@@ -244,6 +244,27 @@
     .change-box li.warn { color: #b91c1c; font-weight: 700; }
     .change-box li.muted { color: var(--muted); list-style: none; margin-left: -20px; }
     .change-box code { font-size: .9em; background: var(--snow); border: 1px solid var(--line); padding: 0 5px; border-radius: 6px; }
+    .change-box li.ok { color: #15803d; }
+    .change-box li.ok::marker { content: "✓  "; }
+    .builder { padding: 16px 18px; margin-bottom: 12px; border-radius: var(--radius); background: var(--part-soft); }
+    .builder-title { font-weight: 900; font-size: 1.05rem; margin-bottom: 8px; }
+    .choice-row { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 6px 0; }
+    .choice-label { min-width: 92px; font-weight: 800; color: var(--muted); }
+    .chip-btn { min-height: 40px; padding: 6px 14px; border-radius: 999px; border: 2px solid var(--line); background: var(--white);
+                font: 700 .95rem "Nunito", system-ui, sans-serif; color: var(--ink); cursor: pointer; }
+    .chip-btn.active { border-color: var(--part); background: var(--part); color: #fff; }
+    .builder-extra { display: block; margin-top: 10px; }
+    .builder-extra span { display: block; font-weight: 800; color: var(--muted); margin-bottom: 4px; }
+    .builder-extra textarea { width: 100%; padding: 8px 12px; border-radius: var(--radius-sm); border: 2px solid var(--line);
+                              font: 600 1rem/1.4 "Nunito", system-ui, sans-serif; resize: vertical; }
+    .builder-extra textarea:focus { outline: none; border-color: var(--part); }
+    .exact { margin-top: 12px; padding: 10px 14px; border-radius: var(--radius-sm); border: 1px dashed var(--line); }
+    .exact summary { cursor: pointer; font-weight: 800; color: var(--muted); }
+    .exact p { margin: 8px 0; color: var(--muted); font-size: .92rem; }
+    .exact pre { max-height: 220px; overflow: auto; padding: 10px; border-radius: 8px; background: var(--snow); font: .85rem/1.45 var(--mono); }
+    .done-list { list-style: none; margin: 4px 0 0; padding: 0; }
+    .done-list li { margin: 3px 0; }
+    .done-list input { width: 18px; height: 18px; vertical-align: -3px; accent-color: var(--green); }
     .preview-frame-outer { padding: 12px; border-radius: var(--radius); background: var(--snow); border: 1px solid var(--line); }
     .preview-frame-note { font-size: .9rem; color: var(--muted); margin-bottom: 8px; }
     .preview-frame-wrapper { width: 100%; max-width: 900px; border-radius: 12px; overflow: hidden; background: #0f1d2b; }
@@ -741,6 +762,20 @@ Explain in simple language (for a 12-year-old), without code:
       subtitle: "The skier moves up, you see further ahead.",
       tag: "Part 1 – Camera",
       info: "Only change PLAYER_Y in CONFIG. Watch: is it easier to ski?",
+      user: {
+        sentence: "I want to see the next gates {when}, {howmuch}.",
+        choices: [
+          { key: "when", label: "When?", options: [{ label: "earlier", text: "earlier" }, { label: "later", text: "later" }] },
+          { key: "howmuch", label: "How much?", options: [{ label: "a little", text: "a little" }, { label: "a lot", text: "a lot" }] }
+        ],
+        extraPlaceholder: "e.g. “This should make the game easier.”",
+        done: [
+          "The skier is in a different place on the screen, so I see the gates {when}.",
+          "Everything else feels the same as before."
+        ],
+        frame: "To do this, change exactly one number in CONFIG – the one that decides where the skier is on the screen. In your 1–2 sentences, tell me which number you changed from what to what and what it means. Change nothing else, not in area 2 either.",
+        expect: { config: ["PLAYER_Y"] }
+      },
       prompt: `${V2_RULES}
 
 Task (step 3 – camera):
@@ -769,6 +804,20 @@ In your 1–2 sentences, also explain why TRACK_HALF is called "half".`
       subtitle: "Less braking when steering = more sliding.",
       tag: "Part 1 – Steering",
       info: "Only change STEER_FRICTION. Watch: how does the steering feel?",
+      user: {
+        sentence: "Steering should feel {strength} {how}.",
+        choices: [
+          { key: "how", label: "How?", options: [{ label: "more slippery, like ice", text: "more slippery, like on ice" }, { label: "more direct and precise", text: "more direct and precise" }] },
+          { key: "strength", label: "How much?", options: [{ label: "a little", text: "a little" }, { label: "a lot", text: "a lot" }] }
+        ],
+        extraPlaceholder: "e.g. “I want to slide on for longer after steering.”",
+        done: [
+          "After steering, the skier slides on differently than before.",
+          "Speed and course have stayed the same."
+        ],
+        frame: "To do this, change exactly one number in CONFIG – the one that decides how quickly the skier slows down again after steering. In your 1–2 sentences, tell me which number you changed from what to what and what it means. Change nothing else, not in area 2 either.",
+        expect: { config: ["STEER_FRICTION"] }
+      },
       prompt: `${V2_RULES}
 
 Task (step 5 – steering):
@@ -783,6 +832,20 @@ In your 1–2 sentences, also explain what "friction" means when steering.`
       subtitle: "Fewer gates, but missed gates cost more.",
       tag: "Part 1 – Rules",
       info: "Change GATES_TOTAL and MISS_PENALTY_S. Discuss: is that fairer?",
+      user: {
+        sentence: "The race should have {length} gates, and a missed gate should give {penalty} penalty.",
+        choices: [
+          { key: "length", label: "Gates?", options: [{ label: "fewer", text: "fewer" }, { label: "more", text: "more" }] },
+          { key: "penalty", label: "Penalty?", options: [{ label: "more", text: "more" }, { label: "less", text: "less" }] }
+        ],
+        extraPlaceholder: "e.g. “About 15 gates would be good.”",
+        done: [
+          "The number of gates at the top is different (“Gate 0 / …”).",
+          "A missed gate gives the new penalty in seconds."
+        ],
+        frame: "To do this, change only the two numbers in CONFIG for the number of gates in a race and the penalty for missing one. In your 1–2 sentences, tell me what you changed from what to what. Change nothing else, not in area 2 either.",
+        expect: { config: ["GATES_TOTAL", "MISS_PENALTY_S"] }
+      },
       prompt: `${V2_RULES}
 
 Task (step 6 – rules):
@@ -879,6 +942,23 @@ Task: switch on snowfall
       tag: "Extra / decoration",
       info: "A new extra without collision and without points – just to look at.",
       type: "template",
+      user: {
+        extraHelp: true,
+        sentence: "Now and then there should be {what} in the deep snow next to the piste. If you touch them, {touch}. They should appear {often}.",
+        choices: [
+          { key: "what", label: "What?", options: [{ label: "huts, rocks, goats", text: "huts, rocks and mountain goats" }, { label: "snowmen", text: "snowmen" }, { label: "igloos", text: "igloos" }] },
+          { key: "touch", label: "Touching?", options: [{ label: "ski through", text: "you just ski through" }, { label: "crash", text: "you crash like at a tree" }] },
+          { key: "often", label: "How often?", options: [{ label: "rarely", text: "rarely" }, { label: "often", text: "often" }] }
+        ],
+        extraPlaceholder: "e.g. “The igloos should have a small window.”",
+        done: [
+          "There are {what} next to the piste.",
+          "There is nothing on the piste itself.",
+          "If you touch them, {touch}."
+        ],
+        frame: "Build this as a new extra in area 2 and switch it on with EXTRAS.push(...). The things are only next to the piste, never on it, and inside the playing field. If you can ski through them, the extra gets no hits() function; otherwise hits() returns true when the player is close enough. Draw with simple p5 shapes. CONFIG and the other parts of area 2 stay the same.",
+        expect: { extra: true }
+      },
       prompt: `${V2_RULES}
 
 ${V2_EXTRA_HELP}
@@ -919,6 +999,22 @@ Tip for you as a player: you can change the numbers in the prompt yourself befor
       tag: "Extra / enemy",
       info: "An extra with hits(): touching it = crash (the engine handles the penalty / losing a heart).",
       type: "template",
+      user: {
+        extraHelp: true,
+        sentence: "Now and then {who} should come down the slope from behind and chase me. It is {speed} than me. If it catches me, I crash.",
+        choices: [
+          { key: "who", label: "Who?", options: [{ label: "a bear", text: "a bear" }, { label: "a yeti", text: "a yeti" }, { label: "a snowman on skis", text: "a snowman on skis" }] },
+          { key: "speed", label: "How fast?", options: [{ label: "a little faster", text: "a little faster" }, { label: "much faster", text: "much faster" }] }
+        ],
+        extraPlaceholder: "e.g. “The yeti should be purple and roar.”",
+        done: [
+          "After a few seconds {who} comes into the picture from the top.",
+          "It runs towards me.",
+          "If it touches me, I crash – the game keeps running."
+        ],
+        frame: "Build this as a new extra in area 2 and switch it on with EXTRAS.push(...). There is at most one chaser at a time. It appears just above the top of the screen, runs downhill and sideways towards me, and disappears again at the bottom. The first one only comes after a few seconds. hits() returns true when it touches me – the game engine handles the crash. CONFIG and the other parts of area 2 stay the same.",
+        expect: { extra: true }
+      },
       prompt: `${V2_RULES}
 
 ${V2_EXTRA_HELP}
@@ -1322,7 +1418,7 @@ Where does the idea belong?
 copyBtnTeil1El.addEventListener("click", async () => {
   const step = promptsTeil1.find((p) => p.id === currentStepTeil1Id);
   if (!step) return;
-  const ok = await copyToClipboard(step.prompt);
+  const ok = await copyToClipboard(promptFor(step));
   if (ok) {
     statusMsgTeil1El.textContent =
       "✅ Prompt copied! Switch to the chat and paste it there.";
@@ -1467,7 +1563,7 @@ Where does the idea belong?
     if (step.type === "generator") {
       text = buildOwnPrompt();
     } else {
-      text = step.prompt;
+      text = promptFor(step);
     }
     const ok = await copyToClipboard(text);
     statusMsgTeil2El.textContent = ok
@@ -4114,6 +4210,19 @@ window.__ski = {
     chTheme: (n) => `${n} ${n === 1 ? "colour" : "colours"} changed in <code>THEME</code>`,
     chOther: "Other changes in the area “You may change this”",
     chEngine: "⚠ Game engine changed",
+    chUnexpected: "not expected",
+    chMissing: (k) => `A change to <code>${k}</code> was expected`,
+    chMissingExtra: "A new extra was expected",
+    pWish: "What I want:",
+    pDone: "It is done when:",
+    pFrame: "Technical notes for you (AI):",
+    bTitle: "What do you want?",
+    bExtra: "Anything else I want to say (optional)",
+    exactSummary: "🛟 Exact prompt – if it does not work",
+    exactHint: "The prompt with all the details, written out word for word. Use it if the AI cannot handle your own sentence.",
+    exactCopy: "📋 Copy exact prompt",
+    doneLabel: "It is done when …",
+    watchLabel: "Watch out for",
   };
   // UI_TEXT_END
 
@@ -4151,6 +4260,8 @@ window.__ski = {
           text = text.slice(V2_EXTRA_HELP.length).replace(/^\n+/, "");
         }
       }
+      const fi = text.indexOf(T.pFrame);
+      if (fi >= 0) { head += "\n\n" + text.slice(fi).trim(); text = text.slice(0, fi); }
       const esc = text.trim().replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
       const codeWords = /\b([A-Z][A-Z0-9]*_[A-Z0-9_]+|CONFIG(?:\.[A-Z_]+)?|THEME|EXTRAS(?:\.push\([^)]*\);?)?|SEED|TITLE|SCHNEEFALL|SNOWFALL|DEKO|DECO|BAER|BEAR|drawPlayer\(p\)|on(?:GatePassed|GateMissed|Crash|Finish)(?:\(\w*\))?|(?:welt|world)(?:\.\w+)+(?:\([^)]*\))?)/g;
       task.innerHTML = '<span class="task-label">' + T.taskLabel + "</span>" + esc.replace(codeWords, "<code>$1</code>");
@@ -4170,6 +4281,7 @@ window.__ski = {
     if (!step) return;
     $("bigNumTeil" + part).textContent = step.number;
     $("stepTitleTeil" + part).textContent = step.title;
+    if (window.__renderUser) window.__renderUser(part, step);
   }
   const origSelect1 = selectStepTeil1, origSelect2 = selectStepTeil2;
   selectStepTeil1 = function (id) { origSelect1(id); decorate(1); };
@@ -4313,16 +4425,27 @@ window.__ski = {
     return out;
   }
   const esc = (t) => String(t).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-  function describeChanges(before, after) {
+  function describeChanges(before, after, expect) {
     const items = [];
     if (norm(before.engine) !== norm(after.engine)) items.push({ cls: "warn", html: T.chEngine });
     const cb = configValues(before.config), ca = configValues(after.config);
+    const wanted = (expect && expect.config) || [];
+    const mark = (ok) => (expect ? (ok ? "ok" : "warn") : "");
+    const tag = (ok, html) => (expect && !ok ? html + " – " + T.chUnexpected : html);
+    const changedKeys = [];
     for (const k of Object.keys(ca)) {
-      if (!(k in cb)) items.push({ html: T.chConfigNew(k, esc(ca[k])) });
-      else if (cb[k] !== ca[k]) items.push({ html: T.chConfig(k, esc(cb[k]), esc(ca[k])) });
+      if (!(k in cb)) items.push({ cls: mark(false), html: tag(false, T.chConfigNew(k, esc(ca[k]))) });
+      else if (cb[k] !== ca[k]) {
+        const ok = wanted.includes(k);
+        changedKeys.push(k);
+        items.push({ cls: mark(ok), html: tag(ok, T.chConfig(k, esc(cb[k]), esc(ca[k]))) });
+      }
     }
+    for (const k of wanted) if (!changedKeys.includes(k)) items.push({ cls: "warn", html: T.chMissing(k) });
     const eb = activeExtras(before.area2), ea = activeExtras(after.area2);
-    for (const n of ea) if (!eb.has(n)) items.push({ html: T.chExtraNew(n) });
+    const newExtras = [...ea].filter((n) => !eb.has(n));
+    for (const n of newExtras) items.push({ cls: mark(!!(expect && expect.extra)), html: tag(!!(expect && expect.extra), T.chExtraNew(n)) });
+    if (expect && expect.extra && !newExtras.length) items.push({ cls: "warn", html: T.chMissingExtra });
     for (const n of eb) if (!ea.has(n)) items.push({ html: T.chExtraOff(n) });
     let explained = items.length > 0;
     for (const n of ["drawPlayer", "onGatePassed", "onGateMissed", "onCrash", "onFinish"]) {
@@ -4338,7 +4461,9 @@ window.__ski = {
   function showChanges(code, previous) {
     const after = parts(code), before = parts(previous || $("baseGameSrc").value);
     if (!after || !before || after.lang !== before.lang) { changeBox.hidden = true; return; }
-    const items = describeChanges(before, after);
+    const list = ctx && (ctx.part === 1 ? promptsTeil1 : promptsTeil2);
+    const step = list && list.find((p) => p.id === ctx.id);
+    const items = describeChanges(before, after, step && step.user ? step.user.expect : null);
     changeList.innerHTML = `<li class="muted">${previous ? T.chVsPrev : T.chVsBase}</li>` +
       (items.length ? items.map((i) => `<li class="${i.cls || ""}">${i.html}</li>`).join("") : `<li>${T.chNone}</li>`);
     changeBox.hidden = false;
@@ -4379,7 +4504,85 @@ window.__ski = {
   });
   editor.addEventListener("focus", () => editor.classList.remove("compact"));
 
-  // --- 6) Startseite und Trainer-Modus ------------------------------------
+  // --- 6) Eigener Satz statt fertigem Prompt (Schritte mit Feld `user`) ------
+  const userState = {};   // Schritt-ID → { choices: { key: Index }, extra: "" }
+  const stateFor = (step) => (userState[step.id] = userState[step.id] || { choices: {}, extra: "" });
+  function fillTemplate(tpl, step) {
+    const st = stateFor(step);
+    return tpl.replace(/\{(\w+)\}/g, (m, key, off, whole) => {
+      const group = step.user.choices.find((c) => c.key === key);
+      if (!group) return m;
+      let text = group.options[st.choices[key] || 0].text;
+      const before = whole.slice(0, off).trimEnd();
+      if (!before || /[.!?:]$/.test(before)) text = text.charAt(0).toUpperCase() + text.slice(1);
+      return text;
+    });
+  }
+  function buildUserPrompt(step) {
+    const u = step.user, st = stateFor(step);
+    let p = V2_RULES + (u.extraHelp ? "\n\n" + V2_EXTRA_HELP : "");
+    p += "\n\n" + T.pWish + "\n" + fillTemplate(u.sentence, step) + (st.extra.trim() ? "\n" + st.extra.trim() : "");
+    p += "\n\n" + T.pDone + "\n" + u.done.map((d) => "- " + fillTemplate(d, step)).join("\n");
+    p += "\n\n" + T.pFrame + "\n" + u.frame;
+    return p;
+  }
+  // Wird von beiden „Prompt kopieren“-Knöpfen benutzt
+  window.promptFor = (step) => (step.user ? buildUserPrompt(step) : step.prompt);
+
+  const ui = {};   // pro Teil: Auswahl-Karte, genauer Prompt
+  function partUi(part) {
+    if (ui[part]) return ui[part];
+    const panel = $(part === 1 ? "tab-teil1" : "tab-teil2"), box = panel.querySelector(".prompt-box");
+    const builder = document.createElement("div");
+    builder.className = "builder";
+    box.before(builder);
+    const exact = document.createElement("details");
+    exact.className = "exact";
+    exact.innerHTML = `<summary>${T.exactSummary}</summary><p>${T.exactHint}</p><pre class="prompt-text"></pre>
+      <button class="secondary-btn" type="button">${T.exactCopy}</button> <span class="status"></span>`;
+    box.after(exact);
+    exact.querySelector("button").addEventListener("click", async () => {
+      const step = (part === 1 ? promptsTeil1 : promptsTeil2).find((p) => p.id === (part === 1 ? currentStepTeil1Id : currentStepTeil2Id));
+      if (!step) return;
+      exact.querySelector(".status").textContent = (await copyToClipboard(step.prompt)) ? T.copied : T.copyFailed;
+      setCtx(part);
+    });
+    return (ui[part] = { panel, builder, exact, pre: $("promptTextTeil" + part), watchLabel: panel.querySelector(".watch b"), info: $("stepInfoTeil" + part) });
+  }
+  function renderUser(part, step) {
+    const u = partUi(part);
+    u.watchLabel.textContent = step.user ? T.doneLabel : T.watchLabel;
+    u.builder.hidden = u.exact.hidden = !step.user;
+    if (!step.user) return;
+    u.exact.open = false;
+    u.exact.querySelector("pre").textContent = step.prompt;
+    u.exact.querySelector(".status").textContent = "";
+    const st = stateFor(step);
+    u.builder.innerHTML = `<div class="builder-title">${T.bTitle}</div>` + step.user.choices.map((g) =>
+      `<div class="choice-row"><span class="choice-label">${g.label}</span>` + g.options.map((o, i) =>
+        `<button type="button" class="chip-btn${(st.choices[g.key] || 0) === i ? " active" : ""}" data-key="${g.key}" data-i="${i}">${o.label}</button>`).join("") +
+      "</div>").join("") +
+      `<label class="builder-extra"><span>${T.bExtra}</span><textarea rows="2" placeholder="${step.user.extraPlaceholder || ""}"></textarea></label>`;
+    const ta = u.builder.querySelector("textarea");
+    ta.value = st.extra;
+    const refresh = () => {
+      u.pre.textContent = buildUserPrompt(step);
+      u.info.innerHTML = '<ul class="done-list">' + step.user.done.map((d) =>
+        `<li><label><input type="checkbox"> ${fillTemplate(d, step)}</label></li>`).join("") + "</ul>";
+    };
+    u.builder.querySelectorAll(".chip-btn").forEach((b) => b.addEventListener("click", () => {
+      st.choices[b.dataset.key] = Number(b.dataset.i);
+      u.builder.querySelectorAll(`.chip-btn[data-key="${b.dataset.key}"]`).forEach((x) => x.classList.toggle("active", x === b));
+      refresh();
+    }));
+    ta.addEventListener("input", () => { st.extra = ta.value; refresh(); });
+    refresh();
+  }
+  window.__renderUser = renderUser;
+  decorate(1);
+  if (currentStepTeil2Id) decorate(2);
+
+  // --- 7) Startseite und Trainer-Modus ------------------------------------
   document.querySelectorAll("[data-go]").forEach((b) => b.addEventListener("click", () => {
     const go = b.dataset.go;
     if (go === "play") { showTab("editor"); $("loadBaseBtn").click(); }
