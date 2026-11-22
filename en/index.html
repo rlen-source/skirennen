@@ -264,6 +264,8 @@
     .exact pre { max-height: 220px; overflow: auto; padding: 10px; border-radius: 8px; background: var(--snow); font: .85rem/1.45 var(--mono); }
     .done-list { list-style: none; margin: 4px 0 0; padding: 0; }
     .done-list li { margin: 3px 0; }
+    .bonus-tag { display: inline-block; margin-left: 4px; padding: 0 8px; border-radius: 999px; background: var(--yellow);
+                 color: var(--ink); font-size: .72rem; font-weight: 900; vertical-align: 2px; }
     .done-list input { width: 18px; height: 18px; vertical-align: -3px; accent-color: var(--green); }
     .preview-frame-outer { padding: 12px; border-radius: var(--radius); background: var(--snow); border: 1px solid var(--line); }
     .preview-frame-note { font-size: .9rem; color: var(--muted); margin-bottom: 8px; }
@@ -366,14 +368,14 @@
         </div>
 
         <div class="intro-card trainer-only">
-          <span class="intro-pill">4P – compass for good prompts</span>
-          <h3>The 4-step compass (4P)</h3>
+          <span class="intro-pill">The formula for good prompts</span>
+          <h3>I want … · Don't change … · It is done when …</h3>
           <ul class="intro-list">
-            <li><strong>Plan:</strong> What do I really want? Goal, rules, numbers.</li>
-            <li><strong>Prompt:</strong> Say it clearly, concretely and with limits.</li>
-            <li><strong>Probe:</strong> Is the result right? What is missing? What is broken?</li>
-            <li><strong>Polish:</strong> Ask follow-up questions, add examples, make small improvements.</li>
+            <li><strong>I want …</strong> The goal in your own words: what should be different, and how much?</li>
+            <li><strong>Don't change …</strong> The limit: what must stay exactly the same?</li>
+            <li><strong>It is done when …</strong> How can I tell while playing that it worked?</li>
           </ul>
+          <p class="intro-subtitle">In Parts 1 and 2 the launcher helps build the sentence with choice buttons; in Part 3 participants write it completely themselves.</p>
         </div>
 
         <div class="intro-card trainer-only">
@@ -413,37 +415,30 @@
           <ul class="intro-list">
             <li><strong>Step 1 – Play:</strong> Load the base game in the Live Editor, do one race, remember your time. Download the file and upload it in the chat.</li>
             <li><strong>Step 2 – Blueprint:</strong> The AI explains the three areas: settings, playground, game engine.</li>
-            <li><strong>Step 3 – Camera:</strong> See further ahead – change one number, feel the difference.</li>
-            <li><strong>Step 4 – Piste:</strong> A narrower piste, more risk of deep snow.</li>
-            <li><strong>Step 5 – Steering:</strong> Slippery like ice.</li>
-            <li><strong>Step 6 – Rules:</strong> Fewer gates, a bigger penalty for missing one.</li>
-            <li><strong>Step 7 – Forest:</strong> More trees, a shorter crash penalty.</li>
-            <li><strong>Step 8 – Your own course:</strong> Change the seed number, set a best time – version 1 is done.</li>
+            <li><strong>Step 3 – Camera:</strong> See further ahead or less far – feel the difference.</li>
+            <li><strong>Step 4 – Piste (bonus):</strong> A narrower or wider piste.</li>
+            <li><strong>Step 5 – Steering:</strong> Slippery like ice, or more direct.</li>
+            <li><strong>Step 6 – Rules:</strong> More or fewer gates, the penalty for missing one.</li>
+            <li><strong>Step 7 – Forest (bonus):</strong> More or fewer trees, the penalty for crashes.</li>
+            <li><strong>Step 8 – Your own course:</strong> Your own course and title, set a best time – version 1 is done.</li>
           </ul>
           <p class="intro-subtitle">
-            After every step: <strong>prompt → chat → HTML into the Live Editor → play &amp; compare.</strong>
+            After every step: <strong>choose → prompt into the chat → answer into the Live Editor → check “What has changed?” → play.</strong> The bonus steps can be skipped if time is short.
           </p>
         </div>
 
         <div class="intro-card trainer-only">
-          <span class="intro-pill">The challenge with AI</span>
-          <h3>Why we work with “locked prompts”</h3>
+          <span class="intro-pill">How the prompts are built</span>
+          <h3>Your own sentence + the launcher's frame</h3>
           <p>
-            If a prompt is too vague (“put trees in the game”), every AI does something slightly different –
-            then you have ten different games and nobody knows exactly what is going on.
+            If a prompt is too vague, every AI does something different. If it is too technical, you no longer understand what you are telling the AI.
+            So every prompt has two parts:
           </p>
-          <p>
-            If the prompt is too technical, non-programmers hardly understand anything –
-            and that is no fun.
-          </p>
-          <p><strong>Our solution: a two-layer system:</strong></p>
           <ul class="intro-list">
-            <li><strong>Explanation:</strong> In everyday language: what happens in the game in this step?</li>
-            <li><strong>Locked prompt:</strong> A technically exact prompt that you only copy and paste.</li>
+            <li><strong>Your own sentence:</strong> participants choose what they want and add to it freely. They see it as “What you tell the AI”.</li>
+            <li><strong>The frame:</strong> rules and technical notes for the AI (where it may work, what is off limits). It is collapsed and copied along automatically.</li>
           </ul>
-          <p class="intro-subtitle">
-            That keeps the result stable – and you still understand what you are teaching the AI.
-          </p>
+          <p><strong>Reliability comes from checking, not prescribing:</strong> after every answer the Live Editor checks that the game engine is unchanged and shows in “What has changed?” whether the AI did what was expected. If your own sentence doesn't work, every step has the <strong>🛟 Exact prompt</strong> from before.</p>
         </div>
 
         <div class="intro-card trainer-only">
@@ -479,8 +474,8 @@
         <div class="hint-box">
           <span class="icon">💡</span>
           <div>
-            <strong>How kids use Part 1:</strong><br />
-            First: Live Editor → “Load base game” &amp; “Download base game” → upload the file in a new chat.<br />Then: 1. pick a step · 2. “Copy prompt” · 3. paste it in the chat · 4. test the HTML code in the Live Editor.
+            <strong>How Part 1 works:</strong><br />
+            First: Live Editor → “Load base game” &amp; “Download base game” → upload the file in a new chat.<br />Then: 1. pick a step · 2. choose what you want · 3. “Copy prompt” and paste it in the chat · 4. test the answer in the Live Editor.
           </div>
         </div>
 
@@ -516,7 +511,7 @@
             Choose a step on the left to see its learning goals and explanations.
           </p>
           <ul id="didaktikListTeil1">
-            <li>Focus: kids describe what should happen in the game – not the code.</li>
+            <li>Focus: participants describe what should happen in the game – not the code.</li>
             <li>Trainers can introduce terms like “world”, “camera”, “objects” here.</li>
           </ul>
         </div>
@@ -571,12 +566,15 @@
         <div class="prompt-box">
           <!-- Own idea form (shown/hidden by JS) -->
           <div id="studioFormWrapper" class="studio-form" style="display:none;">
-            <div><span class="pill">🧪 Your own idea</span></div>
-            <label for="ideaInput">1. What should be added? (describe it briefly)</label>
-            <textarea id="ideaInput" placeholder="e.g. &quot;Snowfall with small white dots&quot;"></textarea>
+            <div><span class="pill">🧪 The formula for good prompts</span></div>
+            <label for="ideaInput">1. I want …</label>
+            <textarea id="ideaInput" placeholder="e.g. &quot;… a snowman to stand next to the piste now and then and wave.&quot;"></textarea>
 
-            <label for="keepInput">2. What must stay exactly the same?</label>
+            <label for="keepInput">2. Don't change …</label>
             <textarea id="keepInput" placeholder="e.g. &quot;Gates, trees, time and finish stay exactly the same.&quot;"></textarea>
+
+            <label for="doneInput">3. It is done when …</label>
+            <textarea id="doneInput" placeholder="e.g. &quot;… I see a waving snowman while skiing.&quot;"></textarea>
 
             <p class="studio-note">
               Below you can see how this becomes a safe prompt.
@@ -674,7 +672,7 @@
   </div>
 
   <footer>
-    <span>Kids don't need to select anything – just click &amp; paste.</span>
+    <span>No selecting needed – choose, copy, paste.</span>
     <span><a href="../trainer.html#en">📄 Printable info sheet with QR code</a> · <button type="button" class="link-btn" id="trainerToggle">👩‍🏫 Trainer mode: off</button></span>
   </footer>
 
@@ -731,10 +729,20 @@ Please do NOT write the file again from the beginning.
       subtitle: "Load the game, do one race, give the file to the chat.",
       tag: "Part 1 – Start",
       info: "Live Editor → “Load base game” → play. Then “Download base game” and upload the file in a new chat.",
+      user: {
+        noRules: true,
+        sentence: "Explain my game to me {how}: What is the goal? How do you steer – with the keyboard and on a tablet? What happens when you miss a gate or ski into a tree? And what is the difference between “Race” and “Endless”?",
+        choices: [
+          { key: "how", label: "How?", options: [{ label: "short", text: "briefly, in at most 6 sentences" }, { label: "in detail", text: "in detail, with examples" }] }
+        ],
+        extraPlaceholder: "e.g. “How do I get a good time?”",
+        done: ["I can explain to someone else how the game works."],
+        frame: "I have sent you my ski game ski-race-v2.html (p5.js). We will work on it together today. Please do NOT change the code yet and do not show any code. Explain in simple language, so that someone with no programming experience understands."
+      },
       prompt: `I have sent you my ski game ski-race-v2.html (p5.js). We will work on it together today.
 Please do NOT change the code yet and do not show any code.
 
-Explain to me in at most 6 short sentences, so that a 12-year-old understands:
+Explain to me in at most 6 short sentences, so that someone with no programming experience understands:
 1. What is the goal of the game?
 2. How do you steer (keyboard and tablet)?
 3. What happens when you miss a gate or ski into a tree?
@@ -747,10 +755,21 @@ Explain to me in at most 6 short sentences, so that a 12-year-old understands:
       subtitle: "Settings, playground and game engine.",
       tag: "Part 1 – Understand",
       info: "The AI explains how the file is built – this is the map for all the following prompts.",
+      user: {
+        noRules: true,
+        sentence: "Explain how the code of my game is built: What is in the three areas, {examples}? Why should you not change the game engine? And which three numbers make the game noticeably {direction}?",
+        choices: [
+          { key: "examples", label: "Examples?", options: [{ label: "2–3 each", text: "with 2–3 examples each" }, { label: "just briefly", text: "just very briefly" }] },
+          { key: "direction", label: "Numbers for …", options: [{ label: "easier", text: "easier" }, { label: "harder", text: "harder" }] }
+        ],
+        extraPlaceholder: "e.g. “Where would I add a new enemy?”",
+        done: ["I know which area holds the numbers, my own ideas and the game engine."],
+        frame: "Please do NOT change the code yet and do not show any code. The three areas are called 1) SETTINGS (CONFIG), 2) YOU MAY CHANGE THIS, 3) GAME ENGINE – DO NOT CHANGE. Explain in simple language, so that someone with no programming experience understands."
+      },
       prompt: `Please do NOT change the code yet.
 
 My game has three areas: 1) SETTINGS (CONFIG), 2) YOU MAY CHANGE THIS, 3) GAME ENGINE – DO NOT CHANGE.
-Explain in simple language (for a 12-year-old), without code:
+Explain in simple language (for someone with no programming experience), without code:
 - What is in each of the three areas? Give 2–3 examples per area.
 - Why is it smart that the game engine should not be changed?
 - Name three numbers in CONFIG that make the game noticeably easier or harder.`
@@ -758,8 +777,8 @@ Explain in simple language (for a 12-year-old), without code:
     {
       id: "step3",
       number: 3,
-      title: "World & camera – see further ahead",
-      subtitle: "The skier moves up, you see further ahead.",
+      title: "Camera – how far ahead can you see?",
+      subtitle: "The skier moves up or down – the gates come into view earlier or later.",
       tag: "Part 1 – Camera",
       info: "Only change PLAYER_Y in CONFIG. Watch: is it easier to ski?",
       user: {
@@ -786,10 +805,22 @@ In your 1–2 sentences, also explain what PLAYER_Y means.`
     {
       id: "step4",
       number: 4,
-      title: "Piste – make it narrower",
-      subtitle: "Less room between the piste edges.",
+      title: "Piste – narrower or wider",
+      subtitle: "More or less room between the piste edges.",
       tag: "Part 1 – Course",
       info: "Only change TRACK_HALF. Watch: how often do you end up in the deep snow now?",
+      bonus: true,
+      user: {
+        sentence: "The piste should get {width}, {howmuch}.",
+        choices: [
+          { key: "width", label: "How?", options: [{ label: "narrower", text: "narrower" }, { label: "wider", text: "wider" }] },
+          { key: "howmuch", label: "How much?", options: [{ label: "a little", text: "a little" }, { label: "a lot", text: "a lot" }] }
+        ],
+        extraPlaceholder: "e.g. “This should make the game harder.”",
+        done: ["The piste is visibly {width}.", "There is still deep snow next to the piste."],
+        frame: "To do this, change exactly one number in CONFIG – the one that decides how wide the piste is. In your 1–2 sentences, tell me which number you changed from what to what and what it means. Change nothing else, not in area 2 either.",
+        expect: { config: ["TRACK_HALF"] }
+      },
       prompt: `${V2_RULES}
 
 Task (step 4 – piste):
@@ -800,8 +831,8 @@ In your 1–2 sentences, also explain why TRACK_HALF is called "half".`
     {
       id: "step5",
       number: 5,
-      title: "Skier – steering like on ice",
-      subtitle: "Less braking when steering = more sliding.",
+      title: "Steering – slippery or direct",
+      subtitle: "How long does the skier slide on after steering?",
       tag: "Part 1 – Steering",
       info: "Only change STEER_FRICTION. Watch: how does the steering feel?",
       user: {
@@ -828,8 +859,8 @@ In your 1–2 sentences, also explain what "friction" means when steering.`
     {
       id: "step6",
       number: 6,
-      title: "Gates & penalties – a shorter race",
-      subtitle: "Fewer gates, but missed gates cost more.",
+      title: "Gates & penalties",
+      subtitle: "How long is the race, and what does a missed gate cost?",
       tag: "Part 1 – Rules",
       info: "Change GATES_TOTAL and MISS_PENALTY_S. Discuss: is that fairer?",
       user: {
@@ -857,10 +888,22 @@ Change nothing else – not in area 2 either.`
     {
       id: "step7",
       number: 7,
-      title: "Trees & crashes – a denser forest",
-      subtitle: "More trees next to the piste, but a shorter crash penalty.",
+      title: "Forest & crashes",
+      subtitle: "How dense is the forest, and what does a crash cost?",
       tag: "Part 1 – Obstacles",
       info: "Change TREE_EVERY and CRASH_PENALTY_S. Watch: are shortcuts through the forest riskier now?",
+      bonus: true,
+      user: {
+        sentence: "There should be {trees} trees next to the piste, and a crash should cost {penalty} time.",
+        choices: [
+          { key: "trees", label: "Trees?", options: [{ label: "more", text: "more" }, { label: "fewer", text: "fewer" }] },
+          { key: "penalty", label: "Crash?", options: [{ label: "less", text: "less" }, { label: "more", text: "more" }] }
+        ],
+        extraPlaceholder: "e.g. “The forest should be really dense.”",
+        done: ["There are {trees} trees next to the piste than before.", "A crash costs the new penalty in seconds."],
+        frame: "To do this, change only the two numbers in CONFIG for the distance between the rows of trees and the penalty for a crash. In your 1–2 sentences, tell me what you changed from what to what and why a smaller distance means more trees. Change nothing else, not in area 2 either.",
+        expect: { config: ["TREE_EVERY", "CRASH_PENALTY_S"] }
+      },
       prompt: `${V2_RULES}
 
 Task (step 7 – obstacles):
@@ -874,9 +917,17 @@ In your 1–2 sentences, also explain why a smaller number for TREE_EVERY means 
       id: "step8",
       number: 8,
       title: "Your own course – version 1 done",
-      subtitle: "New seed number = new course. Set a best time!",
+      subtitle: "Your own course, your own title. Then set a best time!",
       tag: "Part 1 – Finished game",
       info: "Change SEED (e.g. your team number). Then set a best time – that is your version 1.",
+      user: {
+        sentence: "Our game should get a new course of its own and its own title.",
+        choices: [],
+        extraPlaceholder: "Our title: “Ski Race of Team Lightning” · our number for the course: 4711",
+        done: ["The title screen shows our title.", "The course looks different from before."],
+        frame: "To do this, change only SEED in CONFIG (the number for the course – use our number, otherwise any other) and TITLE (use our title, otherwise “Ski Race of Team …”). In your 1–2 sentences, tell me why everybody gets the same course with the same SEED number. Change nothing else, not in area 2 either.",
+        expect: { config: ["SEED", "TITLE"] }
+      },
       prompt: `${V2_RULES}
 
 Task (step 8 – own course):
@@ -921,11 +972,22 @@ Do not add new features, only repair. Write in 1–2 sentences what was broken.`
     {
       id: "schnee",
       number: "0",
-      title: "Warm-up: switch on snowfall",
-      subtitle: "Switch on the example extra and make it more colourful.",
+      title: "Warm-up: snowfall",
+      subtitle: "Switch on the prepared extra and adjust it.",
       tag: "Extra / warm-up",
       info: "A first success: switch on an existing extra and adjust it.",
       type: "template",
+      user: {
+        sentence: "It should snow {amount}. The flakes should be {colour}.",
+        choices: [
+          { key: "amount", label: "How much?", options: [{ label: "a little", text: "a little" }, { label: "heavily", text: "really heavily" }] },
+          { key: "colour", label: "Colour?", options: [{ label: "white", text: "white" }, { label: "light blue", text: "light blue" }, { label: "colourful", text: "colourful" }] }
+        ],
+        extraPlaceholder: "e.g. “The flakes should have different sizes.”",
+        done: ["It snows {amount}.", "The flakes are {colour}."],
+        frame: "Area 2 already has the extra SNOWFALL. Switch it on (remove the // in front of EXTRAS.push(SNOWFALL);) and adjust the number, colour and size of the flakes. Change nothing else.",
+        expect: { extra: true }
+      },
       prompt: `${V2_RULES}
 
 Task: switch on snowfall
@@ -975,11 +1037,22 @@ Task: new extra "Decoration"
     {
       id: "tempo",
       number: "B",
-      title: "Speed tuning: faster & harder",
+      title: "Speed – faster or slower",
       subtitle: "Only change numbers in the settings.",
       tag: "Settings / speed",
-      info: "Kids learn: how a game feels depends on parameters. Only CONFIG is changed.",
+      info: "How a game feels depends on numbers: only values in CONFIG change here.",
       type: "template",
+      user: {
+        sentence: "The game should get {speed}. The gates should be {gates}.",
+        choices: [
+          { key: "speed", label: "Speed?", options: [{ label: "faster", text: "faster and harder" }, { label: "slower", text: "slower and easier" }] },
+          { key: "gates", label: "Gates?", options: [{ label: "narrower", text: "narrower" }, { label: "the same", text: "as wide as now" }, { label: "wider", text: "wider" }] }
+        ],
+        extraPlaceholder: "e.g. “It should feel like a pro race.”",
+        done: ["The skier is noticeably {speed}.", "The gates are {gates}."],
+        frame: "To do this, change only numbers in CONFIG: the start speed and the top speed, the width of the gates, and if it gets faster, also how fast you can steer sideways, so you can still make it round the bends. In your 1–2 sentences, tell me what you changed from what to what. Change nothing in area 2.",
+        expect: { config: ["SPEED_START", "SPEED_MAX"], allow: ["GATE_WIDTH", "STEER_MAX", "STEER_ACCEL", "SPEED_PER_GATE"] }
+      },
       prompt: `${V2_RULES}
 
 Task: speed tuning (exception: here you may change CONFIG)
@@ -994,8 +1067,8 @@ Tip for you as a player: you can change the numbers in the prompt yourself befor
     {
       id: "baer",
       number: "C",
-      title: "New enemy: the bear chases you",
-      subtitle: "A bear comes down the slope from behind.",
+      title: "New enemy: who is chasing you?",
+      subtitle: "A bear, yeti or snowman comes down the slope from behind.",
       tag: "Extra / enemy",
       info: "An extra with hits(): touching it = crash (the engine handles the penalty / losing a heart).",
       type: "template",
@@ -1034,10 +1107,21 @@ Task: new extra "Bear"
       id: "kombo",
       number: "E",
       title: "Combo streak: gates in a row",
-      subtitle: "A fire display for many gates without a mistake.",
+      subtitle: "A display for many gates without a mistake.",
       tag: "Events",
       info: "Learn events: onGatePassed, onGateMissed, onCrash.",
       type: "template",
+      user: {
+        sentence: "When I pass several gates in a row, {display} should appear. {message} After a missed gate or a crash the streak starts again.",
+        choices: [
+          { key: "display", label: "Display?", options: [{ label: "🔥 fire", text: "a fire display with the number at the top right (e.g. “🔥 7”)" }, { label: "counter", text: "a counter “Streak: 7” at the top right" }] },
+          { key: "message", label: "Message?", options: [{ label: "every 5 gates", text: "Every 5 gates a message “🔥 5 in a row!” should flash." }, { label: "none", text: "" }] }
+        ],
+        extraPlaceholder: "e.g. “From 10 gates on, the display should turn gold.”",
+        done: ["The display appears after 2 gates in a row.", "After a missed gate or a crash it starts again."],
+        frame: "Use the events onGatePassed, onGateMissed and onCrash in area 2 for this (their names stay the same) and a variable for the streak. For the display, build a small extra with EXTRAS.push(...) that draws at the top right below the speaker symbol, but only from 2 gates in a row. Messages work with world.popup(text, x, y, colour). CONFIG stays the same.",
+        expect: { extra: true, funcs: ["onGatePassed"] }
+      },
       prompt: `${V2_RULES}
 
 Task: combo streak
@@ -1050,11 +1134,21 @@ Task: combo streak
     {
       id: "theme",
       number: "D",
-      title: "Theme: colours for the whole game",
+      title: "Colours for the whole game",
       subtitle: "Night, neon, candy or retro.",
       tag: "Look & feel / theme",
       info: "Only change the colour values in THEME – the game logic stays the same.",
       type: "template",
+      user: {
+        sentence: "The whole game should look like {style}.",
+        choices: [
+          { key: "style", label: "Style?", options: [{ label: "night", text: "a ski slope at night" }, { label: "neon", text: "a neon disco" }, { label: "candy", text: "a pastel candy land" }, { label: "retro", text: "an old video game with a few strong colours" }] }
+        ],
+        extraPlaceholder: "e.g. “The gates should be yellow and purple.”",
+        done: ["The game has new colours.", "Piste and deep snow are easy to tell apart, and the gates are easy to see."],
+        frame: "To do this, change ONLY the colour values in the object THEME (area 2). All names in THEME stay the same, no new ones are added. The piste (snow) and the deep snow (deepSnow) must be easy to tell apart, and the gates must stay easy to see.",
+        expect: { theme: true }
+      },
       prompt: `${V2_RULES}
 
 Task: new colour theme
@@ -1067,57 +1161,31 @@ Choose ONE theme (or write your own here):
 Important: the piste (snow) and the deep snow (deepSnow) must be easy to tell apart, and the gates must stay easy to see.`
     },
     {
-      id: "prinzessin",
-      number: "D1",
-      title: "Figure: princess instead of skier",
-      subtitle: "Pink dress, golden crown.",
+      id: "figur",
+      number: "F",
+      title: "Your own player figure",
+      subtitle: "A princess, ninja, penguin or robot instead of the skier.",
       tag: "Look & feel / figure",
-      info: "Only change the contents of drawPlayer(p) – steering & collisions stay.",
+      info: "Only the look of the figure changes – steering and crashes stay the same.",
       type: "template",
+      user: {
+        sentence: "My player figure should be {who}. When I steer, {motion}.",
+        choices: [
+          { key: "who", label: "Who?", options: [{ label: "princess", text: "a princess with a pink dress and a golden crown" }, { label: "ninja", text: "a ninja with a dark mask and a red headband" }, { label: "penguin", text: "a penguin with a scarf" }, { label: "robot", text: "a robot with an antenna" }] },
+          { key: "motion", label: "When steering?", options: [{ label: "something flutters", text: "something should blow to the side (e.g. ribbons, scarf or antenna)" }, { label: "stays calm", text: "only the whole figure should lean" }] }
+        ],
+        extraPlaceholder: "e.g. “The robot should have blinking eyes.”",
+        done: ["Instead of the skier, {who} is skiing.", "The figure stands on two skis and is about as big as before.", "Steering and crashes work as before."],
+        frame: "To do this, change ONLY the contents of the function drawPlayer(p) in area 2. The first two lines (translate(...) and rotate(...)) stay exactly as they are; after that you draw around the point (0, 0). Always calculate sizes with s = p.s; the figure fits roughly into a square of 2·s × 2·s and stands on two skis. For movement when steering there is p.lean (-1 left … 1 right).",
+        expect: { funcs: ["drawPlayer"] }
+      },
       prompt: `${V2_RULES}
 
-Task: new player figure – princess
+Task: new player figure
 - Change ONLY the contents of the function drawPlayer(p) in area 2.
 - The first two lines (translate(...) and rotate(...)) stay exactly as they are. After that you draw around the point (0, 0).
 - Always calculate sizes with s = p.s. The figure should fit roughly into a square of 2·s × 2·s.
-- Look: a pink dress that gets wider at the bottom; a small head; a golden crown; she stands on two skis (as before).`
-    },
-    {
-      id: "ninja",
-      number: "D2",
-      title: "Figure: ninja instead of skier",
-      subtitle: "Black, mask, red headband.",
-      tag: "Look & feel / figure",
-      info: "Only change the contents of drawPlayer(p) – steering & collisions stay.",
-      type: "template",
-      prompt: `${V2_RULES}
-
-Task: new player figure – ninja
-- Change ONLY the contents of the function drawPlayer(p) in area 2.
-- The first two lines (translate(...) and rotate(...)) stay exactly as they are. After that you draw around the point (0, 0).
-- Always calculate sizes with s = p.s. The figure should fit roughly into a square of 2·s × 2·s.
-- Look: black clothes, a dark mask with visible eyes, a red headband with two short ribbons that blow to the side depending on p.lean; stands on two skis (as before).`
-    },
-    {
-      id: "safemode",
-      number: "S",
-      title: "Safe-mode prompt",
-      subtitle: "A safe template for any idea of your own.",
-      tag: "Safety",
-      info: "Rules + help for extras – your idea goes into the marked line.",
-      type: "template",
-      prompt: `${V2_RULES}
-
-${V2_EXTRA_HELP}
-
-Task (your idea HERE in one sentence, e.g. "A snowman stands next to the piste now and then"):
-…
-
-Where does the idea belong?
-- Colours → only THEME
-- Look of the figure → only the contents of drawPlayer(p)
-- New things on the piste → a new extra with EXTRAS.push(...)
-- Something should happen at a gate / missed gate / crash / finish → onGatePassed / onGateMissed / onCrash / onFinish`
+- Look: a princess with a pink dress that gets wider at the bottom, a small head and a golden crown; she stands on two skis (as before).`
     },
     {
       id: "weiter",
@@ -1132,10 +1200,10 @@ Where does the idea belong?
     {
       id: "own",
       number: "★",
-      title: "Build your own idea (prompt generator)",
-      subtitle: "Kids write their idea, the prompt is put together.",
-      tag: "Creator",
-      info: "Kids describe their change, the rules for the AI are added automatically.",
+      title: "Free idea",
+      subtitle: "Your very own idea – with the formula for good prompts.",
+      tag: "Part 3 – completely free",
+      info: "Write what you want, what must stay the same and how you can tell it is done. The rules for the AI are added automatically.",
       type: "generator",
       prompt: ""
     }
@@ -1227,9 +1295,9 @@ Where does the idea belong?
 
   const didaktikTeil1 = {
     default: {
-      intro: "In Part 1 the kids get to know a finished, stable game and tune it step by step with precise prompts.",
+      intro: "In Part 1 participants get to know a finished, stable game and tune it step by step. They choose what they want and phrase it as their own sentence; the launcher adds the rules for the AI.",
       bullets: [
-        "Stress: the AI is a helper – the kids decide what changes and check the result.",
+        "Stress: the AI is a helper – participants decide what changes and check the result with “What has changed?” and the checklist.",
         "After every step, play briefly and say together: what has changed – and why?"
       ]
     },
@@ -1264,7 +1332,7 @@ Where does the idea belong?
     step5: {
       intro: "How a game feels is physics: friction decides whether you steer precisely or slide.",
       bullets: [
-        "Kids describe the feeling in their own words (spongy, slippery, direct).",
+        "Participants describe the feeling in their own words (spongy, slippery, direct).",
         "Good moment for: input → movement → reaction."
       ]
     },
@@ -1290,7 +1358,7 @@ Where does the idea belong?
       ]
     },
     weiter: {
-      intro: "Long answers are sometimes cut off – that is not the kids' fault, it is a limit of the chat.",
+      intro: "Long answers are sometimes cut off – that is not the participants' fault, it is a limit of the chat.",
       bullets: [
         "How to spot it: </html> is missing at the end of the code, or the game does not start.",
         "In the Live Editor, “🧩 Append continuation” joins the two parts automatically.",
@@ -1495,16 +1563,20 @@ if (toggleDidaktikBtnEl) {
   function buildOwnPrompt() {
     const idea = (ideaInputEl.value || "").trim();
     const keep = (keepInputEl.value || "").trim();
+    const done = ((document.getElementById("doneInput") || {}).value || "").trim();
 
     let base = `${V2_RULES}
 
 ${V2_EXTRA_HELP}
 
-Task – my idea:
-${idea || "(put your idea here – e.g. \"A snowman stands next to the piste now and then\")"}
+What I want:
+${idea || "(your idea here – e.g. \"Now and then a snowman stands next to the piste and waves.\")"}
 
-This must stay exactly the same:
-${keep || "(write here what should stay the same – e.g. \"Gates, trees, time and finish stay exactly the same.\")"}
+This must stay the same:
+${keep || "(e.g. \"Gates, trees, time and finish stay exactly the same.\")"}
+
+It is done when:
+${done || "(e.g. \"I see a waving snowman while skiing.\")"}
 
 Where does the idea belong?
 - Colours → only THEME
@@ -1547,6 +1619,11 @@ Where does the idea belong?
     if (currentStepTeil2Id === "own") {
       promptTextTeil2El.textContent = buildOwnPrompt();
     }
+  });
+
+  const doneInputEl = document.getElementById("doneInput");
+  if (doneInputEl) doneInputEl.addEventListener("input", () => {
+    if (currentStepTeil2Id === "own") promptTextTeil2El.textContent = buildOwnPrompt();
   });
 
   keepInputEl.addEventListener("input", () => {
@@ -4223,6 +4300,8 @@ window.__ski = {
     exactCopy: "📋 Copy exact prompt",
     doneLabel: "It is done when …",
     watchLabel: "Watch out for",
+    sepFree: "Part 3 – completely free",
+    bonus: "Bonus",
   };
   // UI_TEXT_END
 
@@ -4302,7 +4381,13 @@ window.__ski = {
     setTimeout(() => head.scrollIntoView({ behavior: "smooth", block: "start" }), 50);
   }));
   separator("stepsListTeil1", "check", T.sepHelp1);
-  separator("stepsListTeil2", "safemode", T.sepHelp2);
+  separator("stepsListTeil2", "weiter", T.sepHelp1);
+  separator("stepsListTeil2", "own", T.sepFree);
+  // Bonus-Schritte kennzeichnen
+  promptsTeil1.filter((p) => p.bonus).forEach((p) => {
+    const h = document.querySelector(`#stepsListTeil1 [data-step-id="${p.id}"] h3`);
+    if (h) h.insertAdjacentHTML("beforeend", ` <span class="bonus-tag">${T.bonus}</span>`);
+  });
 
   // --- 2) Schritt-Führung: Prompt → Live Editor → ✓ Klappt → nächster Schritt
   let ctx = null;   // { part: 1 | 2, id }
@@ -4429,14 +4514,14 @@ window.__ski = {
     const items = [];
     if (norm(before.engine) !== norm(after.engine)) items.push({ cls: "warn", html: T.chEngine });
     const cb = configValues(before.config), ca = configValues(after.config);
-    const wanted = (expect && expect.config) || [];
+    const wanted = (expect && expect.config) || [], allowed = wanted.concat((expect && expect.allow) || []);
     const mark = (ok) => (expect ? (ok ? "ok" : "warn") : "");
     const tag = (ok, html) => (expect && !ok ? html + " – " + T.chUnexpected : html);
     const changedKeys = [];
     for (const k of Object.keys(ca)) {
       if (!(k in cb)) items.push({ cls: mark(false), html: tag(false, T.chConfigNew(k, esc(ca[k]))) });
       else if (cb[k] !== ca[k]) {
-        const ok = wanted.includes(k);
+        const ok = allowed.includes(k);
         changedKeys.push(k);
         items.push({ cls: mark(ok), html: tag(ok, T.chConfig(k, esc(cb[k]), esc(ca[k]))) });
       }
@@ -4448,12 +4533,16 @@ window.__ski = {
     if (expect && expect.extra && !newExtras.length) items.push({ cls: "warn", html: T.chMissingExtra });
     for (const n of eb) if (!ea.has(n)) items.push({ html: T.chExtraOff(n) });
     let explained = items.length > 0;
+    const funcs = (expect && expect.funcs) || [];
     for (const n of ["drawPlayer", "onGatePassed", "onGateMissed", "onCrash", "onFinish"]) {
-      if (funcBody(before.area2, n) !== funcBody(after.area2, n)) { items.push({ html: T.chFunc(n) }); explained = true; }
+      const changed = funcBody(before.area2, n) !== funcBody(after.area2, n);
+      if (changed) { items.push({ cls: funcs.includes(n) ? "ok" : "", html: T.chFunc(n) }); explained = true; }
+      else if (funcs.includes(n)) items.push({ cls: "warn", html: T.chMissing(n) });
     }
     const tb = themeColours(before.area2), ta = themeColours(after.area2);
     const themeChanged = Object.keys(ta).filter((k) => tb[k] !== ta[k]).length;
-    if (themeChanged) { items.push({ html: T.chTheme(themeChanged) }); explained = true; }
+    if (themeChanged) { items.push({ cls: expect && expect.theme ? "ok" : "", html: T.chTheme(themeChanged) }); explained = true; }
+    else if (expect && expect.theme) items.push({ cls: "warn", html: T.chMissing("THEME") });
     if (!explained && norm(before.area2) !== norm(after.area2)) items.push({ html: T.chOther });
     return items;
   }
@@ -4520,8 +4609,8 @@ window.__ski = {
   }
   function buildUserPrompt(step) {
     const u = step.user, st = stateFor(step);
-    let p = V2_RULES + (u.extraHelp ? "\n\n" + V2_EXTRA_HELP : "");
-    p += "\n\n" + T.pWish + "\n" + fillTemplate(u.sentence, step) + (st.extra.trim() ? "\n" + st.extra.trim() : "");
+    let p = u.noRules ? "" : V2_RULES + (u.extraHelp ? "\n\n" + V2_EXTRA_HELP : "") + "\n\n";
+    p += T.pWish + "\n" + fillTemplate(u.sentence, step) + (st.extra.trim() ? "\n" + st.extra.trim() : "");
     p += "\n\n" + T.pDone + "\n" + u.done.map((d) => "- " + fillTemplate(d, step)).join("\n");
     p += "\n\n" + T.pFrame + "\n" + u.frame;
     return p;
