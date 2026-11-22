@@ -245,6 +245,12 @@
     .change-box li.muted { color: var(--muted); list-style: none; margin-left: -20px; }
     .change-box code { font-size: .9em; background: var(--snow); border: 1px solid var(--line); padding: 0 5px; border-radius: 6px; }
     .change-box li.ok { color: #15803d; }
+    .repair { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 8px 10px; margin-top: 10px; padding-top: 10px; border-top: 1px dashed var(--line); }
+    .repair label { flex: 1 1 260px; }
+    .repair label span { display: block; font-weight: 800; color: var(--muted); margin-bottom: 4px; }
+    .repair input { width: 100%; min-height: 42px; padding: 8px 12px; border-radius: var(--radius-sm); border: 2px solid var(--line);
+                    font: 600 1rem "Nunito", system-ui, sans-serif; }
+    .repair input:focus { outline: none; border-color: var(--part); }
     .change-box li.ok::marker { content: "✓  "; }
     .builder { padding: 16px 18px; margin-bottom: 12px; border-radius: var(--radius); background: var(--part-soft); }
     .builder-title { font-weight: 900; font-size: 1.05rem; margin-bottom: 8px; }
@@ -939,6 +945,7 @@ Erkläre in deinen 1–2 Sätzen zusätzlich, warum mit der gleichen SEED-Zahl a
     },
     {
       id: "check",
+      hidden: true,   // nur noch intern: Text für „Reparatur-Prompt kopieren“
       number: "8½",
       title: "Fehlercheck & Reparatur",
       subtitle: "Falls etwas nicht funktioniert: Reparatur-Prompt.",
@@ -4301,6 +4308,9 @@ window.__ski = {
     doneLabel: "Fertig ist es, wenn …",
     watchLabel: "Darauf achten",
     sepFree: "Teil 3 – ganz frei",
+    repairAsk: "Etwas stimmt nicht?",
+    repairPlaceholder: "z. B. „Der Yeti kommt nie.“ (freiwillig)",
+    repairFound: "Das ist mir aufgefallen – bitte nur das korrigieren:",
     bonus: "Bonus",
   };
   // UI_TEXT_END
@@ -4380,7 +4390,10 @@ window.__ski = {
     const head = $(listId).closest(".tab-panel").querySelector(".step-head");
     setTimeout(() => head.scrollIntoView({ behavior: "smooth", block: "start" }), 50);
   }));
-  separator("stepsListTeil1", "check", T.sepHelp1);
+  promptsTeil1.concat(promptsTeil2).filter((p) => p.hidden).forEach((p) => {
+    document.querySelectorAll(`[data-step-id="${p.id}"]`).forEach((li) => li.remove());
+  });
+  separator("stepsListTeil1", "weiter", T.sepHelp1);
   separator("stepsListTeil2", "weiter", T.sepHelp1);
   separator("stepsListTeil2", "own", T.sepFree);
   // Bonus-Schritte kennzeichnen
@@ -4547,12 +4560,31 @@ window.__ski = {
     return items;
   }
   const changeBox = $("changeBox"), changeList = $("changeList");
+  let lastFindings = [];   // Warnungen der letzten Prüfung, als Text
+  const repair = document.createElement("div");
+  repair.className = "repair";
+  repair.innerHTML = `<label><span>${T.repairAsk}</span><input type="text" placeholder="${T.repairPlaceholder}"></label>
+    <button class="secondary-btn" type="button">${T.copyRepair}</button> <span class="status"></span>`;
+  changeBox.append(repair);
+  // Reparatur-Prompt: allgemeiner Prüf-Prompt + was der Launcher und die Teilnehmer:innen bemerkt haben
+  window.repairPromptFor = function () {
+    const own = repair.querySelector("input").value.trim();
+    const found = lastFindings.concat(own ? [own] : []);
+    const base = promptsTeil1.find((p) => p.id === "check").prompt;
+    return found.length ? base + "\n\n" + T.repairFound + "\n" + found.map((f) => "- " + f).join("\n") : base;
+  };
+  repair.querySelector("button").addEventListener("click", async () => {
+    repair.querySelector(".status").textContent = (await copyToClipboard(repairPromptFor())) ? T.copied : T.copyFailed;
+  });
   function showChanges(code, previous) {
     const after = parts(code), before = parts(previous || $("baseGameSrc").value);
     if (!after || !before || after.lang !== before.lang) { changeBox.hidden = true; return; }
     const list = ctx && (ctx.part === 1 ? promptsTeil1 : promptsTeil2);
     const step = list && list.find((p) => p.id === ctx.id);
     const items = describeChanges(before, after, step && step.user ? step.user.expect : null);
+    lastFindings = items.filter((i) => i.cls === "warn").map((i) => i.html.replace(/<[^>]+>/g, "").replace(/^⚠\s*/, ""));
+    repair.querySelector("input").value = "";
+    repair.querySelector(".status").textContent = "";
     changeList.innerHTML = `<li class="muted">${previous ? T.chVsPrev : T.chVsBase}</li>` +
       (items.length ? items.map((i) => `<li class="${i.cls || ""}">${i.html}</li>`).join("") : `<li>${T.chNone}</li>`);
     changeBox.hidden = false;

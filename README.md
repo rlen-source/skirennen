@@ -79,6 +79,7 @@ Alles passiert auf einer Seite, dem **Launcher**. Er läuft am Laptop und auf de
 
 - **Die KI macht etwas anderes:** „🛟 Genauer Prompt“ unter dem Prompt aufklappen und diesen schicken.
 - **Das Spiel hat einen Fehler:** Über dem Spiel erscheint ein roter Hinweis mit „Reparatur-Prompt kopieren“. Im Chat einfügen, neue Antwort testen.
+- **Das Spiel läuft, aber etwas stimmt nicht:** Unter „Was hat sich geändert?“ bei „Etwas stimmt nicht?“ kurz beschreiben, was falsch ist (z. B. „Der Yeti kommt nie“), und „Reparatur-Prompt kopieren“. Was der Launcher selbst bemerkt hat, kommt automatisch dazu.
 - **Die Antwort hört mittendrin auf:** Der Launcher merkt das. Den Prompt „↻ Weiter“ schicken und „🧩 Fortsetzung anhängen“ benutzen.
 - **Ein Schritt hat es schlechter gemacht:** „↩ Vorherige Version“ holt die letzte Version zurück.
 - **Später weitermachen:** „💾 Meine Version herunterladen“ speichert das Spiel, „📂 Datei öffnen“ lädt es wieder – auch zu Hause.
@@ -212,6 +213,7 @@ Everything happens on one page, the **launcher**. It runs on laptops and iPads, 
 
 - **The AI does something else:** open "🛟 Exact prompt" below the prompt and send that one.
 - **The game has an error:** a red notice appears above the game with "Copy repair prompt". Paste it in the chat, test the new answer.
+- **The game runs, but something is not right:** under "What has changed?" describe briefly at "Something not right?" what is wrong (e.g. "The yeti never comes") and press "Copy repair prompt". Whatever the launcher noticed itself is added automatically.
 - **The answer stops halfway:** the launcher notices. Send the "↻ Continue" prompt and use "🧩 Append continuation".
 - **A step made it worse:** "↩ Previous version" brings back the last version.
 - **Continue later:** "💾 Download my version" saves the game, "📂 Open file" loads it again – at home too.
