@@ -1,0 +1,4304 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8" />
+  <title>KI-Spielwerkstatt: Skirennen</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <!-- Als App auf dem Home-Bildschirm (iPad: Teilen → Zum Home-Bildschirm) -->
+  <link rel="apple-touch-icon" href="icon-180.png" />
+  <link rel="icon" href="icon-192.png" />
+  <link rel="manifest" href="manifest.webmanifest" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-title" content="Skirennen" />
+  <meta name="theme-color" content="#1d4ed8" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@500;600;700;800;900&amp;display=swap" rel="stylesheet" />
+  <style>
+    /* =====================================================================
+       Launcher-Design „Ski-Welt“: Farben aus dem Spiel, Teil 1 rot, Teil 2 blau
+       ===================================================================== */
+    :root {
+      --sky-900: #0f2a6b;
+      --sky-700: #1d4ed8;
+      --sky-500: #3b82f6;
+      --sky-100: #e0ecff;
+      --snow: #f5f9ff;
+      --white: #ffffff;
+      --ink: #0f172a;
+      --muted: #51607a;
+      --line: #d7e2f2;
+      --red: #dc2828;
+      --red-soft: #fdecec;
+      --blue: #285adc;
+      --blue-soft: #e8efff;
+      --green: #16a34a;
+      --green-soft: #e9f8ef;
+      --yellow: #ffbe28;
+      --yellow-dark: #e0a10e;
+      --part: var(--sky-700);
+      --part-soft: var(--sky-100);
+      --radius: 18px;
+      --radius-sm: 12px;
+      --shadow: 0 10px 30px -14px rgba(15, 42, 107, .35);
+      --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    }
+    * { box-sizing: border-box; }
+    [hidden] { display: none !important; }
+    html { font-size: 16px; }
+    body {
+      margin: 0; min-height: 100vh; padding: 20px 16px 40px;
+      background: var(--snow); color: var(--ink);
+      font: 500 1rem/1.5 "Nunito", system-ui, -apple-system, "Segoe UI", sans-serif;
+    }
+    h1, h2, h3 { line-height: 1.15; }
+    code { font-family: var(--mono); }
+
+    .app { max-width: 1180px; margin: 0 auto; background: var(--white); border-radius: 24px;
+           box-shadow: var(--shadow); border: 1px solid var(--line); overflow: hidden; }
+
+    /* --- Kopfzeile mit Piste -------------------------------------------- */
+    .hero-head { position: relative; color: #fff; padding: 22px 28px 86px; overflow: hidden;
+                 background: linear-gradient(180deg, var(--sky-700) 0%, var(--sky-500) 100%); }
+    .hero-head .slope { position: absolute; left: 0; right: 0; bottom: -1px; width: 100%; height: 70px; }
+    .head-row { position: relative; z-index: 1; display: flex; align-items: center; gap: 14px; }
+    .head-row img { width: 52px; height: 52px; border-radius: 14px; box-shadow: 0 6px 16px -6px rgba(0, 0, 0, .4); }
+    .head-row h1 { margin: 0; font-size: 1.7rem; font-weight: 900; letter-spacing: -.01em; }
+    .head-row p { margin: 2px 0 0; opacity: .92; font-weight: 600; }
+    .lang-switch { margin-left: auto; color: #fff; text-decoration: none; font-weight: 800; font-size: .95rem;
+                   background: rgba(255, 255, 255, .18); padding: 8px 14px; border-radius: 999px; white-space: nowrap; }
+    .lang-switch:hover { background: rgba(255, 255, 255, .3); }
+
+    /* --- Reiter ----------------------------------------------------------- */
+    .tabs { display: flex; gap: 6px; padding: 0 20px; margin-top: -30px; position: relative; z-index: 1;
+            overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
+    .tab-btn { flex: none; display: flex; align-items: center; gap: 8px; padding: 12px 18px 14px; min-height: 48px;
+               border: none; border-bottom: 4px solid transparent; border-radius: 16px 16px 0 0; cursor: pointer;
+               background: rgba(255, 255, 255, .78); color: var(--muted); font: 800 1.02rem/1 "Nunito", system-ui, sans-serif;
+               white-space: nowrap; }
+    .tab-btn:hover { background: rgba(255, 255, 255, .95); }
+    .tab-btn .dot { width: 12px; height: 12px; border-radius: 50%; background: var(--sky-700); }
+    .tab-btn.p1 .dot { background: var(--red); }
+    .tab-btn.p2 .dot { background: var(--blue); }
+    .tab-btn.editor .dot { background: var(--green); }
+    .tab-btn.active { background: var(--white); color: var(--ink); border-bottom-color: var(--sky-700); }
+    .tab-btn.p1.active { border-bottom-color: var(--red); }
+    .tab-btn.p2.active { border-bottom-color: var(--blue); }
+    .tab-btn.editor.active { border-bottom-color: var(--green); }
+
+    .tab-panel { padding: 28px; }
+    #tab-teil1 { --part: var(--red); --part-soft: var(--red-soft); }
+    #tab-teil2 { --part: var(--blue); --part-soft: var(--blue-soft); }
+    #tab-editor { --part: var(--green); --part-soft: var(--green-soft); }
+
+    /* --- Knöpfe: Hauptknopf (gelb) und Nebenknopf (weiss) -------------------- */
+    button.copy-btn, button.secondary-btn {
+      display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 46px;
+      padding: 10px 20px; border-radius: 999px; cursor: pointer; text-decoration: none;
+      font: 800 1rem/1.1 "Nunito", system-ui, sans-serif; border: 2px solid transparent;
+    }
+    button.copy-btn { background: var(--yellow); color: var(--ink); box-shadow: 0 5px 0 var(--yellow-dark); }
+    button.copy-btn:hover { filter: brightness(1.04); }
+    button.copy-btn:active { transform: translateY(3px); box-shadow: 0 2px 0 var(--yellow-dark); }
+    button.secondary-btn { background: var(--white); color: var(--ink); border-color: var(--line); font-weight: 700; }
+    button.secondary-btn:hover { border-color: var(--sky-500); }
+    button:disabled { opacity: .45; cursor: default; }
+    button.copy-btn:disabled { box-shadow: none; }
+    .link-btn { background: none; border: none; padding: 0; color: inherit; text-decoration: underline; cursor: pointer; font: inherit; }
+
+    /* --- Startseite ----------------------------------------------------------- */
+    .intro-layout { display: flex; flex-direction: column; gap: 28px; }
+    .start { display: grid; grid-template-columns: 1.05fr .95fr; gap: 32px; align-items: center; }
+    .start h2 { margin: 0 0 8px; font-size: 2.2rem; font-weight: 900; letter-spacing: -.02em; }
+    .start .lead { font-size: 1.15rem; color: var(--muted); margin: 0 0 22px; }
+    .steps3 { display: grid; gap: 12px; }
+    .step3 { display: flex; align-items: center; gap: 16px; padding: 16px 18px; border-radius: var(--radius); text-align: left;
+             background: var(--white); border: 2px solid var(--line); color: var(--ink); cursor: pointer; font: inherit; width: 100%; }
+    .step3:hover { border-color: var(--sky-500); transform: translateY(-1px); }
+    .step3 .num { flex: none; width: 46px; height: 46px; border-radius: 14px; display: grid; place-items: center;
+                  font-weight: 900; font-size: 1.3rem; color: #fff; background: var(--sky-700); }
+    .step3.s1 .num { background: var(--red); }
+    .step3.s2 .num { background: var(--blue); }
+    .step3 b { display: block; font-size: 1.15rem; font-weight: 900; }
+    .step3 small { color: var(--muted); font-size: .95rem; font-weight: 600; }
+    .step3 .go { margin-left: auto; font-size: 1.5rem; color: var(--muted); }
+    .rule { margin-top: 18px; padding: 12px 16px; border-radius: var(--radius-sm); background: var(--sky-100);
+            font-weight: 700; color: var(--sky-900); }
+    .demo-card { position: relative; border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow); background: var(--sky-100); }
+    .demo-card img { display: block; width: 100%; height: auto; }
+    .demo-card .cap { position: absolute; left: 14px; right: 14px; bottom: 14px; display: flex; flex-wrap: wrap; align-items: center; gap: 10px;
+                      background: rgba(255, 255, 255, .95); border-radius: 14px; padding: 10px 12px; }
+    .demo-card .cap span { font-weight: 800; }
+    .demo-card .cap button { margin-left: auto; min-height: 40px; padding: 8px 16px; font-size: .95rem; box-shadow: 0 4px 0 var(--yellow-dark); }
+
+    /* Karten für Trainer:innen (nur im Trainer-Modus) */
+    body:not(.trainer) .trainer-only { display: none !important; }
+    .trainer-head { margin: 8px 0 -8px; font-size: .85rem; font-weight: 900; color: var(--muted); text-transform: uppercase; letter-spacing: .06em; }
+    .intro-card { background: var(--snow); border: 1px solid var(--line); border-radius: var(--radius); padding: 18px 20px; }
+    .intro-card h3 { margin: 6px 0 8px; font-size: 1.2rem; font-weight: 900; }
+    .intro-card p { margin: 0 0 8px; }
+    .intro-pill, .pill { display: inline-block; padding: 3px 10px; border-radius: 999px; background: var(--sky-100);
+                         color: var(--sky-900); font-size: .8rem; font-weight: 800; }
+    .intro-list { margin: 0; padding-left: 20px; }
+    .intro-list li { margin-bottom: 4px; }
+    .intro-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; }
+    .intro-subtitle { color: var(--muted); margin: 8px 0 4px; }
+
+    /* --- Teil 1 und Teil 2 ------------------------------------------------------- */
+    .layout { display: grid; grid-template-columns: 340px 1fr; gap: 28px; align-items: start; }
+    .hint-box { display: flex; gap: 10px; padding: 12px 14px; margin-bottom: 16px; border-radius: var(--radius-sm);
+                background: var(--part-soft); font-size: .92rem; }
+    .hint-box .icon { font-size: 1.2rem; }
+    .progress-wrapper { margin-bottom: 14px; }
+    .progress-label { font-weight: 800; font-size: .95rem; margin-bottom: 6px; }
+    .progress-bar { height: 12px; border-radius: 999px; background: var(--part-soft); overflow: hidden; }
+    .progress-bar-fill { height: 100%; width: 0; background: var(--part); border-radius: 999px; transition: width .3s ease; }
+
+    .steps-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+    .step-item { display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 14px; cursor: pointer;
+                 border: 2px solid transparent; }
+    .step-item:hover { background: var(--snow); }
+    .step-number { flex: none; width: 38px; height: 38px; border-radius: 50%; display: grid; place-items: center; font-weight: 900;
+                   border: 2px solid var(--line); color: var(--muted); background: var(--white); font-size: .95rem; }
+    .step-content h3 { margin: 0; font-size: 1rem; font-weight: 800; }
+    .step-content p { margin: 2px 0 0; color: var(--muted); font-size: .88rem; font-weight: 600; line-height: 1.3; }
+    .step-item.completed .step-number { background: var(--green); border-color: var(--green); color: transparent; position: relative; }
+    .step-item.completed .step-number::after { content: "✓"; position: absolute; inset: 0; display: grid; place-items: center; color: #fff; }
+    .step-item.active { border-color: var(--part); background: var(--part-soft); }
+    .step-item.active .step-number { background: var(--part); border-color: var(--part); color: #fff; }
+    .step-item.active.completed .step-number::after { content: none; }
+    .step-item.active.completed .step-number { color: #fff; }
+    .steps-sep { margin: 10px 0 0; padding: 0 12px; font-size: .8rem; font-weight: 900; color: var(--muted);
+                 text-transform: uppercase; letter-spacing: .06em; list-style: none; }
+
+    .step-head { display: flex; align-items: center; gap: 16px; margin-bottom: 4px; }
+    .big-num { flex: none; min-width: 64px; height: 64px; padding: 0 10px; border-radius: 18px; background: var(--part); color: #fff;
+               display: grid; place-items: center; font-size: 1.9rem; font-weight: 900; }
+    .kicker { color: var(--part); font-weight: 900; font-size: .88rem; text-transform: uppercase; letter-spacing: .06em; }
+    .step-head h2 { margin: 2px 0 0; font-size: 1.8rem; font-weight: 900; }
+    .what { font-size: 1.12rem; color: var(--muted); margin: 10px 0 18px; }
+
+    .prompt-box { display: flex; flex-direction: column; gap: 10px; }
+    .prompt-text { margin: 0; white-space: pre-wrap; }
+    .prompt-task { border-radius: var(--radius); background: var(--white); border: 2px solid var(--line);
+                   border-left: 8px solid var(--part); padding: 16px 20px; font-size: 1.08rem; font-weight: 600; line-height: 1.55;
+                   white-space: pre-wrap; }
+    .prompt-task .task-label { display: block; margin-bottom: 6px; font-weight: 900; color: var(--part); font-size: .85rem;
+                               text-transform: uppercase; letter-spacing: .06em; }
+    .prompt-task code { font-size: .92em; background: var(--snow); border: 1px solid var(--line); padding: 1px 6px; border-radius: 6px; }
+    .prompt-rules { border-radius: var(--radius-sm); background: var(--snow); padding: 10px 14px; }
+    .prompt-rules summary { cursor: pointer; font-weight: 800; color: var(--muted); }
+    .prompt-rules pre { margin: 8px 0 2px; font: 600 .9rem/1.5 "Nunito", system-ui, sans-serif; color: var(--muted); white-space: pre-wrap; }
+    .prompt-actions { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 6px; }
+    .status { min-height: 1.4em; font-weight: 700; color: var(--muted); }
+    .watch { display: flex; gap: 12px; align-items: flex-start; margin-top: 16px; padding: 14px 16px;
+             border-radius: var(--radius-sm); background: #fff8e6; border: 1px solid #ffe2a0; }
+    .watch-icon { font-size: 1.3rem; }
+    .watch b { display: block; }
+    .chip-row { display: flex; flex-wrap: wrap; gap: 8px; }
+    .chip { padding: 6px 12px; border-radius: 999px; background: var(--snow); border: 1px solid var(--line); font-size: .88rem; font-weight: 700; color: var(--muted); }
+
+    .studio-form { flex-direction: column; gap: 8px; padding: 16px; border-radius: var(--radius); background: var(--part-soft); }
+    .studio-form label { font-weight: 800; }
+    .studio-form textarea { width: 100%; min-height: 70px; padding: 10px 12px; border-radius: var(--radius-sm); border: 2px solid var(--line);
+                            font: 600 1rem/1.4 "Nunito", system-ui, sans-serif; resize: vertical; }
+    .studio-form textarea:focus, #htmlEditor:focus { outline: none; border-color: var(--part); }
+    .studio-note { margin: 0; color: var(--muted); font-size: .92rem; }
+
+    /* Didaktik (Trainer-Modus) */
+    .didaktik-header { display: flex; align-items: center; gap: 10px; margin: 0 0 12px; }
+    .didaktik-header button { border: 1px solid var(--line); background: var(--white); border-radius: 999px; padding: 6px 12px;
+                              font: 700 .88rem "Nunito", system-ui, sans-serif; cursor: pointer; }
+    .didaktik-box { display: none; margin-bottom: 14px; padding: 14px 16px; border-radius: var(--radius-sm); background: var(--sky-100); }
+    body.didaktik-on #tab-teil1 .didaktik-box { display: block; }
+    .didaktik-box h3 { margin: 0 0 6px; font-size: 1rem; }
+    .didaktik-box p { margin: 0 0 6px; }
+    .didaktik-box ul { margin: 0; padding-left: 20px; }
+
+    /* --- Live Editor ---------------------------------------------------------- */
+    .editor-layout { display: flex; flex-direction: column; gap: 14px; }
+    .editor-top h2 { margin: 0 0 4px; font-size: 1.6rem; font-weight: 900; }
+    .editor-top p { margin: 0; color: var(--muted); font-size: 1.05rem; }
+    .step-bar { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; padding: 12px 14px; border-radius: var(--radius);
+                background: var(--green-soft); border: 2px solid #86e0a8; }
+    .step-bar-label { font-weight: 900; margin-right: auto; }
+    .tool-group { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+    .tool-label { font-size: .8rem; font-weight: 900; color: var(--muted); text-transform: uppercase; letter-spacing: .06em; margin-right: 4px; }
+    #htmlEditor { width: 100%; min-height: 200px; padding: 10px 12px; border-radius: var(--radius-sm); border: 2px solid var(--line);
+                  font: .85rem/1.45 var(--mono); resize: vertical; background: var(--snow); }
+    #htmlEditor.compact { min-height: 0; height: 70px; }
+    .run-row { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 16px; }
+    button.run-btn { font-size: 1.1rem; padding: 12px 26px; }
+    #stitchBox { padding: 14px 16px; border-radius: var(--radius-sm); background: var(--snow); border: 1px solid var(--line); }
+    #stitchBox p { margin: 0 0 8px; }
+    #stitchInput { width: 100%; height: 120px; margin-bottom: 8px; padding: 8px 10px; border-radius: var(--radius-sm);
+                   border: 2px solid var(--line); font: .85rem/1.45 var(--mono); }
+    #stitchMsg { margin-left: 8px; font-weight: 700; }
+    .game-alert { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; padding: 12px 14px; border-radius: var(--radius-sm);
+                  background: #fef2f2; border: 2px solid #fca5a5; color: #7f1d1d; }
+    .game-alert > div { flex: 1 1 280px; }
+    .preview-frame-outer { padding: 12px; border-radius: var(--radius); background: var(--snow); border: 1px solid var(--line); }
+    .preview-frame-note { font-size: .9rem; color: var(--muted); margin-bottom: 8px; }
+    .preview-frame-wrapper { width: 100%; max-width: 900px; border-radius: 12px; overflow: hidden; background: #0f1d2b; }
+    #previewFrame { display: block; width: 100%; aspect-ratio: 900 / 630; height: auto; border: none; background: #0f1d2b; }
+
+    /* --- Fusszeile -------------------------------------------------------------- */
+    footer { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px 16px; padding: 16px 28px;
+             border-top: 1px solid var(--line); background: var(--snow); color: var(--muted); font-size: .9rem; }
+    footer a { color: var(--sky-700); font-weight: 700; }
+    .hidden-textarea { position: fixed; left: -9999px; top: -9999px; opacity: 0; pointer-events: none; }
+
+    /* --- Tablet und schmale Bildschirme -------------------------------------------- */
+    @media (max-width: 900px) {
+      body { padding: 0; }
+      .app { border-radius: 0; border: none; }
+      .start, .layout { grid-template-columns: 1fr; }
+      .start h2 { font-size: 1.8rem; }
+      .tab-panel { padding: 20px 16px; }
+      .hero-head { padding: 18px 16px 76px; }
+      .head-row h1 { font-size: 1.3rem; }
+      .head-row p { display: none; }
+      .tabs { padding: 0 12px; }
+      footer { padding: 14px 16px; }
+    }
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="hero-head">
+    <div class="head-row">
+      <img src="icon-180.png" alt="" />
+      <div>
+        <h1>KI-Spielwerkstatt: Skirennen</h1>
+        <p>Baue ein Ski-Spiel – mit Worten statt Code</p>
+      </div>
+      <a class="lang-switch" href="en/">🇬🇧 English</a>
+    </div>
+    <svg class="slope" viewBox="0 0 1200 90" preserveAspectRatio="none" aria-hidden="true">
+      <path d="M0 60 L180 20 L300 45 L470 5 L640 50 L800 18 L960 48 L1080 25 L1200 45 L1200 90 L0 90 Z" fill="#e2ecf7"/>
+      <path d="M0 80 C300 50 700 55 1200 62 L1200 90 L0 90 Z" fill="#ffffff"/>
+    </svg>
+  </header>
+
+  <!-- Tabs -->
+  <div class="tabs">
+    <button class="tab-btn home active" data-tab="teil0"><span class="dot"></span>Start</button>
+    <button class="tab-btn p1" data-tab="teil1"><span class="dot"></span>Teil 1 · Spiel einstellen</button>
+    <button class="tab-btn p2" data-tab="teil2"><span class="dot"></span>Teil 2 · Eigene Ideen</button>
+    <button class="tab-btn editor" data-tab="editor"><span class="dot"></span>Live Editor</button>
+  </div>
+
+  <!-- TAB: ÜBERBLICK & ABLAUF -->
+    <div id="tab-teil0" class="tab-panel">
+    <div class="intro-layout">
+      <div>
+        <section class="start">
+          <div>
+            <h2>Heute baut ihr euer eigenes Skirennen.</h2>
+            <p class="lead">Ihr sagt der KI, was ihr wollt. Die KI schreibt den Code. Ihr spielt und prüft, ob es stimmt.</p>
+            <div class="steps3">
+              <button class="step3" type="button" data-go="play"><span class="num">1</span><span><b>Spiel ausprobieren</b><small>Ein Rennen fahren und die Zeit merken</small></span><span class="go">›</span></button>
+              <button class="step3 s1" type="button" data-go="teil1"><span class="num">2</span><span><b>Teil 1: Spiel einstellen</b><small>8 Schritte mit fertigen Prompts</small></span><span class="go">›</span></button>
+              <button class="step3 s2" type="button" data-go="teil2"><span class="num">3</span><span><b>Teil 2: Eigene Ideen</b><small>Bär, Ninja, Farben und mehr</small></span><span class="go">›</span></button>
+            </div>
+            <div class="rule">Die Regel: Wir ändern keinen Code von Hand – nur mit Prompts.</div>
+          </div>
+          <div class="demo-card">
+            <img src="docs/demo.png" alt="Demo: Piste mit Bergbeizli, Murmeltier, Publikum und Sternen" />
+            <div class="cap"><span>So weit könnt ihr kommen</span><button class="copy-btn" type="button" data-go="demo">✨ Demo spielen</button></div>
+          </div>
+        </section>
+        <p class="trainer-head trainer-only">Für Trainer:innen</p>
+        <div class="intro-card trainer-only">
+          <span class="intro-pill">Unser Ziel heute</span>
+          <h3>Ein Ski-Spiel nur mit Beschreiben bauen</h3>
+          <p>
+            Wir bauen gemeinsam ein Ski-Spiel – ohne selber Code zu tippen.
+            Ihr beschreibt, <strong>was</strong> passieren soll, und die KI schreibt den Code.
+          </p>
+          <ul class="intro-list">
+            <li><strong>Teil 1:</strong> Wir lernen das fertige Basis-Spiel kennen und stellen es mit genauen Prompts auf uns ein – das ist eure Version 1.</li>
+            <li><strong>Teil 2:</strong> Ihr werdet Game Designer:innen und baut eure eigene Variante.</li>
+            <li><strong>Regel:</strong> Wir verändern keine einzelne Code-Zeile direkt – nur über Prompts.</li>
+          </ul>
+        </div>
+
+        <div class="intro-card trainer-only">
+          <span class="intro-pill">Wie wir arbeiten (Loop)</span>
+          <h3>Der 4-Schritte-Loop in jedem Schritt</h3>
+          <ol class="intro-list">
+            <li><strong>Lesen:</strong> Was machen wir in diesem Schritt genau?</li>
+            <li><strong>Prompt kopieren:</strong> Prompt von dieser Seite nehmen und im Chat einfügen.</li>
+            <li><strong>Sicht-Check:</strong> Spiel im Live-Editor ausprobieren – passt das?</li>
+            <li><strong>Reparieren:</strong> Wenn etwas komisch ist → Mini-Reparatur-Prompt schicken.</li>
+          </ol>
+          <p class="intro-subtitle">
+            Merksatz: <strong>Die KI ist dein Beifahrer</strong> – du planst und prüfst.
+          </p>
+        </div>
+
+        <div class="intro-card trainer-only">
+          <span class="intro-pill">4P – Kompass für gute Prompts</span>
+          <h3>4-Schritte-Kompass (4P)</h3>
+          <ul class="intro-list">
+            <li><strong>Planen:</strong> Was will ich wirklich? Ziel, Regeln, Zahlen.</li>
+            <li><strong>Prompten:</strong> Klar, konkret und mit Grenzen formulieren.</li>
+            <li><strong>Prüfen:</strong> Stimmt das Ergebnis? Was fehlt? Was ist kaputt?</li>
+            <li><strong>Polieren:</strong> Nachfragen, Beispiele ergänzen, kleine Verbesserungen.</li>
+          </ul>
+        </div>
+
+        <div class="intro-card trainer-only">
+          <span class="intro-pill">Was ihr heute seht</span>
+          <h3>Technik &amp; Teamwork gleichzeitig</h3>
+          <div class="intro-grid">
+            <div>
+              <p class="intro-subtitle"><strong>Prompting &amp; Denken wie Entwickler:innen</strong></p>
+              <ul class="intro-list">
+                <li>Systeme mit Objekten, Regeln und Zahlen beschreiben.</li>
+                <li>Rahmenbedingungen festlegen („Bäume nur links/rechts“).</li>
+                <li>Schrittweise testen &amp; nachsteuern.</li>
+              </ul>
+            </div>
+            <div>
+              <p class="intro-subtitle"><strong>Computational Thinking</strong></p>
+              <ul class="intro-list">
+                <li>Komplexes zerlegen: Piste, Tore, Bäume, Kamera, HUD.</li>
+                <li>Abstrahieren: Welt-Koordinaten vs. Bildschirm.</li>
+                <li>Regeln &amp; Verbote festlegen → Spiel wird berechenbar.</li>
+              </ul>
+            </div>
+            <div>
+              <p class="intro-subtitle"><strong>Sozial &amp; Methodik</strong></p>
+              <ul class="intro-list">
+                <li>Ideen klar im Team erklären.</li>
+                <li>Kurz planen → Prompt → testen → anpassen.</li>
+                <li>Peer-Feedback: Sichtprüfung per Checkliste.</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        <div class="intro-card trainer-only">
+          <span class="intro-pill">Teil 1 – Was passiert Schritt für Schritt?</span>
+          <h3>Vom fertigen Basis-Spiel zu eurer Version 1</h3>
+          <ul class="intro-list">
+            <li><strong>Schritt 1 – Spielen:</strong> Basis-Spiel im Live Editor laden, ein Rennen fahren, Zeit merken. Datei herunterladen und im Chat hochladen.</li>
+            <li><strong>Schritt 2 – Bauplan:</strong> Die KI erklärt die drei Bereiche: Einstellungen, Spielwiese, Spiel-Motor.</li>
+            <li><strong>Schritt 3 – Kamera:</strong> Mehr Vorausblick – eine Zahl ändern, Unterschied spüren.</li>
+            <li><strong>Schritt 4 – Piste:</strong> Schmalere Piste, mehr Tiefschnee-Gefahr.</li>
+            <li><strong>Schritt 5 – Lenkung:</strong> Rutschig wie auf Eis.</li>
+            <li><strong>Schritt 6 – Regeln:</strong> Weniger Tore, höhere Strafe fürs Verpassen.</li>
+            <li><strong>Schritt 7 – Wald:</strong> Mehr Bäume, kürzere Sturz-Strafe.</li>
+            <li><strong>Schritt 8 – Eigene Strecke:</strong> Seed-Zahl ändern, Bestzeit fahren – Version 1 ist fertig.</li>
+          </ul>
+          <p class="intro-subtitle">
+            Nach jedem Schritt: <strong>Prompt → Chat → HTML in den Live Editor → spielen &amp; vergleichen.</strong>
+          </p>
+        </div>
+
+        <div class="intro-card trainer-only">
+          <span class="intro-pill">Die Challenge mit KI</span>
+          <h3>Warum wir mit „locked Prompts“ arbeiten</h3>
+          <p>
+            Wenn ein Prompt zu vage ist („Bau Bäume ins Spiel“), macht jede KI etwas leicht anderes –
+            dann habt ihr zehn verschiedene Spiele und niemand weiss, was genau passiert.
+          </p>
+          <p>
+            Wenn der Prompt zu technisch ist, versteht man als Nicht-Programmierer kaum noch etwas –
+            das macht wenig Spass.
+          </p>
+          <p><strong>Unsere Lösung: Zwei-Schichten-System:</strong></p>
+          <ul class="intro-list">
+            <li><strong>Erklärung:</strong> In Alltagssprache: Was passiert im Spiel in diesem Schritt?</li>
+            <li><strong>Locked Prompt:</strong> Ein technisch exakter Prompt, den ihr nur kopiert/einfügt.</li>
+          </ul>
+          <p class="intro-subtitle">
+            So bleibt das Ergebnis stabil – und ihr versteht trotzdem, was ihr der KI beibringt.
+          </p>
+        </div>
+
+        <div class="intro-card trainer-only">
+          <span class="intro-pill">Wie ihr diese Seite nutzt</span>
+          <h3>Ablauf mit den Tabs</h3>
+          <ul class="intro-list">
+            <li>
+              <strong>Überblick &amp; Ablauf:</strong> Ziel, Ablauf, Methode. Hier startet ihr gemeinsam im Plenum.
+            </li>
+            <li>
+              <strong>Teil 1 – Basis-Spiel:</strong> Spiel laden, verstehen und mit genauen Prompts einstellen.
+            </li>
+            <li>
+              <strong>Teil 2 – Prompt-Studio:</strong> Templates &amp; eigene Ideen, ihr werdet Game Designer:innen.
+            </li>
+            <li>
+              <strong>Live Editor:</strong> HTML-Code aus dem Chat einfügen und das Spiel live testen.
+            </li>
+          </ul>
+          <p class="intro-subtitle">
+            Typischer Flow: <strong>Basis-Spiel laden &amp; im Chat hochladen → Schritt wählen → Prompt in den Chat → HTML kopieren → Live Editor</strong>.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB: TEIL 1 -->
+  <div id="tab-teil1" class="tab-panel" style="display:none;">
+    <div class="layout">
+      <!-- LEFT: Schritt-Auswahl -->
+      <section class="left">
+        <div class="hint-box">
+          <span class="icon">💡</span>
+          <div>
+            <strong>So benutzen Kids Teil 1:</strong><br />
+            Zuerst: Live Editor → „Basis-Spiel laden“ &amp; „herunterladen“ → Datei in neuem Chat hochladen.<br />Dann: 1. Schritt wählen · 2. „Prompt kopieren“ · 3. Im Chat einfügen · 4. HTML-Code im Live Editor testen.
+          </div>
+        </div>
+
+                <div class="progress-wrapper">
+          <div class="progress-label">
+            Dein Fortschritt: <span id="progressCountTeil1">0 / 8</span> Schritte
+          </div>
+          <div class="progress-bar">
+            <div class="progress-bar-fill" id="progressBarTeil1"></div>
+          </div>
+        </div>
+
+<ul class="steps-list" id="stepsListTeil1">
+          <!-- Schritte werden per JS eingefügt -->
+        </ul>
+      </section>
+
+      <!-- RIGHT: Aktueller Prompt -->
+      <section class="right">
+        <div class="step-head">
+          <div class="big-num" id="bigNumTeil1">1</div>
+          <div><div class="kicker" id="stepTagTeil1"></div><h2 id="stepTitleTeil1">Schritt auswählen</h2></div>
+        </div>
+        <p class="what" id="stepSubtitleTeil1">Klicke links auf einen Schritt.</p>
+
+        <div class="didaktik-header trainer-only">
+          <span class="pill">Didaktik-Modus (für Trainer:innen)</span>
+          <button type="button" id="toggleDidaktikBtn">Didaktik einblenden</button>
+        </div>
+        <div class="didaktik-box" id="didaktikBoxTeil1">
+          <h3>Lernziele &amp; Hinweise zu diesem Schritt</h3>
+          <p id="didaktikTextTeil1">
+            Wähle links einen Schritt, um passende Lernziele und Erklärungen zu sehen.
+          </p>
+          <ul id="didaktikListTeil1">
+            <li>Fokus: Kids beschreiben, was im Spiel passieren soll – nicht den Code.</li>
+            <li>Trainer:innen können hier Begriffe wie „Welt“, „Kamera“, „Objekte“ usw. einführen.</li>
+          </ul>
+        </div>
+
+        <div class="prompt-box">
+          <pre class="prompt-text" id="promptTextTeil1">
+// Wähle links einen Schritt aus.
+// Dann kannst du den vollständigen Prompt mit einem Klick kopieren.
+          </pre>
+          <div class="prompt-actions">
+            <button class="copy-btn" id="copyBtnTeil1" disabled type="button">
+              📋 Prompt kopieren
+            </button>
+            <button class="secondary-btn go-editor" data-part="1" type="button">🧪 Antwort im Live Editor testen</button>
+            <button class="secondary-btn" id="selectBtnTeil1" disabled type="button" hidden>
+              🔍 Nur anzeigen / markieren
+            </button>
+          </div>
+          <div class="status" id="statusMsgTeil1"></div>
+        </div>
+        <div class="watch"><span class="watch-icon">💡</span><div><b>Darauf achten</b><span id="stepInfoTeil1"></span></div></div>
+      </section>
+    </div>
+  </div>
+
+  <!-- TAB: TEIL 2 -->
+  <div id="tab-teil2" class="tab-panel" style="display:none;">
+    <div class="layout">
+      <!-- LEFT: Design-Ideen -->
+      <section class="left">
+        <div class="hint-box">
+          <span class="icon">🚀</span>
+          <div>
+            <strong>Teil 2 – Ihr seid Game Designer:innen!</strong><br />
+            Arbeitet im selben Chat weiter (oder neuer Chat + eure Datei hochladen) · Idee wählen · Prompt kopieren &amp; einfügen · HTML im Live Editor testen.
+          </div>
+        </div>
+
+        <ul class="steps-list" id="stepsListTeil2">
+          <!-- Design-Ideen werden per JS eingefügt -->
+        </ul>
+      </section>
+
+      <!-- RIGHT: Prompt / Prompt-Generator -->
+      <section class="right">
+        <div class="step-head">
+          <div class="big-num" id="bigNumTeil2">💡</div>
+          <div><div class="kicker" id="stepTagTeil2">Teil 2</div><h2 id="stepTitleTeil2">Idee auswählen</h2></div>
+        </div>
+        <p class="what" id="stepSubtitleTeil2">Klicke links auf eine Idee (z. B. Schneefall, Bär, Ninja) – oder wähle „Eigene Idee bauen“.</p>
+
+        <div class="prompt-box">
+          <!-- Eigene-Idee-Form (wird per JS an/aus gemacht) -->
+          <div id="studioFormWrapper" class="studio-form" style="display:none;">
+            <div><span class="pill">🧪 Eigene Idee</span></div>
+            <label for="ideaInput">1. Was soll neu dazukommen? (kurz beschreiben)</label>
+            <textarea id="ideaInput" placeholder="z. B. &quot;Schneefall mit kleinen weissen Punkten&quot;"></textarea>
+
+            <label for="keepInput">2. Was muss unbedingt gleich bleiben?</label>
+            <textarea id="keepInput" placeholder="z. B. &quot;Tore, Bäume, Zeit und Ziel bleiben genau gleich.&quot;"></textarea>
+
+            <p class="studio-note">
+              Darunter siehst du, wie daraus ein sicherer Prompt wird.
+            </p>
+          </div>
+
+          <pre class="prompt-text" id="promptTextTeil2">
+// Wähle links eine Idee aus.
+// Dann kannst du den Beispiel-Prompt mit einem Klick kopieren.
+          </pre>
+
+          <div class="prompt-actions">
+            <button class="copy-btn" id="copyBtnTeil2" disabled type="button">
+              📋 Prompt kopieren
+            </button>
+            <button class="secondary-btn go-editor" data-part="2" type="button">🧪 Antwort im Live Editor testen</button>
+            <button class="secondary-btn" id="selectBtnTeil2" disabled type="button" hidden>
+              🔍 Nur anzeigen / markieren
+            </button>
+          </div>
+          <div class="status" id="statusMsgTeil2"></div>
+
+          <div class="chip-row">
+            <span class="chip">Wenn etwas kaputt geht: „Safe-Mode Prompt“ benutzen</span>
+            <span class="chip">Immer sagen: „Nur das ändern, alles andere bleibt!“</span>
+          </div>
+        </div>
+        <div class="watch"><span class="watch-icon">💡</span><div><b>Darauf achten</b><span id="stepInfoTeil2"></span></div></div>
+      </section>
+    </div>
+  </div>
+
+  <!-- TAB: LIVE EDITOR -->
+  <div id="tab-editor" class="tab-panel" style="display:none;">
+    <div class="editor-layout">
+      <div class="editor-top">
+        <h2>Live Editor</h2>
+        <p>Antwort aus dem Chat: den <strong>ganzen Code</strong> kopieren (Kopieren-Knopf am Codeblock), unten einfügen und <strong>„▶ Spiel anzeigen“</strong> drücken.</p>
+      </div>
+
+      <div id="stepBar" class="step-bar" hidden>
+        <span class="step-bar-label">📍 <span id="stepBarText"></span></span>
+        <button class="copy-btn" id="stepDoneBtn" type="button">✓ Klappt – nächster Schritt</button>
+        <button class="secondary-btn" id="stepBackBtn" type="button">← Zurück zum Prompt</button>
+      </div>
+
+      <div class="tool-group">
+        <span class="tool-label">Start</span>
+        <button class="secondary-btn" id="loadBaseBtn" type="button">⛷ Basis-Spiel laden</button>
+        <button class="secondary-btn" id="demoBtn" type="button" title="Zeigt die Demo-Version. Dein Code im Editor bleibt, wie er ist.">✨ Demo zeigen</button>
+        <button class="secondary-btn" id="downloadBaseBtn" type="button">⬇ Basis-Spiel herunterladen (für den Chat)</button>
+      </div>
+
+      <textarea id="htmlEditor" placeholder="Füge hier den ganzen Code aus dem Chat ein (von &lt;!doctype html&gt; bis &lt;/html&gt;)."></textarea>
+
+      <div class="run-row">
+        <button class="copy-btn run-btn" id="runHtmlBtn" type="button">▶️ Spiel anzeigen / aktualisieren</button>
+        <div class="tool-group">
+          <button class="secondary-btn" id="openFileBtn" type="button">📂 Datei öffnen</button>
+          <input type="file" id="openFileInput" accept=".html,.htm,text/html" hidden>
+          <button class="secondary-btn" id="downloadMineBtn" type="button">💾 Meine Version herunterladen</button>
+          <button class="secondary-btn" id="undoBtn" type="button" disabled>↩ Vorherige Version</button>
+          <button class="secondary-btn" type="button" onclick="document.getElementById('htmlEditor').value='';">🧹 Leeren</button>
+          <button class="secondary-btn" id="stitchOpenBtn" type="button">🧩 Fortsetzung anhängen</button>
+        </div>
+      </div>
+      <div id="stitchBox" hidden>
+        <p><strong>Antwort war abgeschnitten?</strong> Oben steht der erste Teil. Füge hier den zweiten Teil ein (die Antwort auf den „Weiter“-Prompt) und klicke „Zusammensetzen“.</p>
+        <textarea id="stitchInput" placeholder="Zweiter Teil des Codes hier einfügen"></textarea>
+        <button class="copy-btn" id="stitchBtn" type="button">🧩 Zusammensetzen &amp; Spiel anzeigen</button>
+        <span id="stitchMsg"></span>
+      </div>
+
+      <div id="gameAlert" class="game-alert" hidden>
+        <div><strong id="gameAlertTitle"></strong> <span id="gameAlertText"></span></div>
+        <button class="copy-btn" id="gameAlertCopyBtn" type="button">📋 Reparatur-Prompt kopieren</button>
+        <span id="gameAlertMsg"></span>
+      </div>
+
+      <div class="preview-frame-outer">
+        <div class="preview-frame-note">
+          Das Spielfeld passt sich der Bildschirmbreite an (im Code bleibt es immer 900 × 630).<br>
+          <strong>Tipp:</strong> Wenn die Pfeiltasten nicht reagieren, einmal ins Spielfeld klicken. Auf dem Tablet: Finger aufs Spielfeld legen und hin und her ziehen – der Skifahrer folgt.
+        </div>
+        <div class="preview-frame-wrapper">
+          <iframe id="previewFrame" title="Ski-Spiel Vorschau"></iframe>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    <span>Kids müssen nichts markieren – nur klicken &amp; einfügen.</span>
+    <span><a href="trainer.html">📄 Infoblatt mit QR-Code zum Ausdrucken</a> · <button type="button" class="link-btn" id="trainerToggle">👩‍🏫 Trainer-Modus: aus</button></span>
+  </footer>
+
+  <!-- Versteckte Textarea als Fallback fürs Kopieren -->
+  <textarea id="hiddenClipboard" class="hidden-textarea"></textarea>
+</div>
+
+<script>
+  // ------------------------------------------------------------
+  // Gemeinsame Regeln, TEIL 1 und TEIL 2
+  // ------------------------------------------------------------
+
+// Basis: skirennen-v2.html
+  const V2_RULES = `Das ist mein Ski-Spiel (skirennen-v2.html, p5.js). Der Code hat drei Bereiche:
+1) EINSTELLUNGEN (CONFIG)
+2) HIER DARFST DU ÄNDERN (THEME, drawPlayer, EXTRAS, onGatePassed/onGateMissed/onCrash/onFinish)
+3) SPIEL-MOTOR – NICHT ÄNDERN
+
+Regeln für dich:
+- Arbeite immer auf der neuesten Version der Datei aus diesem Chat.
+- Bereich 3 (Spiel-Motor) bleibt Zeichen für Zeichen gleich.
+- CONFIG nur ändern, wenn die Aufgabe es ausdrücklich verlangt.
+- Nichts umbenennen oder löschen, was schon da ist. Kein zweites Canvas, keine neuen <script>-Dateien.
+- Ändere nur das, was in der Aufgabe steht.
+- Antworte so: zuerst 1–2 kurze Sätze in einfacher Sprache, was du änderst. Danach die VOLLSTÄNDIGE HTML-Datei in einem einzigen Codeblock – ohne Abkürzungen wie „// Rest bleibt gleich“.`;
+
+  const V2_EXTRA_HELP = `So funktioniert ein Extra in diesem Spiel:
+- Ein Extra ist ein Objekt mit name, spawn(welt), update(dt, welt), draw(welt) und optional hits(spieler, welt).
+- Es wird mit EXTRAS.push(MEIN_EXTRA); eingeschaltet (direkt unter der Definition).
+- Positionen in der Welt heissen wy (wird bergab grösser). Bildschirm-y = welt.toScreenY(wy).
+- welt.player hat x und wy. welt.scrollY = oberer Bildrand in der Welt. welt.speed = Tempo in Pixel pro Sekunde.
+- welt.trackBounds(wy) gibt {left, right} der Piste. welt.rnd() gibt eine Zufallszahl 0–1.
+- dt ist in Sekunden: Bewegung immer mit "* dt" rechnen.
+- hits() gibt true zurück, wenn der Spieler getroffen wird – den Sturz macht der Spiel-Motor.`;
+
+  // Prompt für abgeschnittene Antworten (Teil 1 und Teil 2)
+  const WEITER_PROMPT = `Deine letzte Antwort ist abgeschnitten – die HTML-Datei hört mittendrin auf.
+Bitte schreib die Datei NICHT nochmal von vorne.
+- Beginne einen neuen Codeblock mit der letzten VOLLSTÄNDIGEN Zeile aus deiner abgeschnittenen Antwort (genau gleich geschrieben).
+- Schreib von dort aus weiter bis zum Ende der Datei (</html>).
+- Keine Erklärung, nur der Codeblock.`;
+
+  const WEITER_INFO = "Nur nötig, wenn die Antwort mittendrin aufhört (am Ende fehlt </html>). Hat der Chat einen Knopf „Weiter“ / „Continue“, zuerst den drücken. Sonst diesen Prompt schicken. Dann im Live Editor: ersten Teil einfügen → „🧩 Fortsetzung anhängen“ → zweiten Teil einfügen.";
+
+  // ------------------------------------------------------------
+  // TEIL 1 – Basis-Spiel kennenlernen & einstellen
+  // ------------------------------------------------------------
+
+  const promptsTeil1 = [
+    {
+      id: "step1",
+      number: 1,
+      title: "Basis-Spiel holen & spielen",
+      subtitle: "Spiel laden, ein Rennen fahren, Datei in den Chat geben.",
+      tag: "Teil 1 – Start",
+      info: "Live Editor → „Basis-Spiel laden“ → spielen. Dann „Basis-Spiel herunterladen“ und die Datei in einem neuen Chat hochladen.",
+      prompt: `Ich habe dir mein Ski-Spiel skirennen-v2.html geschickt (p5.js). Wir arbeiten heute zusammen daran.
+Bitte noch NICHTS am Code ändern und keinen Code zeigen.
+
+Erkläre mir in höchstens 6 kurzen Sätzen, so dass es ein Kind mit 12 Jahren versteht:
+1. Was ist das Ziel des Spiels?
+2. Wie steuert man (Tastatur und Tablet)?
+3. Was passiert, wenn man ein Tor verpasst oder in einen Baum fährt?
+4. Was ist der Unterschied zwischen „Rennen“ und „Endlos“?`
+    },
+    {
+      id: "step2",
+      number: 2,
+      title: "Der Bauplan – drei Bereiche",
+      subtitle: "Einstellungen, Spielwiese und Spiel-Motor.",
+      tag: "Teil 1 – Verstehen",
+      info: "Die KI erklärt den Aufbau der Datei – das ist die Landkarte für alle weiteren Prompts.",
+      prompt: `Bitte noch NICHTS am Code ändern.
+
+Mein Spiel hat drei Bereiche: 1) EINSTELLUNGEN (CONFIG), 2) HIER DARFST DU ÄNDERN, 3) SPIEL-MOTOR – NICHT ÄNDERN.
+Erkläre mir in einfacher Sprache (für ein Kind mit 12 Jahren), ohne Code:
+- Was steht in jedem der drei Bereiche? Nenne pro Bereich 2–3 Beispiele.
+- Warum ist es schlau, dass der Spiel-Motor nicht verändert werden soll?
+- Nenne aus CONFIG drei Zahlen, die das Spiel spürbar leichter oder schwerer machen.`
+    },
+    {
+      id: "step3",
+      number: 3,
+      title: "Welt & Kamera – mehr Vorausblick",
+      subtitle: "Der Skifahrer rückt nach oben, man sieht weiter voraus.",
+      tag: "Teil 1 – Kamera",
+      info: "Nur PLAYER_Y in CONFIG ändern. Beobachten: Fährt es sich leichter?",
+      prompt: `${V2_RULES}
+
+Aufgabe (Schritt 3 – Kamera):
+Ändere in CONFIG NUR diese Zahl: PLAYER_Y von 190 auf 140.
+Sonst nichts ändern – auch nicht im Bereich 2.
+Erkläre in deinen 1–2 Sätzen zusätzlich, was PLAYER_Y bedeutet.`
+    },
+    {
+      id: "step4",
+      number: 4,
+      title: "Piste – schmaler machen",
+      subtitle: "Weniger Platz zwischen den Pistenrändern.",
+      tag: "Teil 1 – Strecke",
+      info: "Nur TRACK_HALF ändern. Beobachten: Wie oft landet man jetzt im Tiefschnee?",
+      prompt: `${V2_RULES}
+
+Aufgabe (Schritt 4 – Piste):
+Ändere in CONFIG NUR diese Zahl: TRACK_HALF von 165 auf 140.
+Sonst nichts ändern – auch nicht im Bereich 2.
+Erkläre in deinen 1–2 Sätzen zusätzlich, warum TRACK_HALF „halb“ heisst.`
+    },
+    {
+      id: "step5",
+      number: 5,
+      title: "Skifahrer – Lenkung wie auf Eis",
+      subtitle: "Weniger Bremsen beim Lenken = mehr Rutschen.",
+      tag: "Teil 1 – Steuerung",
+      info: "Nur STEER_FRICTION ändern. Beobachten: Wie fühlt sich das Lenken an?",
+      prompt: `${V2_RULES}
+
+Aufgabe (Schritt 5 – Lenkung):
+Ändere in CONFIG NUR diese Zahl: STEER_FRICTION von 3.2 auf 2.0.
+Sonst nichts ändern – auch nicht im Bereich 2.
+Erkläre in deinen 1–2 Sätzen zusätzlich, was „Reibung“ beim Lenken bedeutet.`
+    },
+    {
+      id: "step6",
+      number: 6,
+      title: "Tore & Strafen – kürzeres Rennen",
+      subtitle: "Weniger Tore, aber verpasste Tore kosten mehr.",
+      tag: "Teil 1 – Regeln",
+      info: "GATES_TOTAL und MISS_PENALTY_S ändern. Diskutieren: Ist das fairer?",
+      prompt: `${V2_RULES}
+
+Aufgabe (Schritt 6 – Regeln):
+Ändere in CONFIG NUR diese zwei Zahlen:
+- GATES_TOTAL von 25 auf 15
+- MISS_PENALTY_S von 2 auf 3
+Sonst nichts ändern – auch nicht im Bereich 2.`
+    },
+    {
+      id: "step7",
+      number: 7,
+      title: "Bäume & Stürze – dichterer Wald",
+      subtitle: "Mehr Bäume neben der Piste, dafür kürzere Sturz-Strafe.",
+      tag: "Teil 1 – Hindernisse",
+      info: "TREE_EVERY und CRASH_PENALTY_S ändern. Beobachten: Wird Abkürzen durch den Wald riskanter?",
+      prompt: `${V2_RULES}
+
+Aufgabe (Schritt 7 – Hindernisse):
+Ändere in CONFIG NUR diese zwei Zahlen:
+- TREE_EVERY von 42 auf 30
+- CRASH_PENALTY_S von 1.5 auf 1
+Sonst nichts ändern – auch nicht im Bereich 2.
+Erkläre in deinen 1–2 Sätzen zusätzlich, warum eine kleinere Zahl bei TREE_EVERY mehr Bäume bedeutet.`
+    },
+    {
+      id: "step8",
+      number: 8,
+      title: "Eure eigene Strecke – Version 1 fertig",
+      subtitle: "Neue Seed-Zahl = neue Strecke. Bestzeit fahren!",
+      tag: "Teil 1 – Fertiges Spiel",
+      info: "SEED ändern (z. B. eure Teamnummer). Danach Bestzeit fahren – das ist eure Version 1.",
+      prompt: `${V2_RULES}
+
+Aufgabe (Schritt 8 – eigene Strecke):
+Ändere in CONFIG NUR diese Werte:
+- SEED von 2026 auf 1234 (oder unsere Teamzahl: ____ )
+- TITLE auf "Skirennen von Team ____"
+Sonst nichts ändern – auch nicht im Bereich 2.
+Erkläre in deinen 1–2 Sätzen zusätzlich, warum mit der gleichen SEED-Zahl alle die gleiche Strecke fahren.`
+    },
+    {
+      id: "check",
+      number: "8½",
+      title: "Fehlercheck & Reparatur",
+      subtitle: "Falls etwas nicht funktioniert: Reparatur-Prompt.",
+      tag: "Optional – Check",
+      info: "Nur verwenden, wenn das Spiel nicht startet oder sich komisch verhält.",
+      prompt: `${V2_RULES}
+
+Aufgabe (Reparatur):
+Mein Spiel funktioniert nicht richtig. Prüfe die neueste Datei aus diesem Chat:
+- Ist der Bereich 3 (SPIEL-MOTOR) noch genau so wie in der Datei, die ich dir ganz am Anfang geschickt habe? Falls nicht: stelle ihn wieder her.
+- Sind in CONFIG nur die Zahlen geändert, die ich in den Schritten verlangt habe?
+- Fehlt irgendwo Code (z. B. „// Rest bleibt gleich“)? Dann ergänze ihn.
+Keine neuen Features einbauen, nur reparieren. Schreib in 1–2 Sätzen, was kaputt war.`
+    },
+    {
+      id: "weiter",
+      number: "↻",
+      title: "Antwort abgeschnitten? Weiter!",
+      subtitle: "Wenn der Code mittendrin aufhört.",
+      tag: "Optional – Hilfe",
+      info: WEITER_INFO,
+      prompt: WEITER_PROMPT
+    }
+  ];
+
+  // ------------------------------------------------------------
+  // TEIL 2 – Prompt-Studio Templates (Teil 2)
+  // ------------------------------------------------------------
+
+  const promptsTeil2 = [
+    {
+      id: "schnee",
+      number: "0",
+      title: "Aufwärmen: Schneefall einschalten",
+      subtitle: "Das Beispiel-Extra einschalten und bunter machen.",
+      tag: "Extra / Aufwärmen",
+      info: "Erstes Erfolgserlebnis: ein vorhandenes Extra einschalten und anpassen.",
+      type: "template",
+      prompt: `${V2_RULES}
+
+Aufgabe: Schneefall einschalten
+- Im Bereich 2 gibt es schon das Extra SCHNEEFALL. Schalte es ein, indem du die // vor EXTRAS.push(SCHNEEFALL); entfernst.
+- Mach doppelt so viele Flocken (180 statt 90).
+- Die Flocken sollen hellblau sein und unterschiedlich gross (2 bis 5 Pixel).
+- Sonst nichts ändern.`
+    },
+    {
+      id: "deko",
+      number: "A",
+      title: "Mehr Deko neben der Piste",
+      subtitle: "Hütten, Steine oder Bergziegen im Tiefschnee.",
+      tag: "Extra / Deko",
+      info: "Neues Extra ohne Kollision und ohne Punkte – nur zum Anschauen.",
+      type: "template",
+      prompt: `${V2_RULES}
+
+${V2_EXTRA_HELP}
+
+Aufgabe: Neues Extra „Deko“
+- Lege im Bereich 2 ein neues Extra DEKO an und schalte es mit EXTRAS.push(DEKO); ein.
+- DEKO hat eine Liste items. spawn(welt) leert die Liste und füllt sie gleich bis welt.scrollY + CONFIG.H + 200.
+- update(dt, welt) füllt die Liste weiter, sodass immer bis welt.scrollY + CONFIG.H + 200 Deko da ist: ungefähr alle 260 Pixel (wy) ein neues Objekt.
+- Jedes Objekt liegt NEBEN der Piste im Tiefschnee: links von welt.trackBounds(wy).left - 40 oder rechts von welt.trackBounds(wy).right + 40, aber innerhalb des Spielfelds (0 bis CONFIG.W).
+- Art zufällig mit welt.rnd(): Hütte, Stein oder Bergziege. Mit einfachen p5-Formen zeichnen (rect, triangle, ellipse).
+- Objekte mit wy < welt.scrollY - 100 aus der Liste entfernen.
+- KEINE hits()-Funktion: man kann durch die Deko durchfahren, sie gibt keine Punkte.`
+    },
+    {
+      id: "tempo",
+      number: "B",
+      title: "Tempo-Tuning: schneller & schwieriger",
+      subtitle: "Nur Zahlen in den Einstellungen ändern.",
+      tag: "Einstellungen / Tempo",
+      info: "Kinder lernen: Spielgefühl hängt an Parametern. Nur CONFIG wird geändert.",
+      type: "template",
+      prompt: `${V2_RULES}
+
+Aufgabe: Tempo-Tuning (Ausnahme: hier darfst du CONFIG ändern)
+Ändere NUR diese Zahlen in CONFIG, sonst nichts – auch nicht im Bereich 2:
+- SPEED_START von 230 auf 300
+- SPEED_MAX von 430 auf 520
+- GATE_WIDTH von 150 auf 120
+- STEER_MAX von 480 auf 560 (damit man trotzdem noch um die Kurven kommt)
+
+Tipp für dich als Spieler:in: Du kannst die Zahlen im Prompt auch selbst ändern, bevor du ihn abschickst.`
+    },
+    {
+      id: "baer",
+      number: "C",
+      title: "Neuer Gegner: Der Bär jagt dich",
+      subtitle: "Ein Bär kommt von hinten den Hang hinunter.",
+      tag: "Extra / Gegner",
+      info: "Extra mit hits(): Berührung = Sturz (der Motor macht Strafe/Herz-Verlust).",
+      type: "template",
+      prompt: `${V2_RULES}
+
+${V2_EXTRA_HELP}
+
+Aufgabe: Neues Extra „Bär“
+- Lege im Bereich 2 ein neues Extra BAER (name: "Bär") an und schalte es mit EXTRAS.push(BAER); ein.
+- Es gibt höchstens EINEN Bär gleichzeitig (bear = null oder ein Objekt mit x und wy).
+- spawn(welt): bear = null; timer = 6 + welt.rnd() * 6 (Sekunden bis zum ersten Bär).
+- update(dt, welt):
+  - Ohne Bär: timer um dt verringern. Bei 0 startet ein Bär oben knapp ausserhalb des Bildes (wy = welt.scrollY - 60) auf der x-Position des Spielers. Danach timer neu auf 8 + welt.rnd() * 6.
+  - Mit Bär: Der Bär läuft bergab mit welt.speed + 70 Pixel pro Sekunde (wy wird grösser) und bewegt sich mit höchstens 90 Pixel pro Sekunde seitlich Richtung welt.player.x.
+  - Wenn der Bär unten aus dem Bild ist (wy > welt.scrollY + CONFIG.H + 60), verschwindet er (bear = null).
+- hits(spieler, welt): true, wenn der Abstand zwischen Bär und Spieler kleiner als 22 Pixel ist.
+- draw(welt): einen braunen Bären mit einfachen Formen zeichnen (Körper, Kopf, zwei runde Ohren) bei (bear.x, welt.toScreenY(bear.wy)).`
+    },
+    {
+      id: "kombo",
+      number: "E",
+      title: "Kombo-Serie: Tore hintereinander",
+      subtitle: "Feuer-Anzeige für viele Tore ohne Fehler.",
+      tag: "Ereignisse",
+      info: "Lernt Ereignisse (Events): onGatePassed, onGateMissed, onCrash.",
+      type: "template",
+      prompt: `${V2_RULES}
+
+Aufgabe: Kombo-Serie
+- Lege im Bereich 2 eine Variable kombo = 0 an.
+- In onGatePassed(gate): kombo um 1 erhöhen. Bei 5, 10, 15 … zeige mit welt.popup("🔥 " + kombo + "er-Serie!", welt.player.x, 120, [255, 140, 0]) eine Meldung.
+- In onGateMissed(gate) und onCrash(kind): kombo wieder auf 0 setzen.
+- Lege ein kleines Extra KOMBO_ANZEIGE an (EXTRAS.push(KOMBO_ANZEIGE);), das oben rechts (unter dem Lautsprecher-Symbol) "🔥 " + kombo anzeigt, aber nur wenn kombo mindestens 2 ist.
+- Die Funktionen onGatePassed, onGateMissed und onCrash behalten genau ihre Namen.`
+    },
+    {
+      id: "theme",
+      number: "D",
+      title: "Theme: Farben fürs ganze Spiel",
+      subtitle: "Nacht, Neon, Bonbon oder Retro.",
+      tag: "Look & Feel / Theme",
+      info: "Nur die Farbwerte in THEME ändern – Spiel-Logik bleibt gleich.",
+      type: "template",
+      prompt: `${V2_RULES}
+
+Aufgabe: Neues Farb-Theme
+Ändere NUR die Farbwerte im Objekt THEME (Bereich 2). Alle Namen in THEME bleiben gleich, es kommen keine neuen dazu.
+Wähle EIN Theme (oder schreib hier dein eigenes hin):
+- Nacht: dunkelblauer Schnee, helle Piste, leuchtende Tore.
+- Neon: fast schwarzer Hintergrund, Neon-Pink und Neon-Grün.
+- Bonbon: Pastell-Rosa, Mint und Hellgelb.
+- Retro: wenige kräftige Farben wie bei alten Videospielen.
+Wichtig: Piste (snow) und Tiefschnee (deepSnow) müssen sich gut unterscheiden, und die Tore müssen gut sichtbar bleiben.`
+    },
+    {
+      id: "prinzessin",
+      number: "D1",
+      title: "Figur: Prinzessin statt Skifahrer",
+      subtitle: "Rosa Kleid, goldene Krone.",
+      tag: "Look & Feel / Figur",
+      info: "Nur den Inhalt von drawPlayer(p) ändern – Steuerung & Kollision bleiben.",
+      type: "template",
+      prompt: `${V2_RULES}
+
+Aufgabe: Neue Spielfigur – Prinzessin
+- Ändere NUR den Inhalt der Funktion drawPlayer(p) im Bereich 2.
+- Die ersten zwei Zeilen (translate(...) und rotate(...)) bleiben genau so. Danach zeichnest du um den Punkt (0, 0).
+- Grösse immer mit s = p.s rechnen. Die Figur soll ungefähr in ein Quadrat von 2·s × 2·s passen.
+- Aussehen: rosa Kleid, das unten breiter wird; kleiner Kopf; goldene Krone; sie steht auf zwei Skiern (wie vorher).`
+    },
+    {
+      id: "ninja",
+      number: "D2",
+      title: "Figur: Ninja statt Skifahrer",
+      subtitle: "Schwarz, Maske, rotes Stirnband.",
+      tag: "Look & Feel / Figur",
+      info: "Nur den Inhalt von drawPlayer(p) ändern – Steuerung & Kollision bleiben.",
+      type: "template",
+      prompt: `${V2_RULES}
+
+Aufgabe: Neue Spielfigur – Ninja
+- Ändere NUR den Inhalt der Funktion drawPlayer(p) im Bereich 2.
+- Die ersten zwei Zeilen (translate(...) und rotate(...)) bleiben genau so. Danach zeichnest du um den Punkt (0, 0).
+- Grösse immer mit s = p.s rechnen. Die Figur soll ungefähr in ein Quadrat von 2·s × 2·s passen.
+- Aussehen: schwarze Kleidung, dunkle Maske mit sichtbaren Augen, rotes Stirnband mit zwei kurzen Bändern, die je nach p.lean zur Seite wehen; steht auf zwei Skiern (wie vorher).`
+    },
+    {
+      id: "safemode",
+      number: "S",
+      title: "Safe-Mode Prompt",
+      subtitle: "Sicheres Template für jede eigene Idee.",
+      tag: "Safety",
+      info: "Regeln + Hilfe für Extras – die Idee kommt in die markierte Zeile.",
+      type: "template",
+      prompt: `${V2_RULES}
+
+${V2_EXTRA_HELP}
+
+Aufgabe (HIER deine Idee in einem Satz, z. B. „Ein Schneemann steht ab und zu neben der Piste“):
+…
+
+Wo gehört die Idee hin?
+- Farben → nur THEME
+- Aussehen der Figur → nur der Inhalt von drawPlayer(p)
+- Neue Dinge auf der Piste → ein neues Extra mit EXTRAS.push(...)
+- Etwas soll bei Tor / verpasstem Tor / Sturz / Ziel passieren → onGatePassed / onGateMissed / onCrash / onFinish`
+    },
+    {
+      id: "weiter",
+      number: "↻",
+      title: "Antwort abgeschnitten? Weiter!",
+      subtitle: "Wenn der Code mittendrin aufhört.",
+      tag: "Hilfe",
+      info: WEITER_INFO,
+      type: "template",
+      prompt: WEITER_PROMPT
+    },
+    {
+      id: "own",
+      number: "★",
+      title: "Eigene Idee bauen (Prompt-Generator)",
+      subtitle: "Kids schreiben ihre Idee, der Prompt wird zusammengebaut.",
+      tag: "Creator",
+      info: "Kinder beschreiben ihre Änderung, Regeln für die KI werden automatisch ergänzt.",
+      type: "generator",
+      prompt: ""
+    }
+  ];
+
+  // ------------------------------------------------------------
+  // Allgemeine Helper (Copy etc.)
+  // ------------------------------------------------------------
+
+  const hiddenClipboardEl = document.getElementById("hiddenClipboard");
+
+  async function copyToClipboard(text) {
+    if (!text) return false;
+    try {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        await navigator.clipboard.writeText(text);
+        return true;
+      }
+    } catch (err) {
+      // z. B. im iframe oder ohne Berechtigung: unten der ältere Weg
+    }
+    try {
+      hiddenClipboardEl.value = text;
+      hiddenClipboardEl.select();
+      const ok = document.execCommand("copy");
+      hiddenClipboardEl.blur();
+      return ok;
+    } catch (err) {
+      console.error("Copy failed", err);
+      return false;
+    }
+  }
+
+  function selectElementText(el) {
+    if (!el) return;
+    const range = document.createRange();
+    range.selectNodeContents(el);
+    const sel = window.getSelection();
+    sel.removeAllRanges();
+    sel.addRange(range);
+  }
+
+  // ------------------------------------------------------------
+  // TAB-LOGIK
+  // ------------------------------------------------------------
+
+  const tabButtons = document.querySelectorAll(".tab-btn");
+  const tabPanels = {
+    teil0: document.getElementById("tab-teil0"),
+    teil1: document.getElementById("tab-teil1"),
+    teil2: document.getElementById("tab-teil2"),
+    editor: document.getElementById("tab-editor"),
+  };
+
+  tabButtons.forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const target = btn.dataset.tab;
+      Object.keys(tabPanels).forEach((id) => {
+        tabPanels[id].style.display = (id === target) ? "block" : "none";
+      });
+      tabButtons.forEach((b) => b.classList.toggle("active", b === btn));
+    });
+  });
+
+  // ------------------------------------------------------------
+  // TEIL 1 – UI-Logik
+  // ------------------------------------------------------------
+
+  const stepsListTeil1El = document.getElementById("stepsListTeil1");
+  const stepTitleTeil1El = document.getElementById("stepTitleTeil1");
+  const stepSubtitleTeil1El = document.getElementById("stepSubtitleTeil1");
+  const stepTagTeil1El = document.getElementById("stepTagTeil1");
+  const stepInfoTeil1El = document.getElementById("stepInfoTeil1");
+  const promptTextTeil1El = document.getElementById("promptTextTeil1");
+  const copyBtnTeil1El = document.getElementById("copyBtnTeil1");
+  const selectBtnTeil1El = document.getElementById("selectBtnTeil1");
+  const statusMsgTeil1El = document.getElementById("statusMsgTeil1");
+  const progressCountTeil1El = document.getElementById("progressCountTeil1");
+  const progressBarTeil1El = document.getElementById("progressBarTeil1");
+
+  const didaktikBoxTeil1El = document.getElementById("didaktikBoxTeil1");
+  const didaktikTextTeil1El = document.getElementById("didaktikTextTeil1");
+  const didaktikListTeil1El = document.getElementById("didaktikListTeil1");
+  const toggleDidaktikBtnEl = document.getElementById("toggleDidaktikBtn");
+
+  let currentStepTeil1Id = null;
+  const teil1ProgressKey = "ski_workshop_teil1_progress_v2";
+  let completedStepsTeil1 = new Set();
+
+  const didaktikTeil1 = {
+    default: {
+      intro: "In Teil 1 lernen die Kids ein fertiges, stabiles Spiel kennen und stellen es Schritt für Schritt mit genauen Prompts ein.",
+      bullets: [
+        "Betone: Die KI ist Helferin – die Kinder entscheiden, was sich ändert, und prüfen das Ergebnis.",
+        "Nach jedem Schritt kurz spielen und gemeinsam sagen: Was hat sich verändert – und warum?"
+      ]
+    },
+    step1: {
+      intro: "Schritt 1: Ankommen, spielen, Motivation holen. Die KI wird zuerst als Erklärerin benutzt, nicht als Programmiererin.",
+      bullets: [
+        "Alle fahren ein Rennen und merken sich ihre Zeit – das ist der Vergleichswert für später.",
+        "Datei herunterladen und im neuen Chat hochladen: ab jetzt kennt die KI das Spiel."
+      ]
+    },
+    step2: {
+      intro: "Der Bauplan mit drei Bereichen ist die wichtigste Idee des Tages: Wer weiss, wo etwas hingehört, kann gut prompten.",
+      bullets: [
+        "Begriffe: Einstellungen (Zahlen), Spielwiese (eigene Ideen), Motor (Regeln, die alles zusammenhalten).",
+        "Frage: Warum lassen echte Teams manche Teile in Ruhe? (Stabilität, Zusammenarbeit)"
+      ]
+    },
+    step3: {
+      intro: "Kamera und Welt: Die Welt ist lang, der Bildschirm zeigt nur einen Ausschnitt.",
+      bullets: [
+        "Begriff: Welt-Koordinate (wy) vs. Bildschirm-Koordinate.",
+        "Vorher/Nachher spielen: Mehr Vorausblick = mehr Zeit zum Reagieren."
+      ]
+    },
+    step4: {
+      intro: "Eine Zahl macht die Piste schmaler – kleine Zahl, grosse Wirkung auf die Schwierigkeit.",
+      bullets: [
+        "Neben der Piste ist Tiefschnee: man wird langsamer. Regeln entstehen aus Zonen.",
+        "Frage: Wie schmal darf es werden, bevor es unfair ist?"
+      ]
+    },
+    step5: {
+      intro: "Spielgefühl ist Physik: Reibung entscheidet, ob man präzise lenkt oder rutscht.",
+      bullets: [
+        "Kinder beschreiben das Gefühl mit eigenen Worten (schwammig, rutschig, direkt).",
+        "Guter Moment für: Eingabe → Bewegung → Reaktion."
+      ]
+    },
+    step6: {
+      intro: "Regeln und Strafen bestimmen, welche Strategie sich lohnt.",
+      bullets: [
+        "Diskussion: Lieber sicher durch jedes Tor oder schnell und ein Tor auslassen?",
+        "Zwei Zahlen gleichzeitig ändern – trotzdem bleibt der Prompt genau."
+      ]
+    },
+    step7: {
+      intro: "Risiko vs. Belohnung: Abkürzungen durch den Wald werden gefährlicher, Stürze kosten aber weniger.",
+      bullets: [
+        "Stürze sind kein Game Over – Fehler gehören dazu, man fährt weiter.",
+        "Frage: Was macht ein Spiel spannend, aber nicht frustrierend?"
+      ]
+    },
+    step8: {
+      intro: "Mit einer eigenen Seed-Zahl bekommt jedes Team seine eigene, aber faire Strecke.",
+      bullets: [
+        "Begriff: Zufall mit Startwert (Seed) – gleicher Seed, gleiche Strecke.",
+        "Bestzeit fahren und mit der Zeit aus Schritt 1 vergleichen. Danach geht's in Teil 2."
+      ]
+    },
+    weiter: {
+      intro: "Lange Antworten werden manchmal abgeschnitten – das ist kein Fehler der Kinder, sondern eine Grenze des Chats.",
+      bullets: [
+        "Erkennen: Am Ende des Codes fehlt </html>, oder das Spiel startet nicht.",
+        "Im Live Editor setzt „🧩 Fortsetzung anhängen“ die zwei Teile automatisch zusammen.",
+        "Für den nächsten Schritt hilft ein neuer Chat: „Meine Version herunterladen“ und die Datei dort hochladen."
+      ]
+    }
+  };
+
+  function updateDidaktikTeil1(stepId) {
+    if (!didaktikBoxTeil1El || !didaktikTextTeil1El || !didaktikListTeil1El) return;
+    const key = stepId && didaktikTeil1[stepId] ? stepId : "default";
+    const data = didaktikTeil1[key];
+    didaktikTextTeil1El.innerHTML = data.intro;
+    didaktikListTeil1El.innerHTML = "";
+    data.bullets.forEach((b) => {
+      const li = document.createElement("li");
+      li.innerHTML = b;
+      didaktikListTeil1El.appendChild(li);
+    });
+  }
+
+  function loadProgressTeil1() {
+    try {
+      const raw = window.localStorage.getItem(teil1ProgressKey);
+      if (!raw) return;
+      const arr = JSON.parse(raw);
+      if (Array.isArray(arr)) {
+        completedStepsTeil1 = new Set(arr);
+      }
+    } catch (e) {
+      completedStepsTeil1 = new Set();
+    }
+  }
+
+  function saveProgressTeil1() {
+    try {
+      const arr = Array.from(completedStepsTeil1);
+      window.localStorage.setItem(teil1ProgressKey, JSON.stringify(arr));
+    } catch (e) {
+      // ignore
+    }
+  }
+
+  function updateProgressUITeil1() {
+    const optional = ["check", "weiter"]; // Hilfs-Einträge zählen nicht zum Fortschritt
+    const total = promptsTeil1.filter(p => !optional.includes(p.id)).length;
+    const done = Array.from(completedStepsTeil1).filter(id => !optional.includes(id)).length;
+    if (progressCountTeil1El) {
+      progressCountTeil1El.textContent = `${done} / ${total}`;
+    }
+    if (progressBarTeil1El) {
+      const pct = total > 0 ? Math.min(100, Math.round((done / total) * 100)) : 0;
+      progressBarTeil1El.style.width = pct + "%";
+    }
+    // Steps optisch markieren
+    document.querySelectorAll("#stepsListTeil1 .step-item").forEach((el) => {
+      const id = el.dataset.stepId;
+      el.classList.toggle("completed", completedStepsTeil1.has(id));
+    });
+  }
+
+  function markStepCompletedTeil1(stepId) {
+    if (!stepId) return;
+    completedStepsTeil1.add(stepId);
+    saveProgressTeil1();
+    updateProgressUITeil1();
+  }
+
+  function renderStepsTeil1() {
+    stepsListTeil1El.innerHTML = "";
+    promptsTeil1.forEach((step) => {
+      const li = document.createElement("li");
+      li.className = "step-item";
+      li.dataset.stepId = step.id;
+
+      const num = document.createElement("div");
+      num.className = "step-number";
+      num.textContent = step.number;
+
+      const content = document.createElement("div");
+      content.className = "step-content";
+
+      const title = document.createElement("h3");
+      title.textContent = step.title;
+
+      const desc = document.createElement("p");
+      desc.textContent = step.subtitle;
+
+      content.appendChild(title);
+      content.appendChild(desc);
+
+      li.appendChild(num);
+      li.appendChild(content);
+
+      li.addEventListener("click", () => selectStepTeil1(step.id));
+      stepsListTeil1El.appendChild(li);
+    });
+    updateProgressUITeil1();
+  }
+
+  function selectStepTeil1(stepId) {
+  const step = promptsTeil1.find((p) => p.id === stepId);
+  if (!step) return;
+
+  currentStepTeil1Id = stepId;
+
+  document.querySelectorAll("#stepsListTeil1 .step-item").forEach((el) => {
+    el.classList.toggle("active", el.dataset.stepId === stepId);
+  });
+
+  stepTitleTeil1El.textContent = `${step.number}. ${step.title}`;
+  stepSubtitleTeil1El.textContent = step.subtitle;
+  stepTagTeil1El.textContent = step.tag;
+  stepInfoTeil1El.textContent = step.info;
+  promptTextTeil1El.textContent = step.prompt;
+
+  copyBtnTeil1El.disabled = false;
+  selectBtnTeil1El.disabled = false;
+  statusMsgTeil1El.textContent = "";
+
+  // Didaktik-Box aktualisieren
+  updateDidaktikTeil1(stepId);
+}
+
+copyBtnTeil1El.addEventListener("click", async () => {
+  const step = promptsTeil1.find((p) => p.id === currentStepTeil1Id);
+  if (!step) return;
+  const ok = await copyToClipboard(step.prompt);
+  if (ok) {
+    statusMsgTeil1El.textContent =
+      "✅ Prompt kopiert! Wechsle zum Chat und füge ihn dort ein.";
+  } else {
+    statusMsgTeil1El.textContent =
+      "❌ Kopieren hat nicht geklappt. Markiere den Text und kopiere manuell.";
+  }
+});
+
+selectBtnTeil1El.addEventListener("click", () => {
+  selectElementText(promptTextTeil1El);
+  statusMsgTeil1El.textContent =
+    "🔍 Prompt markiert. Du kannst ihn jetzt manuell kopieren.";
+});
+
+if (toggleDidaktikBtnEl) {
+    toggleDidaktikBtnEl.addEventListener("click", () => {
+      document.body.classList.toggle("didaktik-on");
+      const on = document.body.classList.contains("didaktik-on");
+      toggleDidaktikBtnEl.textContent = on ? "Didaktik ausblenden" : "Didaktik einblenden";
+    });
+  }
+
+// ------------------------------------------------------------
+  // TEIL 2 – UI-Logik
+  // ------------------------------------------------------------
+
+  const stepsListTeil2El = document.getElementById("stepsListTeil2");
+  const stepTitleTeil2El = document.getElementById("stepTitleTeil2");
+  const stepSubtitleTeil2El = document.getElementById("stepSubtitleTeil2");
+  const stepTagTeil2El = document.getElementById("stepTagTeil2");
+  const stepInfoTeil2El = document.getElementById("stepInfoTeil2");
+  const promptTextTeil2El = document.getElementById("promptTextTeil2");
+  const copyBtnTeil2El = document.getElementById("copyBtnTeil2");
+  const selectBtnTeil2El = document.getElementById("selectBtnTeil2");
+  const statusMsgTeil2El = document.getElementById("statusMsgTeil2");
+  const studioFormWrapperEl = document.getElementById("studioFormWrapper");
+  const ideaInputEl = document.getElementById("ideaInput");
+  const keepInputEl = document.getElementById("keepInput");
+
+  let currentStepTeil2Id = null;
+
+  function renderStepsTeil2() {
+    stepsListTeil2El.innerHTML = "";
+    promptsTeil2.forEach((step) => {
+      const li = document.createElement("li");
+      li.className = "step-item";
+      li.dataset.stepId = step.id;
+
+      const num = document.createElement("div");
+      num.className = "step-number";
+      num.textContent = step.number;
+
+      const content = document.createElement("div");
+      content.className = "step-content";
+
+      const title = document.createElement("h3");
+      title.textContent = step.title;
+
+      const desc = document.createElement("p");
+      desc.textContent = step.subtitle;
+
+      content.appendChild(title);
+      content.appendChild(desc);
+
+      li.appendChild(num);
+      li.appendChild(content);
+
+      li.addEventListener("click", () => selectStepTeil2(step.id));
+      stepsListTeil2El.appendChild(li);
+    });
+  }
+
+  function buildOwnPrompt() {
+    const idea = (ideaInputEl.value || "").trim();
+    const keep = (keepInputEl.value || "").trim();
+
+    let base = `${V2_RULES}
+
+${V2_EXTRA_HELP}
+
+Aufgabe – meine Idee:
+${idea || "(hier deine Idee einsetzen – z. B. \"Ein Schneemann steht ab und zu neben der Piste\")"}
+
+Das muss unbedingt gleich bleiben:
+${keep || "(hier reinschreiben, was gleich bleiben soll – z. B. \"Tore, Bäume, Zeit und Ziel bleiben genau gleich.\")"}
+
+Wo gehört die Idee hin?
+- Farben → nur THEME
+- Aussehen der Figur → nur der Inhalt von drawPlayer(p)
+- Neue Dinge auf der Piste → ein neues Extra mit EXTRAS.push(...)
+- Etwas soll bei Tor / verpasstem Tor / Sturz / Ziel passieren → onGatePassed / onGateMissed / onCrash / onFinish`;
+    return base;
+  }
+
+  function selectStepTeil2(stepId) {
+    const step = promptsTeil2.find((p) => p.id === stepId);
+    if (!step) return;
+
+    currentStepTeil2Id = stepId;
+
+    document.querySelectorAll("#stepsListTeil2 .step-item").forEach((el) => {
+      el.classList.toggle("active", el.dataset.stepId === stepId);
+    });
+
+    stepTitleTeil2El.textContent = `${step.number}. ${step.title}`;
+    stepSubtitleTeil2El.textContent = step.subtitle;
+    stepTagTeil2El.textContent = step.tag;
+    stepInfoTeil2El.textContent = step.info;
+
+    if (step.type === "generator") {
+      studioFormWrapperEl.style.display = "flex";
+      const generated = buildOwnPrompt();
+      promptTextTeil2El.textContent = generated;
+    } else {
+      studioFormWrapperEl.style.display = "none";
+      promptTextTeil2El.textContent = step.prompt;
+    }
+
+    copyBtnTeil2El.disabled = false;
+    selectBtnTeil2El.disabled = false;
+    statusMsgTeil2El.textContent = "";
+  }
+
+  ideaInputEl.addEventListener("input", () => {
+    if (currentStepTeil2Id === "own") {
+      promptTextTeil2El.textContent = buildOwnPrompt();
+    }
+  });
+
+  keepInputEl.addEventListener("input", () => {
+    if (currentStepTeil2Id === "own") {
+      promptTextTeil2El.textContent = buildOwnPrompt();
+    }
+  });
+
+  copyBtnTeil2El.addEventListener("click", async () => {
+    const step = promptsTeil2.find((p) => p.id === currentStepTeil2Id);
+    if (!step) return;
+
+    let text;
+    if (step.type === "generator") {
+      text = buildOwnPrompt();
+    } else {
+      text = step.prompt;
+    }
+    const ok = await copyToClipboard(text);
+    statusMsgTeil2El.textContent = ok
+      ? "✅ Prompt kopiert! Wechsle zum Chat und füge ihn dort ein."
+      : "❌ Kopieren hat nicht geklappt. Markiere den Text und kopiere manuell.";
+  });
+
+  selectBtnTeil2El.addEventListener("click", () => {
+    selectElementText(promptTextTeil2El);
+    statusMsgTeil2El.textContent = "🔍 Prompt markiert. Du kannst ihn jetzt manuell kopieren.";
+  });
+
+  // ------------------------------------------------------------
+  // Live-HTML-Editor – Preview-Logik (eigener Tab)
+  // ------------------------------------------------------------
+  const htmlEditorEl = document.getElementById("htmlEditor");
+  const runHtmlBtnEl = document.getElementById("runHtmlBtn");
+  const previewFrameEl = document.getElementById("previewFrame");
+  const previewFrameWrapperEl = document.querySelector(".preview-frame-wrapper");
+
+  if (runHtmlBtnEl && htmlEditorEl && previewFrameEl) {
+    runHtmlBtnEl.addEventListener("click", () => {
+      const code = htmlEditorEl.value || "";
+
+      // Beim Laden: Fokus ins iframe, damit Pfeiltasten dort ankommen
+      previewFrameEl.onload = () => {
+        try {
+          previewFrameEl.contentWindow.focus();
+        } catch (e) {
+          console.warn("Konnte iframe nicht fokussieren:", e);
+        }
+      };
+
+      previewFrameEl.srcdoc = withErrorHook(code);
+    });
+
+    if (previewFrameWrapperEl) {
+      previewFrameWrapperEl.addEventListener("click", () => {
+        try {
+          previewFrameEl.contentWindow.focus();
+        } catch (e) {
+          console.warn("Konnte iframe nicht fokussieren (click):", e);
+        }
+      });
+    }
+  }
+
+  // ------------------------------------------------------------
+  // Init
+  // ------------------------------------------------------------
+
+  loadProgressTeil1();
+  renderStepsTeil1();
+  renderStepsTeil2();
+
+  if (promptsTeil1.length > 0) {
+    selectStepTeil1(promptsTeil1[0].id);
+  }
+  updateDidaktikTeil1(null);
+</script>
+
+<!-- Basis-Spiel: Kopie von skirennen-v2.html (mit build-Skript erzeugt) -->
+<textarea id="baseGameSrc" hidden>&lt;!doctype html&gt;
+&lt;html lang="de"&gt;
+&lt;head&gt;
+&lt;meta charset="utf-8"&gt;
+&lt;meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no"&gt;
+&lt;title&gt;Skirennen v2&lt;/title&gt;
+&lt;script src="https://cdn.jsdelivr.net/npm/p5@1.9.0/lib/p5.min.js"&gt;&lt;/script&gt;
+&lt;style&gt;
+  html, body { margin: 0; height: 100%; overflow: hidden; background: #0f1d2b; touch-action: none; }
+  body { display: flex; align-items: center; justify-content: center; }
+  main { line-height: 0; }
+  canvas { display: block; border-radius: 10px; box-shadow: 0 8px 30px rgba(0,0,0,.45); }
+  /* Tablet: kein Markieren, keine Lupe und kein Menü bei langem Drücken */
+  html, body, canvas { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; -webkit-tap-highlight-color: transparent; }
+  .rotate { display: none; position: fixed; top: 16px; left: 16px; right: 16px; text-align: center;
+            color: #cfe3f5; font: 600 16px system-ui, Arial, sans-serif; }
+  @media (orientation: portrait) and (max-width: 1100px) { .rotate { display: block; } }
+&lt;/style&gt;
+&lt;/head&gt;
+&lt;body&gt;
+&lt;div class="rotate"&gt;📱↻ Bitte das Handy oder Tablet quer halten&lt;/div&gt;
+&lt;script&gt;
+// =====================================================================
+// 1) EINSTELLUNGEN – alle Zahlen des Spiels an einem Ort
+// =====================================================================
+const CONFIG = {
+  TITLE: "Skirennen",
+  W: 900, H: 630,              // Spielfeld (Koordinaten bleiben immer 900×630)
+  SEED: 2026,                  // gleiche Zahl = gleiche Strecke für alle
+
+  GATES_TOTAL: 25,             // Tore im Rennen
+  GATE_SPACING: 330,           // Abstand zwischen Toren (Pixel)
+  GATE_WIDTH: 150,             // Breite eines Tors
+  FIRST_GATE_Y: 700,
+  POLE_R: 6,
+
+  MISS_PENALTY_S: 2,           // Tor verpasst = +2 Sekunden
+  CRASH_PENALTY_S: 1.5,        // Sturz = +1.5 Sekunden
+  FALL_S: 1.0,                 // so lange liegt man nach einem Sturz
+  GHOST_S: 1.2,                // danach kurz unverwundbar
+  HEARTS: 3,                   // Herzen im Endlos-Modus
+
+  PLAYER_Y: 190,               // Höhe des Skifahrers auf dem Bildschirm
+  PLAYER_SIZE: 24,
+  SPEED_START: 230,            // Pixel pro Sekunde
+  SPEED_PER_GATE: 7,
+  SPEED_MAX: 430,
+  DEEP_SNOW_MULT: 0.6,         // neben der Piste: 60 % Tempo
+
+  STEER_ACCEL: 3200,
+  STEER_FRICTION: 3.2,
+  STEER_MAX: 480,
+  TOUCH_FOLLOW: true,          // Tablet: Skifahrer folgt dem Finger (false = linke/rechte Hälfte halten)
+
+  TRACK_HALF: 165,             // halbe Pistenbreite
+  BAND_LEFT: 0.17, BAND_RIGHT: 0.83,
+  TREE_EVERY: 42,
+};
+
+// =====================================================================
+// 2) HIER DARFST DU ÄNDERN – Aussehen, Figur, Extras, Ereignisse
+// =====================================================================
+
+// --- Farben ---------------------------------------------------------
+const THEME = {
+  snow:      [250, 252, 255],
+  deepSnow:  [226, 236, 247],
+  sparkle:   [200, 216, 236],
+  corduroy:  [238, 243, 250],
+  pisteEdge: [170, 190, 212],
+  trail:     [200, 214, 232],
+  gateA:     [40, 90, 220],
+  gateB:     [220, 40, 40],
+  pole:      [80, 80, 80],
+  trunk:     [120, 72, 36],
+  tree:      [30, 135, 70],
+  treeDark:  [18, 98, 50],
+  hudBg:     [15, 32, 52, 215],
+  hudText:   [255, 255, 255],
+  accent:    [255, 190, 40],
+};
+
+// --- Die Spielfigur -------------------------------------------------
+// p = { x, y, s (Grösse), lean (-1 links … 1 rechts), fallen, offPiste }
+function drawPlayer(p) {
+  translate(p.x, p.y);
+  rotate(p.fallen ? (p.lean &gt;= 0 ? 1.4 : -1.4) : p.lean * 0.35);
+  const s = p.s;
+  // Ski
+  stroke(30); strokeWeight(3); strokeCap(ROUND);
+  line(-s * 0.32, -s * 0.5, -s * 0.32, s * 0.95);
+  line( s * 0.32, -s * 0.5,  s * 0.32, s * 0.95);
+  // Stöcke
+  stroke(90); strokeWeight(1.5);
+  line(-s * 0.55, -s * 0.05, -s * 0.85, -s * 0.85);
+  line( s * 0.55, -s * 0.05,  s * 0.85, -s * 0.85);
+  // Jacke
+  noStroke(); fill(230, 60, 60); ellipse(0, 0, s * 1.0, s * 1.2);
+  // Kopf + Mütze + Bommel
+  fill(255, 220, 170); ellipse(0, -s * 0.75, s * 0.6, s * 0.6);
+  fill(40, 110, 230);  arc(0, -s * 0.82, s * 0.66, s * 0.6, PI, TWO_PI);
+  fill(255);           ellipse(0, -s * 1.12, s * 0.22, s * 0.22);
+}
+
+// --- Extras: neue Dinge im Spiel ------------------------------------
+// Jedes Extra ist ein Objekt mit (alle optional):
+//   name, spawn(welt), update(dt, welt), draw(welt), hits(spieler, welt) → true = Sturz
+// "welt" kennt: player, scrollY, speed, state, toScreenY(wy), trackBounds(wy),
+//               trackCenter(wy), rnd(), popup(text, x, y, farbe), addScore(n)
+// Wenn ein Extra einen Fehler hat, wird nur dieses Extra ausgeschaltet.
+const EXTRAS = [];
+
+// Beispiel – zum Ausprobieren die // vor EXTRAS.push(...) entfernen:
+const SCHNEEFALL = {
+  name: "Schneefall",
+  flakes: [],
+  spawn(welt) {
+    this.flakes = [];
+    for (let i = 0; i &lt; 90; i++) {
+      this.flakes.push({ x: welt.rnd() * CONFIG.W, y: welt.rnd() * CONFIG.H, v: 25 + welt.rnd() * 45 });
+    }
+  },
+  update(dt, welt) {
+    for (const f of this.flakes) {
+      f.y += f.v * dt;
+      f.x += Math.sin(f.y * 0.02) * 12 * dt;
+      if (f.y &gt; CONFIG.H) { f.y = -5; f.x = welt.rnd() * CONFIG.W; }
+    }
+  },
+  draw(welt) {
+    noStroke(); fill(170, 195, 225);
+    for (const f of this.flakes) circle(f.x, f.y, 3);
+  },
+};
+// EXTRAS.push(SCHNEEFALL);
+
+// --- Ereignisse -----------------------------------------------------
+function onGatePassed(gate) {}
+function onGateMissed(gate) {}
+function onCrash(kind) {}
+function onFinish(result) {}
+
+// =====================================================================
+// 3) SPIEL-MOTOR – NICHT ÄNDERN
+// =====================================================================
+
+function mulberry32(a) {
+  return function () {
+    a |= 0; a = (a + 0x6D2B79F5) | 0;
+    let t = Math.imul(a ^ (a &gt;&gt;&gt; 15), 1 | a);
+    t = (t + Math.imul(t ^ (t &gt;&gt;&gt; 7), 61 | t)) ^ t;
+    return ((t ^ (t &gt;&gt;&gt; 14)) &gt;&gt;&gt; 0) / 4294967296;
+  };
+}
+
+function hash01(n) {
+  const s = Math.sin(n * 127.1 + 311.7) * 43758.5453;
+  return s - Math.floor(s);
+}
+
+// --- Sound (WebAudio, keine Dateien) ---------------------------------
+const SFX = {
+  ctx: null, muted: false,
+  init() {
+    if (!this.ctx) {
+      try { this.ctx = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) { this.ctx = null; }
+    }
+    if (this.ctx &amp;&amp; this.ctx.state === "suspended") this.ctx.resume();
+  },
+  tone(freq, dur, type = "sine", vol = 0.12, to = null, delay = 0) {
+    if (this.muted || !this.ctx) return;
+    const t = this.ctx.currentTime + delay;
+    const o = this.ctx.createOscillator(), g = this.ctx.createGain();
+    o.type = type;
+    o.frequency.setValueAtTime(freq, t);
+    if (to) o.frequency.exponentialRampToValueAtTime(to, t + dur);
+    g.gain.setValueAtTime(vol, t);
+    g.gain.exponentialRampToValueAtTime(0.001, t + dur);
+    o.connect(g).connect(this.ctx.destination);
+    o.start(t); o.stop(t + dur + 0.02);
+  },
+  gate()   { this.tone(880, 0.12, "triangle", 0.12); this.tone(1320, 0.15, "triangle", 0.1, null, 0.07); },
+  miss()   { this.tone(240, 0.25, "sawtooth", 0.06, 140); },
+  crash()  { this.tone(180, 0.35, "square", 0.1, 50); },
+  tick()   { this.tone(600, 0.1, "sine", 0.12); },
+  go()     { this.tone(1000, 0.3, "sine", 0.15); },
+  finish() { [523, 659, 784, 1047].forEach((f, i) =&gt; this.tone(f, 0.28, "triangle", 0.12, null, i * 0.12)); },
+};
+
+// --- Zustand ----------------------------------------------------------
+const G = {
+  state: "title", mode: "race", sel: "race",
+  t: 0, endAt: 0, muted: false,
+  pointers: new Map(), forcedInput: null, autopilot: false,
+  buttons: [], broken: [],
+};
+let COURSE = null;
+let cnv;
+
+const welt = {
+  get player()  { return G.player; },
+  get scrollY() { return G.scrollY; },
+  get speed()   { return G.speed; },
+  get state()   { return G.state; },
+  toScreenY:   (wy) =&gt; wy - G.scrollY,
+  trackBounds: (wy) =&gt; trackBounds(wy),
+  trackCenter: (wy) =&gt; trackCenter(wy),
+  rnd:         () =&gt; COURSE.extraRnd(),
+  popup:       (text, x, y, col) =&gt; popup(text, x, y, col),
+  addScore:    (n) =&gt; { G.score += n; },
+};
+
+// --- Strecke ----------------------------------------------------------
+function newCourse() {
+  const r = mulberry32(CONFIG.SEED);
+  COURSE = {
+    p1: r() * Math.PI * 2, p2: r() * Math.PI * 2,
+    gateRnd: mulberry32(CONFIG.SEED + 101),
+    treeRnd: mulberry32(CONFIG.SEED + 202),
+    extraRnd: mulberry32(CONFIG.SEED + 303),
+    gates: [], trees: [], gateCount: 0,
+    nextGateWY: CONFIG.FIRST_GATE_Y, nextTreeWY: -40,
+    finishY: CONFIG.FIRST_GATE_Y + (CONFIG.GATES_TOTAL - 1) * CONFIG.GATE_SPACING + 300,
+  };
+}
+
+function trackCenter(wy) {
+  const minX = CONFIG.W * CONFIG.BAND_LEFT, maxX = CONFIG.W * CONFIG.BAND_RIGHT;
+  const mid = (minX + maxX) / 2;
+  const room = Math.max(0, (maxX - minX) / 2 - CONFIG.TRACK_HALF);
+  const ease = Math.min(1, Math.max(0, wy / 700));   // Start gerade, dann Kurven
+  const t = wy * 0.0042;
+  return mid + ease * room * (0.75 * Math.sin(t + COURSE.p1) + 0.25 * Math.sin(t * 2.3 + COURSE.p2));
+}
+
+function trackBounds(wy) {
+  const c = trackCenter(wy);
+  return { left: c - CONFIG.TRACK_HALF, right: c + CONFIG.TRACK_HALF };
+}
+
+function makeGate() {
+  const i = COURSE.gateCount, wy = COURSE.nextGateWY;
+  const r = COURSE.gateRnd();
+  const side = i % 2 === 0 ? -1 : 1;
+  const b = trackBounds(wy), half = CONFIG.GATE_WIDTH / 2;
+  const c = constrain(trackCenter(wy) + side * (25 + r * 45), b.left + half + 10, b.right - half - 10);
+  COURSE.gates.push({ i, wy, left: c - half, right: c + half, color: i % 2, state: "open" });
+  COURSE.gateCount++;
+  COURSE.nextGateWY += G.mode === "endless" ? Math.max(240, CONFIG.GATE_SPACING - i * 2) : CONFIG.GATE_SPACING;
+}
+
+function makeTrees(wy) {
+  const r = COURSE.treeRnd;
+  const a = r(), b = r(), c = r(), d = r(), e = r(), f = r();   // immer 6 Zufallszahlen → gleiche Strecke
+  const bb = trackBounds(wy);
+  if (a &lt; 0.7) {
+    const size = 16 + e * 14, lo = 14, hi = bb.left - 22 - size * 0.8;
+    if (hi &gt; lo) COURSE.trees.push({ x: lo + b * (hi - lo), wy: wy + (f - 0.5) * 20, r: size });
+  }
+  if (c &lt; 0.7) {
+    const size = 16 + f * 14, lo = bb.right + 22 + size * 0.8, hi = CONFIG.W - 14;
+    if (hi &gt; lo) COURSE.trees.push({ x: lo + d * (hi - lo), wy: wy + (e - 0.5) * 20, r: size });
+  }
+}
+
+function ensureWorld(untilWY) {
+  while (COURSE.nextGateWY &lt; untilWY &amp;&amp; (G.mode === "endless" || COURSE.gateCount &lt; CONFIG.GATES_TOTAL)) makeGate();
+  while (COURSE.nextTreeWY &lt; untilWY) { makeTrees(COURSE.nextTreeWY); COURSE.nextTreeWY += CONFIG.TREE_EVERY; }
+}
+
+function cleanupWorld() {
+  const cut = G.scrollY - 100;
+  if (COURSE.trees.length &amp;&amp; COURSE.trees[0].wy &lt; cut) COURSE.trees = COURSE.trees.filter((t) =&gt; t.wy &gt;= cut);
+  while (COURSE.gates.length &amp;&amp; COURSE.gates[0].wy &lt; cut) COURSE.gates.shift();
+}
+
+// --- Runde starten / beenden -----------------------------------------
+function prepareRun(mode) {
+  G.mode = mode;
+  newCourse();
+  Object.assign(G, {
+    scrollY: 0, speed: 0, raceTime: 0, penalty: 0,
+    passed: 0, missed: 0, crashes: 0, hearts: CONFIG.HEARTS, score: 0,
+    shake: 0, goFlash: 0, sprayAcc: 0, overPending: false, result: null,
+    trail: [], particles: [], popups: [],
+  });
+  G.player = {
+    x: trackCenter(CONFIG.PLAYER_Y), wy: CONFIG.PLAYER_Y, vx: 0, lean: 0,
+    s: CONFIG.PLAYER_SIZE, fallTimer: 0, ghost: 0, offPiste: false,
+  };
+  G.pointers.clear();
+  ensureWorld(CONFIG.H + 400);
+  for (const ex of EXTRAS) runExtra(ex, () =&gt; ex.spawn &amp;&amp; ex.spawn(welt));
+}
+
+function startRun(mode) {
+  prepareRun(mode);
+  G.state = "countdown"; G.countdown = 3; G.lastBeep = 4;
+}
+
+function toTitle() {
+  prepareRun(G.mode);
+  G.sel = G.mode;
+  G.state = "title";
+}
+
+function finishRace() {
+  const total = G.raceTime + G.penalty;
+  const prev = loadBest("race");
+  const newBest = prev == null || total &lt; prev;
+  if (newBest) saveBest("race", total);
+  G.result = {
+    time: total, raw: G.raceTime, penalty: G.penalty,
+    passed: G.passed, missed: G.missed, crashes: G.crashes,
+    best: newBest ? total : prev, newBest,
+  };
+  G.state = "finish"; G.endAt = G.t;
+  SFX.finish(); confetti();
+  safeHook(onFinish, G.result);
+}
+
+function endEndless() {
+  const prev = loadBest("endless");
+  const newBest = prev == null || G.score &gt; prev;
+  if (newBest) saveBest("endless", G.score);
+  G.result = { score: G.score, passed: G.passed, best: newBest ? G.score : prev, newBest };
+  G.state = "over"; G.endAt = G.t;
+  SFX.finish();
+}
+
+function crash(kind) {
+  const P = G.player;
+  if (P.fallTimer &gt; 0 || P.ghost &gt; 0) return;
+  P.fallTimer = CONFIG.FALL_S;
+  P.vx *= 0.2;
+  G.speed *= 0.25;
+  G.crashes++;
+  G.shake = 0.35;
+  G.trail.push({ brk: true, wy: P.wy });
+  SFX.crash();
+  burst(P, 22);
+  const sy = P.wy - G.scrollY;
+  if (G.mode === "race") {
+    G.penalty += CONFIG.CRASH_PENALTY_S;
+    popup("+" + CONFIG.CRASH_PENALTY_S + " s", P.x, sy - 40, [220, 50, 50]);
+  } else {
+    G.hearts--;
+    popup("−1 ♥", P.x, sy - 40, [220, 50, 50]);
+    if (G.hearts &lt;= 0) G.overPending = true;
+  }
+  safeHook(onCrash, kind);
+}
+
+// --- Hilfen -------------------------------------------------------------
+function bestKey(mode) { return "skirennen_v2_" + mode + "_" + CONFIG.SEED; }
+function loadBest(mode) {
+  try { const v = localStorage.getItem(bestKey(mode)); return v == null ? null : parseFloat(v); } catch (e) { return null; }
+}
+function saveBest(mode, v) {
+  try { localStorage.setItem(bestKey(mode), String(v)); } catch (e) { /* egal */ }
+}
+function fmt(t) { return t.toFixed(2) + " s"; }
+
+function safeHook(fn, arg) {
+  try { fn(arg); } catch (e) { console.warn("Fehler in " + fn.name, e); }
+}
+
+function runExtra(ex, fn) {
+  if (ex._broken) return false;
+  try { return fn(); } catch (e) {
+    ex._broken = true;
+    const name = ex.name || "Extra";
+    G.broken.push(name);
+    console.warn("Extra „" + name + "“ ausgeschaltet:", e);
+    return false;
+  }
+}
+
+function popup(text, x, y, col) {
+  G.popups.push({ text, x, y, col: col || [40, 160, 80], life: 0.9, max: 0.9 });
+}
+
+function spray(P, n, big) {
+  for (let i = 0; i &lt; n; i++) {
+    G.particles.push({
+      x: P.x + (Math.random() - 0.5) * 16, wy: P.wy + P.s * 0.7,
+      vx: -P.vx * 0.3 + (Math.random() - 0.5) * (big ? 260 : 90),
+      vy: (Math.random() - 0.5) * (big ? 200 : 60) - 20,
+      g: 0, life: 0.4 + Math.random() * 0.4, max: 0.8,
+      size: (big ? 4 : 3) + Math.random() * 4, col: null,
+    });
+  }
+}
+function burst(P, n) { spray(P, n, true); }
+
+function confetti() {
+  const P = G.player, cols = [THEME.gateA, THEME.gateB, THEME.accent, [40, 170, 90]];
+  for (let i = 0; i &lt; 70; i++) {
+    G.particles.push({
+      x: P.x + (Math.random() - 0.5) * 60, wy: P.wy - 20,
+      vx: (Math.random() - 0.5) * 420, vy: -150 - Math.random() * 300,
+      g: 520, life: 1.4 + Math.random(), max: 2.4,
+      size: 4 + Math.random() * 4, col: cols[i % cols.length],
+    });
+  }
+}
+
+// --- Eingabe ------------------------------------------------------------
+function readInput() {
+  if (G.forcedInput !== null) return G.forcedInput;
+  if (G.autopilot) return autoInput();
+  let v = 0;
+  if (keyIsDown(LEFT_ARROW) || keyIsDown(65)) v -= 1;
+  if (keyIsDown(RIGHT_ARROW) || keyIsDown(68)) v += 1;
+  if (G.pointers.size) {
+    if (CONFIG.TOUCH_FOLLOW) {
+      // Der zuletzt aufgesetzte Finger ist das Ziel; kurz davor wird abgebremst
+      const P = G.player, fingerX = [...G.pointers.values()].pop();
+      v += (fingerX - (P.x + P.vx * 0.1)) / 15;
+    } else {
+      for (const x of G.pointers.values()) v += x &lt; CONFIG.W / 2 ? -1 : 1;
+    }
+  }
+  return Math.max(-1, Math.min(1, v));
+}
+
+function autoInput() {
+  const P = G.player;
+  let tx = trackCenter(P.wy + 150);
+  const g = COURSE.gates.find((g) =&gt; g.state === "open" &amp;&amp; g.wy &gt; P.wy - 5);
+  if (g &amp;&amp; g.wy - P.wy &lt; 450) tx = (g.left + g.right) / 2;
+  const err = tx - (P.x + P.vx * 0.25);
+  return Math.abs(err) &lt; 6 ? 0 : Math.sign(err);
+}
+
+function bindPointer() {
+  const el = cnv.elt;
+  const toLogical = (e) =&gt; {
+    const r = el.getBoundingClientRect();
+    return { x: (e.clientX - r.left) * CONFIG.W / r.width, y: (e.clientY - r.top) * CONFIG.H / r.height };
+  };
+  el.addEventListener("pointerdown", (e) =&gt; {
+    e.preventDefault();
+    SFX.init();
+    const p = toLogical(e);
+    if (p.x &gt; CONFIG.W - 56 &amp;&amp; p.y &lt; 50) { G.muted = !G.muted; SFX.muted = G.muted; return; }
+    if (G.state === "title") {
+      for (const b of G.buttons) {
+        if (p.x &gt; b.x &amp;&amp; p.x &lt; b.x + b.w &amp;&amp; p.y &gt; b.y &amp;&amp; p.y &lt; b.y + b.h) startRun(b.mode);
+      }
+      return;
+    }
+    if (G.state === "finish" || G.state === "over") {
+      if (G.t - G.endAt &gt; 0.6) startRun(G.mode);
+      return;
+    }
+    G.pointers.set(e.pointerId, p.x);
+    try { el.setPointerCapture(e.pointerId); } catch (_) { /* egal */ }
+  });
+  el.addEventListener("pointermove", (e) =&gt; {
+    if (G.pointers.has(e.pointerId)) G.pointers.set(e.pointerId, toLogical(e).x);
+  });
+  const up = (e) =&gt; G.pointers.delete(e.pointerId);
+  el.addEventListener("pointerup", up);
+  el.addEventListener("pointercancel", up);
+  el.addEventListener("lostpointercapture", up);
+}
+
+function keyPressed() {
+  SFX.init();
+  const k = typeof key === "string" ? key.toLowerCase() : "";
+  if (k === "m") { G.muted = !G.muted; SFX.muted = G.muted; return false; }
+  if (G.state === "title") {
+    if (k === "e" || k === "a" || k === "d" || keyCode === LEFT_ARROW || keyCode === RIGHT_ARROW) {
+      G.sel = G.sel === "race" ? "endless" : "race";
+      return false;
+    }
+    if (k === " " || keyCode === ENTER) { startRun(G.sel); return false; }
+    return;
+  }
+  if (keyCode === ESCAPE) { toTitle(); return false; }
+  if (k === "r") { startRun(G.mode); return false; }
+  if ((G.state === "finish" || G.state === "over") &amp;&amp; (k === " " || keyCode === ENTER) &amp;&amp; G.t - G.endAt &gt; 0.6) {
+    startRun(G.mode);
+    return false;
+  }
+  if (keyCode === LEFT_ARROW || keyCode === RIGHT_ARROW || k === " ") return false;
+}
+
+// --- Spiel-Logik pro Zeitschritt -----------------------------------------
+function stepGame(dt) {
+  G.t += dt;
+  G.shake = Math.max(0, G.shake - dt);
+  if (G.goFlash &gt; 0) G.goFlash -= dt;
+  stepParticles(dt);
+
+  if (G.state === "title") return;
+  if (G.state === "countdown") {
+    G.countdown -= dt;
+    const n = Math.ceil(G.countdown);
+    if (n !== G.lastBeep &amp;&amp; n &gt; 0) { G.lastBeep = n; SFX.tick(); }
+    if (G.countdown &lt;= 0) { G.state = "run"; G.goFlash = 0.8; SFX.go(); }
+    return;
+  }
+
+  const P = G.player;
+  const running = G.state === "run";
+  let input = running ? readInput() : 0;
+
+  if (P.fallTimer &gt; 0) {
+    P.fallTimer -= dt; input = 0;
+    if (P.fallTimer &lt;= 0) {
+      P.fallTimer = 0; P.ghost = CONFIG.GHOST_S;
+      if (G.overPending) endEndless();
+    }
+  } else if (P.ghost &gt; 0) {
+    P.ghost = Math.max(0, P.ghost - dt);
+  }
+  if (running) G.raceTime += dt;
+
+  // Lenken mit Schwung
+  P.vx += input * CONFIG.STEER_ACCEL * dt;
+  P.vx *= Math.exp(-CONFIG.STEER_FRICTION * dt);
+  P.vx = constrain(P.vx, -CONFIG.STEER_MAX, CONFIG.STEER_MAX);
+  P.x += P.vx * dt;
+  if (P.x &lt; 12) { P.x = 12; P.vx = 0; }
+  if (P.x &gt; CONFIG.W - 12) { P.x = CONFIG.W - 12; P.vx = 0; }
+  P.lean = P.vx / CONFIG.STEER_MAX;
+  const b = trackBounds(P.wy);
+  P.offPiste = P.x &lt; b.left || P.x &gt; b.right;
+
+  // Tempo
+  let target = 0;
+  if (running &amp;&amp; P.fallTimer &lt;= 0) {
+    target = G.mode === "race"
+      ? CONFIG.SPEED_START + CONFIG.SPEED_PER_GATE * (G.passed + G.missed)
+      : CONFIG.SPEED_START + G.scrollY * 0.012;
+    target = Math.min(target, CONFIG.SPEED_MAX);
+    if (P.offPiste) target *= CONFIG.DEEP_SNOW_MULT;
+  }
+  const k = running &amp;&amp; P.fallTimer &lt;= 0 ? (target &gt; G.speed ? 1.5 : 4) : 2.5;
+  G.speed += (target - G.speed) * Math.min(1, k * dt);
+
+  const prevWY = P.wy;
+  G.scrollY += G.speed * dt;
+  P.wy = G.scrollY + CONFIG.PLAYER_Y;
+  ensureWorld(G.scrollY + CONFIG.H + 300);
+  cleanupWorld();
+
+  // Spuren im Schnee
+  const last = G.trail[G.trail.length - 1];
+  if (P.fallTimer &lt;= 0 &amp;&amp; G.speed &gt; 5 &amp;&amp; (!last || P.wy - last.wy &gt; 6)) G.trail.push({ x: P.x, wy: P.wy });
+  while (G.trail.length &amp;&amp; G.trail[0].wy &lt; G.scrollY - 30) G.trail.shift();
+
+  // Schnee-Spray beim Carven und im Tiefschnee
+  if (P.fallTimer &lt;= 0 &amp;&amp; G.speed &gt; 40) {
+    const carve = Math.abs(P.vx) / CONFIG.STEER_MAX * (G.speed / CONFIG.SPEED_MAX);
+    G.sprayAcc += (carve * 45 + (P.offPiste ? 30 : 0)) * dt;
+    while (G.sprayAcc &gt;= 1) { G.sprayAcc -= 1; spray(P, 1, false); }
+  }
+
+  if (!running) return;
+
+  // Tore
+  for (const g of COURSE.gates) {
+    if (g.wy &gt; P.wy + 40) break;
+    if (g.state !== "open") continue;
+    if (P.fallTimer &lt;= 0 &amp;&amp; P.ghost &lt;= 0) {
+      for (const px of [g.left, g.right]) {
+        if (Math.abs(P.x - px) &lt; CONFIG.POLE_R + 7 &amp;&amp; Math.abs(P.wy - (g.wy - 10)) &lt; 16) { crash("Stange"); break; }
+      }
+    }
+    if (prevWY &lt; g.wy &amp;&amp; P.wy &gt;= g.wy) {
+      const sy = P.wy - G.scrollY;
+      if (P.x &gt; g.left &amp;&amp; P.x &lt; g.right) {
+        g.state = "passed"; G.passed++; G.score += 10;
+        SFX.gate();
+        popup(G.mode === "race" ? "✓" : "+10", P.x, sy - 40, [40, 160, 80]);
+        safeHook(onGatePassed, g);
+      } else {
+        g.state = "missed"; G.missed++;
+        SFX.miss();
+        if (G.mode === "race") {
+          G.penalty += CONFIG.MISS_PENALTY_S;
+          popup("+" + CONFIG.MISS_PENALTY_S + " s", P.x, sy - 40, [220, 50, 50]);
+        }
+        safeHook(onGateMissed, g);
+      }
+    }
+  }
+
+  // Bäume
+  if (P.fallTimer &lt;= 0 &amp;&amp; P.ghost &lt;= 0) {
+    for (const t of COURSE.trees) {
+      if (Math.abs(t.wy - P.wy) &gt; 70) continue;
+      if (dist(P.x, P.wy, t.x, t.wy - t.r * 0.6) &lt; t.r * 0.55 + 8) { crash("Baum"); break; }
+    }
+  }
+
+  // Extras
+  for (const ex of EXTRAS) {
+    runExtra(ex, () =&gt; {
+      if (ex.update) ex.update(dt, welt);
+      if (ex.hits &amp;&amp; P.fallTimer &lt;= 0 &amp;&amp; P.ghost &lt;= 0 &amp;&amp; ex.hits(P, welt)) crash(ex.name || "Extra");
+    });
+  }
+
+  // Ziel
+  if (G.mode === "race" &amp;&amp; P.wy &gt;= COURSE.finishY) finishRace();
+}
+
+function stepParticles(dt) {
+  for (const p of G.particles) {
+    p.x += p.vx * dt; p.wy += p.vy * dt;
+    p.vx *= Math.exp(-2.5 * dt);
+    p.vy += p.g * dt;
+    p.life -= dt;
+  }
+  G.particles = G.particles.filter((p) =&gt; p.life &gt; 0).slice(-500);
+  for (const p of G.popups) { p.y -= 45 * dt; p.life -= dt; }
+  G.popups = G.popups.filter((p) =&gt; p.life &gt; 0);
+}
+
+// --- Zeichnen -------------------------------------------------------------
+function renderGame() {
+  push();
+  if (G.shake &gt; 0) {
+    const m = (G.shake / 0.35) * 7;
+    translate((Math.random() - 0.5) * m * 2, (Math.random() - 0.5) * m * 2);
+  }
+  background(...THEME.snow);
+  drawSlope();
+  drawBanner(CONFIG.PLAYER_Y + 40, "START", false);
+  if (G.mode === "race") drawBanner(COURSE.finishY, "ZIEL", true);
+  drawTrail();
+  drawGates();
+  const P = G.player;
+  drawTrees((t) =&gt; t.wy &lt;= P.wy);
+  if (G.state !== "title") {
+    for (const ex of EXTRAS) runExtra(ex, () =&gt; { if (ex.draw) { push(); ex.draw(welt); pop(); } });
+  }
+  drawPlayerSafe();
+  drawTrees((t) =&gt; t.wy &gt; P.wy);
+  drawParticles();
+  drawPopups();
+  pop();
+
+  drawHUD();
+  if (G.state === "title") drawTitle();
+  if (G.state === "countdown") drawCountdown();
+  if (G.goFlash &gt; 0) drawGo();
+  if (G.state === "finish") drawFinish();
+  if (G.state === "over") drawOver();
+  drawBroken();
+  drawMute();
+}
+
+function drawSlope() {
+  const step = 10, sy = G.scrollY;
+  noStroke(); fill(...THEME.deepSnow);
+  beginShape(); vertex(-20, -20);
+  for (let y = -20; y &lt;= CONFIG.H + 20; y += step) vertex(trackBounds(y + sy).left, y);
+  vertex(-20, CONFIG.H + 20); endShape(CLOSE);
+  beginShape(); vertex(CONFIG.W + 20, -20);
+  for (let y = -20; y &lt;= CONFIG.H + 20; y += step) vertex(trackBounds(y + sy).right, y);
+  vertex(CONFIG.W + 20, CONFIG.H + 20); endShape(CLOSE);
+
+  // Glitzern im Tiefschnee
+  fill(...THEME.sparkle);
+  const cell = 46;
+  for (let wy = Math.floor(sy / cell) * cell; wy &lt; sy + CONFIG.H + cell; wy += cell) {
+    const b = trackBounds(wy);
+    for (let k = 0; k &lt; 5; k++) {
+      const x = hash01(wy * 0.37 + k * 13.1) * CONFIG.W;
+      if (x &gt; b.left - 6 &amp;&amp; x &lt; b.right + 6) continue;
+      const y = wy - sy + hash01(wy + k * 7.7) * cell;
+      ellipse(x, y, 5, 3);
+    }
+  }
+
+  // Kord-Linien auf der Piste (zeigen das Tempo)
+  stroke(...THEME.corduroy); strokeWeight(2);
+  const gap = 22;
+  for (let wy = Math.floor(sy / gap) * gap; wy &lt; sy + CONFIG.H + gap; wy += gap) {
+    const b = trackBounds(wy);
+    line(b.left + 4, wy - sy, b.right - 4, wy - sy);
+  }
+
+  // Pistenränder
+  noFill(); stroke(...THEME.pisteEdge); strokeWeight(3); strokeJoin(ROUND);
+  for (const side of ["left", "right"]) {
+    beginShape();
+    for (let y = -20; y &lt;= CONFIG.H + 20; y += step) vertex(trackBounds(y + sy)[side], y);
+    endShape();
+  }
+}
+
+function drawBanner(wy, label, checker) {
+  const y = wy - G.scrollY;
+  if (y &lt; -100 || y &gt; CONFIG.H + 100) return;
+  const b = trackBounds(wy), sq = 12;
+  if (checker) {
+    noStroke();
+    let ix = 0;
+    for (let x = b.left; x &lt; b.right; x += sq, ix++) {
+      for (let row = 0; row &lt; 2; row++) {
+        fill((ix + row) % 2 ? 30 : 255);
+        rect(x, y - sq + row * sq, Math.min(sq, b.right - x), sq);
+      }
+    }
+  } else {
+    stroke(...THEME.gateB, 160); strokeWeight(3);
+    line(b.left, y, b.right, y);
+  }
+  stroke(70); strokeWeight(4);
+  line(b.left - 8, y + sq, b.left - 8, y - 70);
+  line(b.right + 8, y + sq, b.right + 8, y - 70);
+  noStroke(); fill(...(checker ? THEME.accent : THEME.gateA));
+  rect(b.left - 10, y - 78, b.right - b.left + 20, 24, 6);
+  fill(checker ? 30 : 255); textAlign(CENTER, CENTER); textStyle(BOLD); textSize(15);
+  text(label, (b.left + b.right) / 2, y - 66);
+  textStyle(NORMAL);
+}
+
+function drawTrail() {
+  if (G.trail.length &lt; 2) return;
+  noFill(); stroke(...THEME.trail); strokeWeight(2);
+  const off = G.player.s * 0.32;
+  for (const o of [-off, off]) {
+    let open = false;
+    for (const p of G.trail) {
+      if (p.brk) { if (open) { endShape(); open = false; } continue; }
+      if (!open) { beginShape(); open = true; }
+      vertex(p.x + o, p.wy - G.scrollY);
+    }
+    if (open) endShape();
+  }
+}
+
+function drawGates() {
+  for (const g of COURSE.gates) {
+    const y = g.wy - G.scrollY;
+    if (y &lt; -60 || y &gt; CONFIG.H + 60) continue;
+    const col = g.color ? THEME.gateB : THEME.gateA;
+    const a = g.state === "passed" ? 110 : 255;
+    noStroke(); fill(0, 0, 0, 25);
+    ellipse(g.left + 5, y + 2, 14, 5); ellipse(g.right + 5, y + 2, 14, 5);
+    stroke(...THEME.pole, a); strokeWeight(3);
+    line(g.left, y, g.left, y - 34); line(g.right, y, g.right, y - 34);
+    noStroke(); fill(...col, a);
+    triangle(g.left, y - 34, g.left + 22, y - 28, g.left, y - 20);
+    triangle(g.right, y - 34, g.right - 22, y - 28, g.right, y - 20);
+    if (G.mode === "race") {
+      fill(120, 140, 160, a); textAlign(CENTER, CENTER); textSize(12);
+      text(g.i + 1, (g.left + g.right) / 2, y - 26);
+    }
+    if (g.state === "missed") {
+      stroke(220, 40, 40, 200); strokeWeight(3);
+      const cx = (g.left + g.right) / 2;
+      line(cx - 8, y - 18, cx + 8, y - 2); line(cx + 8, y - 18, cx - 8, y - 2);
+    }
+  }
+}
+
+function drawTrees(filter) {
+  for (const t of COURSE.trees) {
+    if (!filter(t)) continue;
+    const y = t.wy - G.scrollY, x = t.x, r = t.r;
+    if (y &lt; -60 || y &gt; CONFIG.H + 80) continue;
+    noStroke();
+    fill(0, 0, 0, 22); ellipse(x + r * 0.3, y + 2, r * 1.4, r * 0.4);
+    fill(...THEME.trunk); rect(x - r * 0.12, y - r * 0.35, r * 0.24, r * 0.4);
+    fill(...THEME.treeDark); triangle(x - r * 0.85, y - r * 0.3, x, y - r * 1.5, x + r * 0.85, y - r * 0.3);
+    fill(...THEME.tree);     triangle(x - r * 0.65, y - r * 0.95, x, y - r * 2.0, x + r * 0.65, y - r * 0.95);
+    fill(255, 255, 255, 210); triangle(x - r * 0.25, y - r * 1.62, x, y - r * 2.0, x + r * 0.25, y - r * 1.62);
+  }
+}
+
+function drawPlayerSafe() {
+  const P = G.player;
+  const p = {
+    x: P.x, y: P.wy - G.scrollY, s: P.s, lean: P.lean,
+    fallen: P.fallTimer &gt; 0, offPiste: P.offPiste,
+  };
+  const blink = P.ghost &gt; 0 &amp;&amp; Math.floor(G.t * 12) % 2 === 0;
+  if (blink) drawingContext.globalAlpha = 0.35;
+  noStroke(); fill(0, 0, 0, 30); ellipse(p.x + 4, p.y + p.s * 0.8, p.s * 1.1, p.s * 0.35);
+  push();
+  try {
+    if (G.playerBroken) throw new Error("skip");
+    drawPlayer(p);
+  } catch (e) {
+    if (!G.playerBroken) { G.playerBroken = true; G.broken.push("drawPlayer"); console.warn("drawPlayer hat einen Fehler:", e); }
+    noStroke(); fill(230, 60, 60); circle(0, 0, p.s);
+  }
+  pop();
+  drawingContext.globalAlpha = 1;
+}
+
+function drawParticles() {
+  for (const p of G.particles) {
+    const y = p.wy - G.scrollY;
+    const a = Math.max(0, Math.min(1, p.life / p.max)) * 255;
+    if (p.col) { noStroke(); fill(...p.col, a); rect(p.x, y, p.size, p.size * 0.6); }
+    else { stroke(190, 208, 230, a); strokeWeight(1); fill(255, a); circle(p.x, y, p.size); }
+  }
+}
+
+function drawPopups() {
+  textAlign(CENTER, CENTER); textStyle(BOLD); textSize(22);
+  for (const p of G.popups) {
+    const a = (p.life / p.max) * 255;
+    stroke(255, a); strokeWeight(4); fill(...p.col, a);
+    text(p.text, p.x, p.y);
+  }
+  textStyle(NORMAL);
+}
+
+function drawHUD() {
+  if (G.state === "title") return;
+  push();
+  noStroke(); fill(...THEME.hudBg); rect(12, 12, 224, 108, 12);
+  fill(...THEME.hudText); textAlign(LEFT, TOP);
+  if (G.mode === "race") {
+    const total = CONFIG.GATES_TOTAL, done = Math.min(G.passed + G.missed, total);
+    textSize(12); fill(180, 200, 220); text("ZEIT", 26, 22);
+    fill(...THEME.hudText); textStyle(BOLD); textSize(30); text(fmt(G.raceTime + G.penalty), 26, 36);
+    textStyle(NORMAL); textSize(14); text("Tor " + done + " / " + total, 26, 74);
+    fill(180, 200, 220); textSize(13); text("verpasst " + G.missed + " · Stürze " + G.crashes, 26, 95);
+    // Fortschritt oben in der Mitte
+    fill(0, 0, 0, 40); rect(CONFIG.W / 2 - 150, 16, 300, 8, 4);
+    fill(...THEME.accent); rect(CONFIG.W / 2 - 150, 16, 300 * done / total, 8, 4);
+  } else {
+    textSize(12); fill(180, 200, 220); text("PUNKTE", 26, 22);
+    fill(...THEME.hudText); textStyle(BOLD); textSize(30); text(G.score, 26, 36);
+    textStyle(NORMAL); textSize(20); fill(235, 60, 80);
+    let h = "";
+    for (let i = 0; i &lt; CONFIG.HEARTS; i++) h += i &lt; G.hearts ? "♥ " : "♡ ";
+    text(h, 26, 70);
+    fill(180, 200, 220); textSize(13); text("Strecke " + Math.floor(G.scrollY / 20) + " m", 26, 97);
+  }
+  pop();
+}
+
+function panel(cx, cy, w, h) {
+  noStroke(); fill(12, 28, 48, 225);
+  rect(cx - w / 2, cy - h / 2, w, h, 18);
+}
+
+function drawTitle() {
+  push();
+  fill(10, 25, 45, 90); noStroke(); rect(0, 0, CONFIG.W, CONFIG.H);
+  const cx = CONFIG.W / 2;
+  panel(cx, 315, 620, 430);
+  fill(255); textAlign(CENTER, CENTER); textStyle(BOLD); textSize(34);
+  text("⛷ " + CONFIG.TITLE, cx, 145);
+  textStyle(NORMAL); textSize(16); fill(190, 210, 230);
+  text("Wähle deinen Modus", cx, 185);
+
+  const raceBest = loadBest("race"), endBest = loadBest("endless");
+  const cards = [
+    { mode: "race", x: cx - 260, title: "🏁 Rennen",
+      lines: [CONFIG.GATES_TOTAL + " Tore auf Zeit", "Tor verpasst = +" + CONFIG.MISS_PENALTY_S + " s", "Sturz = +" + CONFIG.CRASH_PENALTY_S + " s"],
+      best: raceBest == null ? "Noch keine Bestzeit" : "Bestzeit: " + fmt(raceBest) },
+    { mode: "endless", x: cx + 10, title: "♾ Endlos",
+      lines: ["Fahr so weit du kannst", CONFIG.HEARTS + " Herzen", "Tor = 10 Punkte"],
+      best: endBest == null ? "Noch kein Rekord" : "Rekord: " + endBest + " Punkte" },
+  ];
+  G.buttons = [];
+  for (const c of cards) {
+    const y = 215, w = 250, h = 160, on = G.sel === c.mode;
+    G.buttons.push({ mode: c.mode, x: c.x, y, w, h });
+    if (on) { stroke(...THEME.accent); strokeWeight(3); } else noStroke();
+    fill(on ? 40 : 28, on ? 70 : 50, on ? 115 : 82);
+    rect(c.x, y, w, h, 14);
+    noStroke(); fill(255); textStyle(BOLD); textSize(22); textAlign(LEFT, TOP);
+    text(c.title, c.x + 18, y + 16);
+    textStyle(NORMAL); textSize(14); fill(200, 218, 236);
+    c.lines.forEach((l, i) =&gt; text(l, c.x + 18, y + 54 + i * 20));
+    fill(...THEME.accent); textSize(13); text(c.best, c.x + 18, y + 128);
+  }
+
+  textAlign(CENTER, CENTER); fill(255); textSize(15); textStyle(BOLD);
+  text("Leertaste = Start  ·  E = Modus wechseln  ·  oder Karte antippen", cx, 410);
+  textStyle(NORMAL); fill(170, 192, 215); textSize(13);
+  text("Lenken: ← →  oder  A / D  ·  Tablet: mit dem Finger lenken  ·  M = Ton  ·  R = Neustart  ·  Esc = Menü", cx, 440);
+  text("Neben der Piste ist Tiefschnee – da wirst du langsamer!", cx, 490);
+  pop();
+}
+
+function drawCountdown() {
+  const n = Math.ceil(G.countdown);
+  const f = G.countdown - Math.floor(G.countdown);
+  push();
+  textAlign(CENTER, CENTER); textStyle(BOLD); textSize(110 + f * 40);
+  stroke(15, 32, 52); strokeWeight(8); fill(255);
+  text(n, CONFIG.W / 2, CONFIG.H / 2);
+  textSize(16); strokeWeight(4); text("Bereit machen …", CONFIG.W / 2, CONFIG.H / 2 + 90);
+  pop();
+}
+
+function drawGo() {
+  push();
+  const a = Math.min(1, G.goFlash / 0.8) * 255;
+  textAlign(CENTER, CENTER); textStyle(BOLD); textSize(90);
+  stroke(15, 32, 52, a); strokeWeight(8); fill(...THEME.accent, a);
+  text("LOS!", CONFIG.W / 2, CONFIG.H / 2);
+  pop();
+}
+
+function drawFinish() {
+  const r = G.result, cx = CONFIG.W / 2;
+  push();
+  panel(cx, 330, 480, 340);
+  textAlign(CENTER, CENTER); fill(255); textStyle(BOLD); textSize(38);
+  text("🏁 ZIEL!", cx, 200);
+  fill(...THEME.accent); textSize(56); text(fmt(r.time), cx, 265);
+  textStyle(NORMAL); fill(200, 218, 236); textSize(16);
+  text("Fahrzeit " + fmt(r.raw) + "   +   Strafen " + fmt(r.penalty), cx, 318);
+  text(r.passed + " Tore geschafft · " + r.missed + " verpasst · " + r.crashes + " Stürze", cx, 344);
+  textStyle(BOLD); textSize(20);
+  if (r.newBest) { fill(...THEME.accent); text("★ Neue Bestzeit! ★", cx, 390); }
+  else { fill(255); text("Bestzeit: " + fmt(r.best), cx, 390); }
+  textStyle(NORMAL); fill(170, 192, 215); textSize(14);
+  text("Leertaste oder Tippen = nochmal  ·  Esc = Menü", cx, 450);
+  pop();
+}
+
+function drawOver() {
+  const r = G.result, cx = CONFIG.W / 2;
+  push();
+  panel(cx, 320, 460, 300);
+  textAlign(CENTER, CENTER); fill(255); textStyle(BOLD); textSize(32);
+  text("Keine Herzen mehr!", cx, 210);
+  fill(...THEME.accent); textSize(56); text(r.score + " Punkte", cx, 280);
+  textStyle(BOLD); textSize(20);
+  if (r.newBest) { fill(...THEME.accent); text("★ Neuer Rekord! ★", cx, 345); }
+  else { fill(255); text("Rekord: " + r.best + " Punkte", cx, 345); }
+  textStyle(NORMAL); fill(170, 192, 215); textSize(14);
+  text("Leertaste oder Tippen = nochmal  ·  Esc = Menü", cx, 420);
+  pop();
+}
+
+function drawBroken() {
+  if (!G.broken.length) return;
+  push();
+  noStroke(); fill(255, 235, 235, 230); rect(12, CONFIG.H - 40, 520, 28, 8);
+  fill(180, 30, 30); textAlign(LEFT, CENTER); textSize(13);
+  text("⚠ Ausgeschaltet wegen Fehler: " + G.broken.join(", ") + " (Details in der Konsole)", 22, CONFIG.H - 26);
+  pop();
+}
+
+function drawMute() {
+  push();
+  textAlign(RIGHT, TOP); textSize(22); noStroke(); fill(0, 0, 0, 120);
+  text(G.muted ? "🔇" : "🔊", CONFIG.W - 16, 14);
+  pop();
+}
+
+// --- p5 ----------------------------------------------------------------
+function fitCanvas() {
+  const s = Math.min(window.innerWidth / CONFIG.W, window.innerHeight / CONFIG.H) * 0.98;
+  cnv.elt.style.width = Math.floor(CONFIG.W * s) + "px";
+  cnv.elt.style.height = Math.floor(CONFIG.H * s) + "px";
+}
+
+function setup() {
+  cnv = createCanvas(CONFIG.W, CONFIG.H);
+  textFont("system-ui");
+  fitCanvas();
+  bindPointer();
+  prepareRun("race");
+  G.state = "title";
+}
+
+function windowResized() { fitCanvas(); }
+
+function draw() {
+  stepGame(Math.min(deltaTime / 1000, 1 / 30));
+  renderGame();
+}
+
+// --- Test-Zugang (für Trainer:innen und automatische Checks) -------------
+window.__ski = {
+  CONFIG, G, get COURSE() { return COURSE; },
+  start: (mode) =&gt; startRun(mode || "race"),
+  toTitle,
+  snapshot() {
+    const P = G.player;
+    return {
+      state: G.state, mode: G.mode, time: G.raceTime + G.penalty, raceTime: G.raceTime, penalty: G.penalty,
+      passed: G.passed, missed: G.missed, crashes: G.crashes, hearts: G.hearts, score: G.score,
+      scrollY: G.scrollY, speed: G.speed,
+      player: { x: P.x, wy: P.wy, vx: P.vx, offPiste: P.offPiste, fallen: P.fallTimer &gt; 0 },
+      result: G.result,
+    };
+  },
+  // Spiel ohne Zeichnen vorspulen: opts = { dt, input (-1/0/1), autopilot }
+  sim(seconds, opts = {}) {
+    const dt = opts.dt || 1 / 60;
+    const prevF = G.forcedInput, prevA = G.autopilot;
+    if ("input" in opts) G.forcedInput = opts.input;
+    if (opts.autopilot) G.autopilot = true;
+    const n = Math.round(seconds / dt);
+    for (let i = 0; i &lt; n; i++) stepGame(dt);
+    G.forcedInput = prevF; G.autopilot = prevA;
+    return this.snapshot();
+  },
+};
+&lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+</textarea>
+<!-- Demo: Kopie von skirennen-v3.html (mit build-Skript erzeugt) -->
+<textarea id="demoGameSrc" hidden>&lt;!doctype html&gt;
+&lt;html lang="de"&gt;
+&lt;head&gt;
+&lt;meta charset="utf-8"&gt;
+&lt;meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no"&gt;
+&lt;title&gt;Skirennen v3 – Demo&lt;/title&gt;
+&lt;script src="https://cdn.jsdelivr.net/npm/p5@1.9.0/lib/p5.min.js"&gt;&lt;/script&gt;
+&lt;style&gt;
+  html, body { margin: 0; height: 100%; overflow: hidden; background: #0f1d2b; touch-action: none; }
+  body { display: flex; align-items: center; justify-content: center; }
+  main { line-height: 0; }
+  canvas { display: block; border-radius: 10px; box-shadow: 0 8px 30px rgba(0,0,0,.45); }
+  /* Tablet: kein Markieren, keine Lupe und kein Menü bei langem Drücken */
+  html, body, canvas { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; -webkit-tap-highlight-color: transparent; }
+  .rotate { display: none; position: fixed; top: 16px; left: 16px; right: 16px; text-align: center;
+            color: #cfe3f5; font: 600 16px system-ui, Arial, sans-serif; }
+  @media (orientation: portrait) and (max-width: 1100px) { .rotate { display: block; } }
+&lt;/style&gt;
+&lt;/head&gt;
+&lt;body&gt;
+&lt;div class="rotate"&gt;📱↻ Bitte das Handy oder Tablet quer halten&lt;/div&gt;
+&lt;script&gt;
+// =====================================================================
+// 1) EINSTELLUNGEN – alle Zahlen des Spiels an einem Ort
+// =====================================================================
+const CONFIG = {
+  TITLE: "Skirennen – Demo",
+  W: 900, H: 630,              // Spielfeld (Koordinaten bleiben immer 900×630)
+  SEED: 2026,                  // gleiche Zahl = gleiche Strecke für alle
+
+  GATES_TOTAL: 25,             // Tore im Rennen
+  GATE_SPACING: 330,           // Abstand zwischen Toren (Pixel)
+  GATE_WIDTH: 150,             // Breite eines Tors
+  FIRST_GATE_Y: 700,
+  POLE_R: 6,
+
+  MISS_PENALTY_S: 2,           // Tor verpasst = +2 Sekunden
+  CRASH_PENALTY_S: 1.5,        // Sturz = +1.5 Sekunden
+  FALL_S: 1.0,                 // so lange liegt man nach einem Sturz
+  GHOST_S: 1.2,                // danach kurz unverwundbar
+  HEARTS: 3,                   // Herzen im Endlos-Modus
+
+  PLAYER_Y: 190,               // Höhe des Skifahrers auf dem Bildschirm
+  PLAYER_SIZE: 24,
+  SPEED_START: 230,            // Pixel pro Sekunde
+  SPEED_PER_GATE: 7,
+  SPEED_MAX: 430,
+  DEEP_SNOW_MULT: 0.6,         // neben der Piste: 60 % Tempo
+
+  STEER_ACCEL: 3200,
+  STEER_FRICTION: 3.2,
+  STEER_MAX: 480,
+  TOUCH_FOLLOW: true,          // Tablet: Skifahrer folgt dem Finger (false = linke/rechte Hälfte halten)
+
+  TRACK_HALF: 165,             // halbe Pistenbreite
+  BAND_LEFT: 0.17, BAND_RIGHT: 0.83,
+  TREE_EVERY: 42,
+};
+
+// =====================================================================
+// 2) HIER DARFST DU ÄNDERN – Aussehen, Figur, Extras, Ereignisse
+// =====================================================================
+// DEMO-VERSION: Alles Neue steht nur in diesem Bereich. Der Spiel-Motor
+// ist genau gleich wie im Basis-Spiel – das alles geht also auch mit Prompts!
+
+// --- Farben ---------------------------------------------------------
+const THEME = {
+  snow:      [250, 252, 255],
+  deepSnow:  [226, 236, 247],
+  sparkle:   [200, 216, 236],
+  corduroy:  [238, 243, 250],
+  pisteEdge: [170, 190, 212],
+  trail:     [200, 214, 232],
+  gateA:     [40, 90, 220],
+  gateB:     [220, 40, 40],
+  pole:      [80, 80, 80],
+  trunk:     [120, 72, 36],
+  tree:      [30, 135, 70],
+  treeDark:  [18, 98, 50],
+  hudBg:     [15, 32, 52, 215],
+  hudText:   [255, 255, 255],
+  accent:    [255, 190, 40],
+};
+
+// --- Die Spielfigur -------------------------------------------------
+// p = { x, y, s (Grösse), lean (-1 links … 1 rechts), fallen, offPiste }
+function drawPlayer(p) {
+  translate(p.x, p.y);
+  rotate(p.fallen ? (p.lean &gt;= 0 ? 1.4 : -1.4) : p.lean * 0.35);
+  const s = p.s;
+  // Ski
+  stroke(30); strokeWeight(3); strokeCap(ROUND);
+  line(-s * 0.32, -s * 0.5, -s * 0.32, s * 0.95);
+  line( s * 0.32, -s * 0.5,  s * 0.32, s * 0.95);
+  // Stöcke
+  stroke(90); strokeWeight(1.5);
+  line(-s * 0.55, -s * 0.05, -s * 0.85, -s * 0.85);
+  line( s * 0.55, -s * 0.05,  s * 0.85, -s * 0.85);
+  // Schal – weht gegen die Lenkrichtung
+  const w = -p.lean, flattern = Math.sin(frameCount * 0.4) * s * 0.08;
+  stroke(255, 200, 40); strokeWeight(s * 0.18);
+  line(0, -s * 0.45, s * (0.35 + w * 0.5), -s * 0.2);
+  line(s * (0.35 + w * 0.5), -s * 0.2, s * (0.6 + w * 0.7), -s * 0.05 + flattern);
+  // Jacke
+  noStroke(); fill(230, 60, 60); ellipse(0, 0, s * 1.0, s * 1.2);
+  fill(255, 255, 255, 120); rect(-s * 0.06, -s * 0.5, s * 0.12, s * 0.9, 2);
+  // Kopf, Skibrille, Mütze, Bommel
+  fill(255, 220, 170); ellipse(0, -s * 0.75, s * 0.6, s * 0.6);
+  fill(40); rect(-s * 0.3, -s * 0.8, s * 0.6, s * 0.17, 3);
+  fill(255, 170, 40); rect(-s * 0.24, -s * 0.78, s * 0.48, s * 0.12, 3);
+  fill(40, 110, 230); arc(0, -s * 0.82, s * 0.66, s * 0.6, PI, TWO_PI);
+  fill(255);          ellipse(0, -s * 1.12, s * 0.22, s * 0.22);
+}
+
+// --- Extras: neue Dinge im Spiel ------------------------------------
+// Jedes Extra ist ein Objekt mit (alle optional):
+//   name, spawn(welt), update(dt, welt), draw(welt), hits(spieler, welt) → true = Sturz
+// "welt" kennt: player, scrollY, speed, state, toScreenY(wy), trackBounds(wy),
+//               trackCenter(wy), rnd(), popup(text, x, y, farbe), addScore(n)
+// Wenn ein Extra einen Fehler hat, wird nur dieses Extra ausgeschaltet.
+const EXTRAS = [];
+
+// Kleine Helfer für die Extras -----------------------------------------
+// Sucht einen Platz im Tiefschnee neben der Piste (links oder rechts).
+function platzImTiefschnee(welt, wy, abstand, rand) {
+  const b = welt.trackBounds(wy);
+  const seiten = welt.rnd() &lt; 0.5 ? ["L", "R"] : ["R", "L"];
+  const r = welt.rnd();
+  for (const seite of seiten) {
+    const lo = seite === "L" ? rand : b.right + abstand;
+    const hi = seite === "L" ? b.left - abstand : CONFIG.W - rand;
+    if (hi - lo &gt; 10) return { x: lo + r * (hi - lo), seite, lo, hi };
+  }
+  return null;
+}
+// Ist die Fläche frei von Bäumen? (liest die Bäume nur, ändert nichts)
+// x, wy = unten in der Mitte, breite/hoehe = Grösse des Dings
+function keinBaumNah(x, wy, breite, hoehe) {
+  for (const t of COURSE.trees) {
+    if (Math.abs(t.x - x) &lt; breite / 2 + t.r * 0.6 &amp;&amp; t.wy &gt; wy - hoehe - 10 &amp;&amp; t.wy - t.r * 1.4 &lt; wy + 6) return false;
+  }
+  return true;
+}
+// Probiert ein paar Plätze im Tiefschnee, bis einer frei ist.
+function freierPlatz(welt, wy, abstand, rand, breite, hoehe) {
+  for (let versuch = 0; versuch &lt; 8; versuch++) {
+    const p = platzImTiefschnee(welt, wy, abstand + breite / 2, rand + breite / 2);
+    if (p &amp;&amp; keinBaumNah(p.x, wy, breite, hoehe)) return p;
+  }
+  return null;
+}
+// Füllt die Liste ex.items bis unter den Bildschirm und räumt oben auf.
+function nachfuellen(ex, welt, abstand, neu) {
+  while (ex.nextWY &lt; welt.scrollY + CONFIG.H + 200) {
+    const ding = neu(ex.nextWY);
+    if (ding) ex.items.push(ding);
+    ex.nextWY += abstand * (0.7 + welt.rnd() * 0.6);
+  }
+  ex.items = ex.items.filter((d) =&gt; d.wy &gt; welt.scrollY - 150);
+}
+function aufBildschirm(y) { return y &gt; -80 &amp;&amp; y &lt; CONFIG.H + 80; }
+
+// Zähler, die mehrere Extras und Ereignisse benutzen
+let kombo = 0;
+let sterne = 0;
+
+// --- Skihütten &amp; Bergbeizli ---------------------------------------------
+const HUETTEN = {
+  name: "Skihütten",
+  items: [], nextWY: 0,
+  spawn(welt) { this.items = []; this.nextWY = 420; this.update(0, welt); },
+  update(dt, welt) {
+    nachfuellen(this, welt, 700, (wy) =&gt; {
+      const gross = welt.rnd() &lt; 0.4;
+      const p = gross ? freierPlatz(welt, wy, 20, 10, 150, 70) : freierPlatz(welt, wy, 20, 10, 60, 60);
+      return p ? { x: p.x, wy, gross } : null;
+    });
+  },
+  draw(welt) {
+    for (const h of this.items) {
+      const y = welt.toScreenY(h.wy);
+      if (!aufBildschirm(y)) continue;
+      push(); translate(h.x, y);
+      const w = h.gross ? 96 : 50, hh = h.gross ? 40 : 32;
+      // Rauch aus dem Kamin
+      noStroke();
+      for (let i = 0; i &lt; 4; i++) {
+        const t = (millis() / 1400 + i / 4) % 1;
+        fill(235, 238, 242, 200 * (1 - t));
+        circle(w * 0.28 + Math.sin(t * 6 + i) * 4, -hh - 26 - t * 40, 8 + t * 14);
+      }
+      fill(90, 60, 50); rect(w * 0.22, -hh - 28, 9, 16);
+      // Haus
+      fill(150, 95, 55); rect(-w / 2, -hh, w, hh, 2);
+      stroke(120, 75, 40); strokeWeight(1);
+      for (let k = 1; k &lt; 4; k++) line(-w / 2, -hh + k * hh / 4, w / 2, -hh + k * hh / 4);
+      noStroke();
+      fill(170, 40, 40); triangle(-w / 2 - 8, -hh, w / 2 + 8, -hh, 0, -hh - 26);
+      fill(255); triangle(-w / 2 - 4, -hh - 2, w / 2 + 4, -hh - 2, 0, -hh - 20);
+      fill(170, 40, 40); triangle(-w / 2 + 6, -hh - 4, w / 2 - 6, -hh - 4, 0, -hh - 16);
+      // Tür und Fenster mit Licht
+      fill(80, 50, 30); rect(-6, -18, 12, 18, 2);
+      fill(255, 220, 110); rect(-w / 2 + 6, -hh + 8, 10, 9, 1); rect(w / 2 - 16, -hh + 8, 10, 9, 1);
+      if (h.gross) {
+        // Schild und Sonnenschirme
+        fill(255); rect(-30, -hh - 2, 60, 13, 3);
+        fill(150, 40, 40); textAlign(CENTER, CENTER); textSize(9); textStyle(BOLD);
+        text("BERGBEIZLI", 0, -hh + 4.5); textStyle(NORMAL);
+        for (const sx of [-w / 2 - 22, w / 2 + 22]) {
+          fill(110); rect(sx - 1, -24, 2, 24);
+          fill(220, 40, 40); arc(sx, -22, 34, 22, PI, TWO_PI);
+          fill(255); arc(sx, -22, 12, 22, PI, TWO_PI);
+          fill(140, 95, 60); rect(sx - 8, -8, 16, 3);
+        }
+      }
+      pop();
+    }
+  },
+};
+EXTRAS.push(HUETTEN);
+
+// --- Tiere im Tiefschnee: Bergziege, Murmeltier, Hase --------------------
+const TIERE = {
+  name: "Tiere",
+  items: [], nextWY: 0,
+  spawn(welt) { this.items = []; this.nextWY = 300; this.update(0, welt); },
+  update(dt, welt) {
+    nachfuellen(this, welt, 480, (wy) =&gt; {
+      const p = freierPlatz(welt, wy, 20, 10, 36, 30);
+      if (!p) return null;
+      const r = welt.rnd();
+      const art = r &lt; 0.35 ? "ziege" : r &lt; 0.7 ? "murmeltier" : "hase";
+      return { art, x: p.x, wy, lo: p.lo, hi: p.hi, h: 0, vx: welt.rnd() &lt; 0.5 ? -45 : 45, phase: welt.rnd() * 6 };
+    });
+    for (const t of this.items) {
+      if (t.art === "murmeltier") {
+        // taucht auf, wenn du in der Nähe bist
+        const ziel = Math.abs(welt.player.wy - t.wy) &lt; 260 ? 1 : 0;
+        t.h += (ziel - t.h) * Math.min(1, dt * 5);
+      }
+      if (t.art === "hase") {
+        t.x += t.vx * dt;
+        if (t.x &lt; t.lo || t.x &gt; t.hi) { t.vx = -t.vx; t.x = constrain(t.x, t.lo, t.hi); }
+      }
+    }
+  },
+  draw(welt) {
+    const zeit = millis() / 1000;
+    for (const t of this.items) {
+      const y = welt.toScreenY(t.wy);
+      if (!aufBildschirm(y)) continue;
+      push(); translate(t.x, y); noStroke();
+      if (t.art === "ziege") {
+        const nick = Math.sin(zeit * 2 + t.phase) * 2;
+        fill(0, 0, 0, 25); ellipse(0, 2, 30, 7);
+        fill(245, 240, 230); ellipse(0, -12, 26, 14);
+        stroke(120); strokeWeight(2);
+        line(-8, -6, -8, 2); line(-3, -6, -3, 2); line(4, -6, 4, 2); line(9, -6, 9, 2);
+        noStroke(); fill(240, 235, 225); ellipse(14, -20 + nick, 11, 9);
+        stroke(90); strokeWeight(2); noFill();
+        arc(12, -26 + nick, 10, 10, PI, PI + HALF_PI);
+        noStroke(); fill(30); circle(16, -21 + nick, 2);
+        fill(200); triangle(15, -16 + nick, 19, -16 + nick, 17, -11 + nick);
+      } else if (t.art === "murmeltier") {
+        fill(110, 90, 75); ellipse(0, 0, 26, 9);
+        if (t.h &gt; 0.05) {
+          const hh = 18 * t.h;
+          fill(160, 115, 70); rect(-6, -hh, 12, hh, 6, 6, 0, 0);
+          fill(140, 100, 60); circle(0, -hh, 12);
+          fill(30); circle(-2.5, -hh - 1, 2); circle(2.5, -hh - 1, 2);
+          fill(255); rect(-1.5, -hh + 3, 3, 2);
+        }
+      } else {
+        const hop = Math.abs(Math.sin(zeit * 9 + t.phase)) * 7;
+        const dir = t.vx &gt; 0 ? 1 : -1;
+        fill(0, 0, 0, 20); ellipse(0, 2, 16, 4);
+        fill(250); ellipse(0, -6 - hop, 16, 11);
+        circle(7 * dir, -12 - hop, 9);
+        ellipse(5 * dir, -20 - hop, 4, 11); ellipse(8 * dir, -20 - hop, 4, 11);
+        fill(255, 190, 200); ellipse(5 * dir, -20 - hop, 2, 7);
+        fill(30); circle(9 * dir, -13 - hop, 1.8);
+      }
+      pop();
+    }
+  },
+};
+EXTRAS.push(TIERE);
+
+// --- Publikum: Zuschauer an der Piste und im Zielbereich -----------------
+const PUBLIKUM = {
+  name: "Publikum",
+  items: [], nextWY: 0, jubel: 0,
+  farben: [[230, 60, 60], [40, 110, 230], [40, 170, 90], [255, 190, 40], [160, 70, 200], [255, 120, 30]],
+  neueGruppe(welt, wy, seite, anzahl, reihen) {
+    const leute = [];
+    for (let i = 0; i &lt; anzahl; i++) {
+      leute.push({
+        dwy: Math.floor(i / reihen) * 26 + (i % reihen) * 13, reihe: i % reihen,
+        jacke: this.farben[Math.floor(welt.rnd() * this.farben.length)],
+        muetze: this.farben[Math.floor(welt.rnd() * this.farben.length)],
+        fahne: welt.rnd() &lt; 0.25, phase: welt.rnd() * 6,
+      });
+    }
+    return { wy, seite, leute, laenge: Math.ceil(anzahl / reihen) * 26 };
+  },
+  spawn(welt) {
+    this.items = []; this.jubel = 0;
+    this.nextWY = 900;
+    // Im Rennen: viele Zuschauer links und rechts vor dem Ziel
+    if (G.mode === "race") {
+      for (const seite of ["left", "right"]) {
+        for (let k = 0; k &lt; 4; k++) {
+          const gruppe = this.neueGruppe(welt, COURSE.finishY - 480 + k * 230, seite, 16, 2);
+          gruppe.ziel = true;
+          this.items.push(gruppe);
+        }
+      }
+    }
+    this.update(0, welt);
+  },
+  update(dt, welt) {
+    this.jubel = Math.max(0, this.jubel - dt);
+    const ziel = this.items.filter((g) =&gt; g.ziel);
+    this.items = this.items.filter((g) =&gt; !g.ziel);
+    nachfuellen(this, welt, 1100, (wy) =&gt; {
+      if (G.mode === "race" &amp;&amp; wy &gt; COURSE.finishY - 700) return null;   // Ziel hat eigene Zuschauer
+      return this.neueGruppe(welt, wy, welt.rnd() &lt; 0.5 ? "left" : "right", 4 + Math.floor(welt.rnd() * 4), 2);
+    });
+    this.items.push(...ziel);
+  },
+  draw(welt) {
+    const P = welt.player, zeit = millis() / 1000;
+    for (const g of this.items) {
+      const y0 = welt.toScreenY(g.wy);
+      if (y0 &gt; CONFIG.H + 60 || y0 + g.laenge &lt; -60) continue;
+      const aussen = g.seite === "left" ? -1 : 1;
+      // Absperrung (orange Netz) entlang der Piste
+      stroke(255, 120, 30); strokeWeight(3); noFill();
+      beginShape();
+      for (let d = -10; d &lt;= g.laenge + 10; d += 10) {
+        vertex(welt.trackBounds(g.wy + d)[g.seite] + aussen * 12, y0 + d);
+      }
+      endShape();
+      stroke(90); strokeWeight(2);
+      for (let d = -10; d &lt;= g.laenge + 10; d += 30) {
+        const x = welt.trackBounds(g.wy + d)[g.seite] + aussen * 12;
+        line(x, y0 + d + 3, x, y0 + d - 7);
+      }
+      noStroke();
+      for (const m of g.leute) {
+        const wy = g.wy + m.dwy, y = welt.toScreenY(wy);
+        if (!aufBildschirm(y)) continue;
+        const x = welt.trackBounds(wy)[g.seite] + aussen * (26 + m.reihe * 16);
+        const nah = Math.abs(P.wy - wy) &lt; 220 || this.jubel &gt; 0 || welt.state === "finish";
+        const hopp = nah ? Math.abs(Math.sin(zeit * 9 + m.phase)) * 5 : 0;
+        push(); translate(x, y - hopp);
+        fill(...m.jacke); ellipse(0, 0, 13, 15);
+        fill(255, 220, 170); circle(0, -10, 9);
+        fill(...m.muetze); arc(0, -11, 10, 9, PI, TWO_PI);
+        stroke(...m.jacke); strokeWeight(3);
+        if (nah) { line(-5, -3, -8, -15); line(5, -3, 8, -15); }
+        else     { line(-5, -2, -7, 5);   line(5, -2, 7, 5); }
+        if (m.fahne) {
+          stroke(80); strokeWeight(1.5); line(8, -15, 8, -32);
+          noStroke(); fill(220, 30, 30); rect(8, -32, 14, 10);
+          fill(255); rect(13, -30, 4, 6); rect(12, -28, 6, 2);
+        }
+        noStroke(); pop();
+      }
+    }
+  },
+};
+EXTRAS.push(PUBLIKUM);
+
+// --- Sterne sammeln auf der Piste ------------------------------------------
+const STERNE = {
+  name: "Sterne",
+  items: [], nextWY: 0,
+  spawn(welt) { this.items = []; sterne = 0; this.nextWY = CONFIG.FIRST_GATE_Y + CONFIG.GATE_SPACING / 2; this.update(0, welt); },
+  update(dt, welt) {
+    while (this.nextWY &lt; welt.scrollY + CONFIG.H + 200) {
+      if (G.mode === "endless" || this.nextWY &lt; COURSE.finishY - 200) {
+        const c = welt.trackCenter(this.nextWY);
+        this.items.push({ x: c + (welt.rnd() - 0.5) * CONFIG.TRACK_HALF * 1.1, wy: this.nextWY, weg: false });
+      }
+      this.nextWY += CONFIG.GATE_SPACING;
+    }
+    const P = welt.player;
+    for (const s of this.items) {
+      if (!s.weg &amp;&amp; P.fallTimer &lt;= 0 &amp;&amp; dist(P.x, P.wy, s.x, s.wy) &lt; 24) {
+        s.weg = true; sterne++;
+        welt.addScore(5);
+        welt.popup("⭐", s.x, welt.toScreenY(s.wy) - 20, [255, 170, 0]);
+        SFX.tone(1320, 0.08, "triangle", 0.08); SFX.tone(1760, 0.1, "triangle", 0.07, null, 0.06);
+      }
+    }
+    this.items = this.items.filter((s) =&gt; s.wy &gt; welt.scrollY - 60);
+  },
+  draw(welt) {
+    const zeit = millis() / 1000;
+    for (const s of this.items) {
+      if (s.weg) continue;
+      const y = welt.toScreenY(s.wy);
+      if (!aufBildschirm(y)) continue;
+      push(); translate(s.x, y); rotate(zeit * 1.5);
+      noStroke(); fill(255, 220, 60, 70); circle(0, 0, 30 + Math.sin(zeit * 6) * 4);
+      fill(255, 200, 0); stroke(200, 130, 0); strokeWeight(1.5);
+      beginShape();
+      for (let i = 0; i &lt; 10; i++) {
+        const r = i % 2 ? 5 : 12, a = -HALF_PI + i * PI / 5;
+        vertex(Math.cos(a) * r, Math.sin(a) * r);
+      }
+      endShape(CLOSE);
+      pop();
+    }
+  },
+};
+EXTRAS.push(STERNE);
+
+// --- Der Bär: kommt von hinten den Hang hinunter --------------------------
+const BAER = {
+  name: "Bär",
+  bear: null, timer: 0,
+  spawn(welt) { this.bear = null; this.timer = 10 + welt.rnd() * 6; },
+  update(dt, welt) {
+    if (!this.bear) {
+      this.timer -= dt;
+      if (this.timer &lt;= 0) {
+        this.bear = { x: welt.player.x, wy: welt.scrollY - 60 };
+        this.timer = 12 + welt.rnd() * 8;
+      }
+      return;
+    }
+    const b = this.bear;
+    b.wy += (welt.speed + 70) * dt;
+    const dx = welt.player.x - b.x;
+    b.x += Math.sign(dx) * Math.min(Math.abs(dx), 90 * dt);
+    if (b.wy &gt; welt.scrollY + CONFIG.H + 60) this.bear = null;
+  },
+  hits(spieler, welt) {
+    return !!this.bear &amp;&amp; dist(this.bear.x, this.bear.wy, spieler.x, spieler.wy) &lt; 22;
+  },
+  draw(welt) {
+    // Warnung kurz bevor der Bär kommt
+    if (!this.bear &amp;&amp; this.timer &lt; 1.3 &amp;&amp; welt.state === "run" &amp;&amp; Math.floor(millis() / 150) % 2) {
+      noStroke(); fill(220, 40, 40, 220); rect(welt.player.x - 32, 6, 64, 26, 8);
+      fill(255); textAlign(CENTER, CENTER); textSize(16); text("⚠ 🐻", welt.player.x, 19);
+    }
+    if (!this.bear) return;
+    const b = this.bear, y = welt.toScreenY(b.wy), lauf = Math.sin(millis() / 60) * 4;
+    push(); translate(b.x, y); noStroke();
+    fill(0, 0, 0, 30); ellipse(0, 18, 34, 10);
+    fill(95, 60, 30);
+    ellipse(-9, 10 + lauf, 9, 12); ellipse(9, 10 - lauf, 9, 12);
+    ellipse(0, 0, 32, 28);
+    circle(0, 15, 20);
+    circle(-8, 22, 8); circle(8, 22, 8);
+    fill(200, 160, 110); ellipse(0, 19, 10, 7);
+    fill(20); circle(0, 17, 4); circle(-4, 12, 3); circle(4, 12, 3);
+    pop();
+  },
+};
+EXTRAS.push(BAER);
+
+// --- Adler: fliegt ab und zu über die Piste -------------------------------
+const ADLER = {
+  name: "Adler",
+  vogel: null, timer: 0,
+  spawn(welt) { this.vogel = null; this.timer = 5 + welt.rnd() * 5; },
+  update(dt, welt) {
+    if (!this.vogel) {
+      this.timer -= dt;
+      if (this.timer &lt;= 0) {
+        const vonLinks = welt.rnd() &lt; 0.5;
+        this.vogel = { x: vonLinks ? -40 : CONFIG.W + 40, y: 80 + welt.rnd() * 220, vx: vonLinks ? 170 : -170 };
+        this.timer = 14 + welt.rnd() * 10;
+      }
+      return;
+    }
+    this.vogel.x += this.vogel.vx * dt;
+    this.vogel.y += Math.sin(this.vogel.x * 0.02) * 20 * dt;
+    if (this.vogel.x &lt; -60 || this.vogel.x &gt; CONFIG.W + 60) this.vogel = null;
+  },
+  draw(welt) {
+    if (!this.vogel) return;
+    const v = this.vogel, flap = Math.sin(millis() / 90) * 9, dir = v.vx &gt; 0 ? 1 : -1;
+    noStroke(); fill(60, 80, 110, 35); ellipse(v.x - 30 * dir, v.y + 90, 40, 9);   // Schatten
+    push(); translate(v.x, v.y);
+    stroke(70, 45, 25); strokeWeight(4); noFill();
+    line(0, 0, -18, -6 - flap); line(-18, -6 - flap, -30, -2 - flap * 1.4);
+    line(0, 0, 18, -6 - flap);  line(18, -6 - flap, 30, -2 - flap * 1.4);
+    noStroke(); fill(80, 50, 25); ellipse(0, 0, 22 * dir, 9);
+    fill(250); circle(10 * dir, -2, 8);
+    fill(255, 190, 30); triangle(13 * dir, -3, 13 * dir, 0, 18 * dir, -1);
+    pop();
+  },
+};
+EXTRAS.push(ADLER);
+
+// --- Schneefall -----------------------------------------------------------
+const SCHNEEFALL = {
+  name: "Schneefall",
+  flakes: [],
+  spawn(welt) {
+    this.flakes = [];
+    for (let i = 0; i &lt; 110; i++) {
+      this.flakes.push({ x: welt.rnd() * CONFIG.W, y: welt.rnd() * CONFIG.H, v: 25 + welt.rnd() * 45, r: 2 + welt.rnd() * 3 });
+    }
+  },
+  update(dt, welt) {
+    for (const f of this.flakes) {
+      f.y += f.v * dt;
+      f.x += Math.sin(f.y * 0.02) * 12 * dt;
+      if (f.y &gt; CONFIG.H) { f.y = -5; f.x = welt.rnd() * CONFIG.W; }
+    }
+  },
+  draw(welt) {
+    noStroke(); fill(170, 195, 225, 200);
+    for (const f of this.flakes) circle(f.x, f.y, f.r);
+  },
+};
+EXTRAS.push(SCHNEEFALL);
+
+// --- Feuerwerk im Ziel ----------------------------------------------------
+// Läuft in draw(), weil update() nach dem Ziel nicht mehr aufgerufen wird.
+const FEUERWERK = {
+  name: "Feuerwerk",
+  aktiv: false, t: 0, naechste: 0, raketen: [], funken: [],
+  spawn(welt) { this.aktiv = false; this.raketen = []; this.funken = []; },
+  start() { this.aktiv = true; this.t = 0; this.naechste = 0; },
+  draw(welt) {
+    if (!this.aktiv) return;
+    const dt = Math.min(deltaTime / 1000, 0.05);
+    this.t += dt;
+    this.naechste -= dt;
+    if (this.t &lt; 6 &amp;&amp; this.naechste &lt;= 0) {
+      this.naechste = 0.35;
+      // links und rechts vom Ergebnis-Fenster
+      const x = Math.random() &lt; 0.5 ? 50 + Math.random() * 160 : CONFIG.W - 210 + Math.random() * 160;
+      this.raketen.push({ x, y: CONFIG.H + 10, vy: -430 - Math.random() * 120, knall: 90 + Math.random() * 220,
+                          col: random([[255, 80, 80], [255, 210, 60], [90, 200, 255], [150, 255, 120], [255, 120, 230]]) });
+    }
+    for (const r of this.raketen) {
+      r.y += r.vy * dt;
+      if (r.y &lt; r.knall &amp;&amp; !r.weg) {
+        r.weg = true;
+        for (let i = 0; i &lt; 40; i++) {
+          const a = Math.random() * TWO_PI, v = 60 + Math.random() * 160;
+          this.funken.push({ x: r.x, y: r.y, vx: Math.cos(a) * v, vy: Math.sin(a) * v, life: 1.2, col: r.col });
+        }
+      }
+    }
+    this.raketen = this.raketen.filter((r) =&gt; !r.weg);
+    for (const f of this.funken) { f.x += f.vx * dt; f.y += f.vy * dt; f.vy += 90 * dt; f.life -= dt; }
+    this.funken = this.funken.filter((f) =&gt; f.life &gt; 0);
+    noStroke();
+    for (const r of this.raketen) { fill(255, 240, 200); circle(r.x, r.y, 4); }
+    for (const f of this.funken) { fill(...f.col, 255 * Math.min(1, f.life)); circle(f.x, f.y, 4); }
+  },
+};
+EXTRAS.push(FEUERWERK);
+
+// --- Anzeige oben rechts: Sterne und Kombo-Serie --------------------------
+const INFO_ANZEIGE = {
+  name: "Info-Anzeige",
+  spawn(welt) { kombo = 0; },
+  draw(welt) {
+    noStroke(); fill(15, 32, 52, 200); rect(CONFIG.W - 140, 54, 126, kombo &gt;= 2 ? 62 : 36, 10);
+    fill(255); textAlign(LEFT, CENTER); textSize(17);
+    text("⭐ " + sterne, CONFIG.W - 128, 72);
+    if (kombo &gt;= 2) { fill(255, 170, 40); text("🔥 " + kombo + "er-Serie", CONFIG.W - 128, 98); }
+  },
+};
+EXTRAS.push(INFO_ANZEIGE);
+
+// --- Ereignisse -----------------------------------------------------------
+function onGatePassed(gate) {
+  kombo++;
+  PUBLIKUM.jubel = 0.8;
+  if (kombo % 5 === 0) welt.popup("🔥 " + kombo + "er-Serie!", welt.player.x, 120, [255, 140, 0]);
+}
+function onGateMissed(gate) { kombo = 0; }
+function onCrash(kind) {
+  kombo = 0;
+  if (kind === "Bär") welt.popup("Der Bär hat dich erwischt!", welt.player.x, 110, [140, 80, 30]);
+}
+function onFinish(result) {
+  FEUERWERK.start();
+  welt.popup("⭐ " + sterne + " Sterne gesammelt!", CONFIG.W / 2, 570, [255, 170, 0]);
+}
+
+// =====================================================================
+// 3) SPIEL-MOTOR – NICHT ÄNDERN
+// =====================================================================
+
+function mulberry32(a) {
+  return function () {
+    a |= 0; a = (a + 0x6D2B79F5) | 0;
+    let t = Math.imul(a ^ (a &gt;&gt;&gt; 15), 1 | a);
+    t = (t + Math.imul(t ^ (t &gt;&gt;&gt; 7), 61 | t)) ^ t;
+    return ((t ^ (t &gt;&gt;&gt; 14)) &gt;&gt;&gt; 0) / 4294967296;
+  };
+}
+
+function hash01(n) {
+  const s = Math.sin(n * 127.1 + 311.7) * 43758.5453;
+  return s - Math.floor(s);
+}
+
+// --- Sound (WebAudio, keine Dateien) ---------------------------------
+const SFX = {
+  ctx: null, muted: false,
+  init() {
+    if (!this.ctx) {
+      try { this.ctx = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) { this.ctx = null; }
+    }
+    if (this.ctx &amp;&amp; this.ctx.state === "suspended") this.ctx.resume();
+  },
+  tone(freq, dur, type = "sine", vol = 0.12, to = null, delay = 0) {
+    if (this.muted || !this.ctx) return;
+    const t = this.ctx.currentTime + delay;
+    const o = this.ctx.createOscillator(), g = this.ctx.createGain();
+    o.type = type;
+    o.frequency.setValueAtTime(freq, t);
+    if (to) o.frequency.exponentialRampToValueAtTime(to, t + dur);
+    g.gain.setValueAtTime(vol, t);
+    g.gain.exponentialRampToValueAtTime(0.001, t + dur);
+    o.connect(g).connect(this.ctx.destination);
+    o.start(t); o.stop(t + dur + 0.02);
+  },
+  gate()   { this.tone(880, 0.12, "triangle", 0.12); this.tone(1320, 0.15, "triangle", 0.1, null, 0.07); },
+  miss()   { this.tone(240, 0.25, "sawtooth", 0.06, 140); },
+  crash()  { this.tone(180, 0.35, "square", 0.1, 50); },
+  tick()   { this.tone(600, 0.1, "sine", 0.12); },
+  go()     { this.tone(1000, 0.3, "sine", 0.15); },
+  finish() { [523, 659, 784, 1047].forEach((f, i) =&gt; this.tone(f, 0.28, "triangle", 0.12, null, i * 0.12)); },
+};
+
+// --- Zustand ----------------------------------------------------------
+const G = {
+  state: "title", mode: "race", sel: "race",
+  t: 0, endAt: 0, muted: false,
+  pointers: new Map(), forcedInput: null, autopilot: false,
+  buttons: [], broken: [],
+};
+let COURSE = null;
+let cnv;
+
+const welt = {
+  get player()  { return G.player; },
+  get scrollY() { return G.scrollY; },
+  get speed()   { return G.speed; },
+  get state()   { return G.state; },
+  toScreenY:   (wy) =&gt; wy - G.scrollY,
+  trackBounds: (wy) =&gt; trackBounds(wy),
+  trackCenter: (wy) =&gt; trackCenter(wy),
+  rnd:         () =&gt; COURSE.extraRnd(),
+  popup:       (text, x, y, col) =&gt; popup(text, x, y, col),
+  addScore:    (n) =&gt; { G.score += n; },
+};
+
+// --- Strecke ----------------------------------------------------------
+function newCourse() {
+  const r = mulberry32(CONFIG.SEED);
+  COURSE = {
+    p1: r() * Math.PI * 2, p2: r() * Math.PI * 2,
+    gateRnd: mulberry32(CONFIG.SEED + 101),
+    treeRnd: mulberry32(CONFIG.SEED + 202),
+    extraRnd: mulberry32(CONFIG.SEED + 303),
+    gates: [], trees: [], gateCount: 0,
+    nextGateWY: CONFIG.FIRST_GATE_Y, nextTreeWY: -40,
+    finishY: CONFIG.FIRST_GATE_Y + (CONFIG.GATES_TOTAL - 1) * CONFIG.GATE_SPACING + 300,
+  };
+}
+
+function trackCenter(wy) {
+  const minX = CONFIG.W * CONFIG.BAND_LEFT, maxX = CONFIG.W * CONFIG.BAND_RIGHT;
+  const mid = (minX + maxX) / 2;
+  const room = Math.max(0, (maxX - minX) / 2 - CONFIG.TRACK_HALF);
+  const ease = Math.min(1, Math.max(0, wy / 700));   // Start gerade, dann Kurven
+  const t = wy * 0.0042;
+  return mid + ease * room * (0.75 * Math.sin(t + COURSE.p1) + 0.25 * Math.sin(t * 2.3 + COURSE.p2));
+}
+
+function trackBounds(wy) {
+  const c = trackCenter(wy);
+  return { left: c - CONFIG.TRACK_HALF, right: c + CONFIG.TRACK_HALF };
+}
+
+function makeGate() {
+  const i = COURSE.gateCount, wy = COURSE.nextGateWY;
+  const r = COURSE.gateRnd();
+  const side = i % 2 === 0 ? -1 : 1;
+  const b = trackBounds(wy), half = CONFIG.GATE_WIDTH / 2;
+  const c = constrain(trackCenter(wy) + side * (25 + r * 45), b.left + half + 10, b.right - half - 10);
+  COURSE.gates.push({ i, wy, left: c - half, right: c + half, color: i % 2, state: "open" });
+  COURSE.gateCount++;
+  COURSE.nextGateWY += G.mode === "endless" ? Math.max(240, CONFIG.GATE_SPACING - i * 2) : CONFIG.GATE_SPACING;
+}
+
+function makeTrees(wy) {
+  const r = COURSE.treeRnd;
+  const a = r(), b = r(), c = r(), d = r(), e = r(), f = r();   // immer 6 Zufallszahlen → gleiche Strecke
+  const bb = trackBounds(wy);
+  if (a &lt; 0.7) {
+    const size = 16 + e * 14, lo = 14, hi = bb.left - 22 - size * 0.8;
+    if (hi &gt; lo) COURSE.trees.push({ x: lo + b * (hi - lo), wy: wy + (f - 0.5) * 20, r: size });
+  }
+  if (c &lt; 0.7) {
+    const size = 16 + f * 14, lo = bb.right + 22 + size * 0.8, hi = CONFIG.W - 14;
+    if (hi &gt; lo) COURSE.trees.push({ x: lo + d * (hi - lo), wy: wy + (e - 0.5) * 20, r: size });
+  }
+}
+
+function ensureWorld(untilWY) {
+  while (COURSE.nextGateWY &lt; untilWY &amp;&amp; (G.mode === "endless" || COURSE.gateCount &lt; CONFIG.GATES_TOTAL)) makeGate();
+  while (COURSE.nextTreeWY &lt; untilWY) { makeTrees(COURSE.nextTreeWY); COURSE.nextTreeWY += CONFIG.TREE_EVERY; }
+}
+
+function cleanupWorld() {
+  const cut = G.scrollY - 100;
+  if (COURSE.trees.length &amp;&amp; COURSE.trees[0].wy &lt; cut) COURSE.trees = COURSE.trees.filter((t) =&gt; t.wy &gt;= cut);
+  while (COURSE.gates.length &amp;&amp; COURSE.gates[0].wy &lt; cut) COURSE.gates.shift();
+}
+
+// --- Runde starten / beenden -----------------------------------------
+function prepareRun(mode) {
+  G.mode = mode;
+  newCourse();
+  Object.assign(G, {
+    scrollY: 0, speed: 0, raceTime: 0, penalty: 0,
+    passed: 0, missed: 0, crashes: 0, hearts: CONFIG.HEARTS, score: 0,
+    shake: 0, goFlash: 0, sprayAcc: 0, overPending: false, result: null,
+    trail: [], particles: [], popups: [],
+  });
+  G.player = {
+    x: trackCenter(CONFIG.PLAYER_Y), wy: CONFIG.PLAYER_Y, vx: 0, lean: 0,
+    s: CONFIG.PLAYER_SIZE, fallTimer: 0, ghost: 0, offPiste: false,
+  };
+  G.pointers.clear();
+  ensureWorld(CONFIG.H + 400);
+  for (const ex of EXTRAS) runExtra(ex, () =&gt; ex.spawn &amp;&amp; ex.spawn(welt));
+}
+
+function startRun(mode) {
+  prepareRun(mode);
+  G.state = "countdown"; G.countdown = 3; G.lastBeep = 4;
+}
+
+function toTitle() {
+  prepareRun(G.mode);
+  G.sel = G.mode;
+  G.state = "title";
+}
+
+function finishRace() {
+  const total = G.raceTime + G.penalty;
+  const prev = loadBest("race");
+  const newBest = prev == null || total &lt; prev;
+  if (newBest) saveBest("race", total);
+  G.result = {
+    time: total, raw: G.raceTime, penalty: G.penalty,
+    passed: G.passed, missed: G.missed, crashes: G.crashes,
+    best: newBest ? total : prev, newBest,
+  };
+  G.state = "finish"; G.endAt = G.t;
+  SFX.finish(); confetti();
+  safeHook(onFinish, G.result);
+}
+
+function endEndless() {
+  const prev = loadBest("endless");
+  const newBest = prev == null || G.score &gt; prev;
+  if (newBest) saveBest("endless", G.score);
+  G.result = { score: G.score, passed: G.passed, best: newBest ? G.score : prev, newBest };
+  G.state = "over"; G.endAt = G.t;
+  SFX.finish();
+}
+
+function crash(kind) {
+  const P = G.player;
+  if (P.fallTimer &gt; 0 || P.ghost &gt; 0) return;
+  P.fallTimer = CONFIG.FALL_S;
+  P.vx *= 0.2;
+  G.speed *= 0.25;
+  G.crashes++;
+  G.shake = 0.35;
+  G.trail.push({ brk: true, wy: P.wy });
+  SFX.crash();
+  burst(P, 22);
+  const sy = P.wy - G.scrollY;
+  if (G.mode === "race") {
+    G.penalty += CONFIG.CRASH_PENALTY_S;
+    popup("+" + CONFIG.CRASH_PENALTY_S + " s", P.x, sy - 40, [220, 50, 50]);
+  } else {
+    G.hearts--;
+    popup("−1 ♥", P.x, sy - 40, [220, 50, 50]);
+    if (G.hearts &lt;= 0) G.overPending = true;
+  }
+  safeHook(onCrash, kind);
+}
+
+// --- Hilfen -------------------------------------------------------------
+function bestKey(mode) { return "skirennen_v2_" + mode + "_" + CONFIG.SEED; }
+function loadBest(mode) {
+  try { const v = localStorage.getItem(bestKey(mode)); return v == null ? null : parseFloat(v); } catch (e) { return null; }
+}
+function saveBest(mode, v) {
+  try { localStorage.setItem(bestKey(mode), String(v)); } catch (e) { /* egal */ }
+}
+function fmt(t) { return t.toFixed(2) + " s"; }
+
+function safeHook(fn, arg) {
+  try { fn(arg); } catch (e) { console.warn("Fehler in " + fn.name, e); }
+}
+
+function runExtra(ex, fn) {
+  if (ex._broken) return false;
+  try { return fn(); } catch (e) {
+    ex._broken = true;
+    const name = ex.name || "Extra";
+    G.broken.push(name);
+    console.warn("Extra „" + name + "“ ausgeschaltet:", e);
+    return false;
+  }
+}
+
+function popup(text, x, y, col) {
+  G.popups.push({ text, x, y, col: col || [40, 160, 80], life: 0.9, max: 0.9 });
+}
+
+function spray(P, n, big) {
+  for (let i = 0; i &lt; n; i++) {
+    G.particles.push({
+      x: P.x + (Math.random() - 0.5) * 16, wy: P.wy + P.s * 0.7,
+      vx: -P.vx * 0.3 + (Math.random() - 0.5) * (big ? 260 : 90),
+      vy: (Math.random() - 0.5) * (big ? 200 : 60) - 20,
+      g: 0, life: 0.4 + Math.random() * 0.4, max: 0.8,
+      size: (big ? 4 : 3) + Math.random() * 4, col: null,
+    });
+  }
+}
+function burst(P, n) { spray(P, n, true); }
+
+function confetti() {
+  const P = G.player, cols = [THEME.gateA, THEME.gateB, THEME.accent, [40, 170, 90]];
+  for (let i = 0; i &lt; 70; i++) {
+    G.particles.push({
+      x: P.x + (Math.random() - 0.5) * 60, wy: P.wy - 20,
+      vx: (Math.random() - 0.5) * 420, vy: -150 - Math.random() * 300,
+      g: 520, life: 1.4 + Math.random(), max: 2.4,
+      size: 4 + Math.random() * 4, col: cols[i % cols.length],
+    });
+  }
+}
+
+// --- Eingabe ------------------------------------------------------------
+function readInput() {
+  if (G.forcedInput !== null) return G.forcedInput;
+  if (G.autopilot) return autoInput();
+  let v = 0;
+  if (keyIsDown(LEFT_ARROW) || keyIsDown(65)) v -= 1;
+  if (keyIsDown(RIGHT_ARROW) || keyIsDown(68)) v += 1;
+  if (G.pointers.size) {
+    if (CONFIG.TOUCH_FOLLOW) {
+      // Der zuletzt aufgesetzte Finger ist das Ziel; kurz davor wird abgebremst
+      const P = G.player, fingerX = [...G.pointers.values()].pop();
+      v += (fingerX - (P.x + P.vx * 0.1)) / 15;
+    } else {
+      for (const x of G.pointers.values()) v += x &lt; CONFIG.W / 2 ? -1 : 1;
+    }
+  }
+  return Math.max(-1, Math.min(1, v));
+}
+
+function autoInput() {
+  const P = G.player;
+  let tx = trackCenter(P.wy + 150);
+  const g = COURSE.gates.find((g) =&gt; g.state === "open" &amp;&amp; g.wy &gt; P.wy - 5);
+  if (g &amp;&amp; g.wy - P.wy &lt; 450) tx = (g.left + g.right) / 2;
+  const err = tx - (P.x + P.vx * 0.25);
+  return Math.abs(err) &lt; 6 ? 0 : Math.sign(err);
+}
+
+function bindPointer() {
+  const el = cnv.elt;
+  const toLogical = (e) =&gt; {
+    const r = el.getBoundingClientRect();
+    return { x: (e.clientX - r.left) * CONFIG.W / r.width, y: (e.clientY - r.top) * CONFIG.H / r.height };
+  };
+  el.addEventListener("pointerdown", (e) =&gt; {
+    e.preventDefault();
+    SFX.init();
+    const p = toLogical(e);
+    if (p.x &gt; CONFIG.W - 56 &amp;&amp; p.y &lt; 50) { G.muted = !G.muted; SFX.muted = G.muted; return; }
+    if (G.state === "title") {
+      for (const b of G.buttons) {
+        if (p.x &gt; b.x &amp;&amp; p.x &lt; b.x + b.w &amp;&amp; p.y &gt; b.y &amp;&amp; p.y &lt; b.y + b.h) startRun(b.mode);
+      }
+      return;
+    }
+    if (G.state === "finish" || G.state === "over") {
+      if (G.t - G.endAt &gt; 0.6) startRun(G.mode);
+      return;
+    }
+    G.pointers.set(e.pointerId, p.x);
+    try { el.setPointerCapture(e.pointerId); } catch (_) { /* egal */ }
+  });
+  el.addEventListener("pointermove", (e) =&gt; {
+    if (G.pointers.has(e.pointerId)) G.pointers.set(e.pointerId, toLogical(e).x);
+  });
+  const up = (e) =&gt; G.pointers.delete(e.pointerId);
+  el.addEventListener("pointerup", up);
+  el.addEventListener("pointercancel", up);
+  el.addEventListener("lostpointercapture", up);
+}
+
+function keyPressed() {
+  SFX.init();
+  const k = typeof key === "string" ? key.toLowerCase() : "";
+  if (k === "m") { G.muted = !G.muted; SFX.muted = G.muted; return false; }
+  if (G.state === "title") {
+    if (k === "e" || k === "a" || k === "d" || keyCode === LEFT_ARROW || keyCode === RIGHT_ARROW) {
+      G.sel = G.sel === "race" ? "endless" : "race";
+      return false;
+    }
+    if (k === " " || keyCode === ENTER) { startRun(G.sel); return false; }
+    return;
+  }
+  if (keyCode === ESCAPE) { toTitle(); return false; }
+  if (k === "r") { startRun(G.mode); return false; }
+  if ((G.state === "finish" || G.state === "over") &amp;&amp; (k === " " || keyCode === ENTER) &amp;&amp; G.t - G.endAt &gt; 0.6) {
+    startRun(G.mode);
+    return false;
+  }
+  if (keyCode === LEFT_ARROW || keyCode === RIGHT_ARROW || k === " ") return false;
+}
+
+// --- Spiel-Logik pro Zeitschritt -----------------------------------------
+function stepGame(dt) {
+  G.t += dt;
+  G.shake = Math.max(0, G.shake - dt);
+  if (G.goFlash &gt; 0) G.goFlash -= dt;
+  stepParticles(dt);
+
+  if (G.state === "title") return;
+  if (G.state === "countdown") {
+    G.countdown -= dt;
+    const n = Math.ceil(G.countdown);
+    if (n !== G.lastBeep &amp;&amp; n &gt; 0) { G.lastBeep = n; SFX.tick(); }
+    if (G.countdown &lt;= 0) { G.state = "run"; G.goFlash = 0.8; SFX.go(); }
+    return;
+  }
+
+  const P = G.player;
+  const running = G.state === "run";
+  let input = running ? readInput() : 0;
+
+  if (P.fallTimer &gt; 0) {
+    P.fallTimer -= dt; input = 0;
+    if (P.fallTimer &lt;= 0) {
+      P.fallTimer = 0; P.ghost = CONFIG.GHOST_S;
+      if (G.overPending) endEndless();
+    }
+  } else if (P.ghost &gt; 0) {
+    P.ghost = Math.max(0, P.ghost - dt);
+  }
+  if (running) G.raceTime += dt;
+
+  // Lenken mit Schwung
+  P.vx += input * CONFIG.STEER_ACCEL * dt;
+  P.vx *= Math.exp(-CONFIG.STEER_FRICTION * dt);
+  P.vx = constrain(P.vx, -CONFIG.STEER_MAX, CONFIG.STEER_MAX);
+  P.x += P.vx * dt;
+  if (P.x &lt; 12) { P.x = 12; P.vx = 0; }
+  if (P.x &gt; CONFIG.W - 12) { P.x = CONFIG.W - 12; P.vx = 0; }
+  P.lean = P.vx / CONFIG.STEER_MAX;
+  const b = trackBounds(P.wy);
+  P.offPiste = P.x &lt; b.left || P.x &gt; b.right;
+
+  // Tempo
+  let target = 0;
+  if (running &amp;&amp; P.fallTimer &lt;= 0) {
+    target = G.mode === "race"
+      ? CONFIG.SPEED_START + CONFIG.SPEED_PER_GATE * (G.passed + G.missed)
+      : CONFIG.SPEED_START + G.scrollY * 0.012;
+    target = Math.min(target, CONFIG.SPEED_MAX);
+    if (P.offPiste) target *= CONFIG.DEEP_SNOW_MULT;
+  }
+  const k = running &amp;&amp; P.fallTimer &lt;= 0 ? (target &gt; G.speed ? 1.5 : 4) : 2.5;
+  G.speed += (target - G.speed) * Math.min(1, k * dt);
+
+  const prevWY = P.wy;
+  G.scrollY += G.speed * dt;
+  P.wy = G.scrollY + CONFIG.PLAYER_Y;
+  ensureWorld(G.scrollY + CONFIG.H + 300);
+  cleanupWorld();
+
+  // Spuren im Schnee
+  const last = G.trail[G.trail.length - 1];
+  if (P.fallTimer &lt;= 0 &amp;&amp; G.speed &gt; 5 &amp;&amp; (!last || P.wy - last.wy &gt; 6)) G.trail.push({ x: P.x, wy: P.wy });
+  while (G.trail.length &amp;&amp; G.trail[0].wy &lt; G.scrollY - 30) G.trail.shift();
+
+  // Schnee-Spray beim Carven und im Tiefschnee
+  if (P.fallTimer &lt;= 0 &amp;&amp; G.speed &gt; 40) {
+    const carve = Math.abs(P.vx) / CONFIG.STEER_MAX * (G.speed / CONFIG.SPEED_MAX);
+    G.sprayAcc += (carve * 45 + (P.offPiste ? 30 : 0)) * dt;
+    while (G.sprayAcc &gt;= 1) { G.sprayAcc -= 1; spray(P, 1, false); }
+  }
+
+  if (!running) return;
+
+  // Tore
+  for (const g of COURSE.gates) {
+    if (g.wy &gt; P.wy + 40) break;
+    if (g.state !== "open") continue;
+    if (P.fallTimer &lt;= 0 &amp;&amp; P.ghost &lt;= 0) {
+      for (const px of [g.left, g.right]) {
+        if (Math.abs(P.x - px) &lt; CONFIG.POLE_R + 7 &amp;&amp; Math.abs(P.wy - (g.wy - 10)) &lt; 16) { crash("Stange"); break; }
+      }
+    }
+    if (prevWY &lt; g.wy &amp;&amp; P.wy &gt;= g.wy) {
+      const sy = P.wy - G.scrollY;
+      if (P.x &gt; g.left &amp;&amp; P.x &lt; g.right) {
+        g.state = "passed"; G.passed++; G.score += 10;
+        SFX.gate();
+        popup(G.mode === "race" ? "✓" : "+10", P.x, sy - 40, [40, 160, 80]);
+        safeHook(onGatePassed, g);
+      } else {
+        g.state = "missed"; G.missed++;
+        SFX.miss();
+        if (G.mode === "race") {
+          G.penalty += CONFIG.MISS_PENALTY_S;
+          popup("+" + CONFIG.MISS_PENALTY_S + " s", P.x, sy - 40, [220, 50, 50]);
+        }
+        safeHook(onGateMissed, g);
+      }
+    }
+  }
+
+  // Bäume
+  if (P.fallTimer &lt;= 0 &amp;&amp; P.ghost &lt;= 0) {
+    for (const t of COURSE.trees) {
+      if (Math.abs(t.wy - P.wy) &gt; 70) continue;
+      if (dist(P.x, P.wy, t.x, t.wy - t.r * 0.6) &lt; t.r * 0.55 + 8) { crash("Baum"); break; }
+    }
+  }
+
+  // Extras
+  for (const ex of EXTRAS) {
+    runExtra(ex, () =&gt; {
+      if (ex.update) ex.update(dt, welt);
+      if (ex.hits &amp;&amp; P.fallTimer &lt;= 0 &amp;&amp; P.ghost &lt;= 0 &amp;&amp; ex.hits(P, welt)) crash(ex.name || "Extra");
+    });
+  }
+
+  // Ziel
+  if (G.mode === "race" &amp;&amp; P.wy &gt;= COURSE.finishY) finishRace();
+}
+
+function stepParticles(dt) {
+  for (const p of G.particles) {
+    p.x += p.vx * dt; p.wy += p.vy * dt;
+    p.vx *= Math.exp(-2.5 * dt);
+    p.vy += p.g * dt;
+    p.life -= dt;
+  }
+  G.particles = G.particles.filter((p) =&gt; p.life &gt; 0).slice(-500);
+  for (const p of G.popups) { p.y -= 45 * dt; p.life -= dt; }
+  G.popups = G.popups.filter((p) =&gt; p.life &gt; 0);
+}
+
+// --- Zeichnen -------------------------------------------------------------
+function renderGame() {
+  push();
+  if (G.shake &gt; 0) {
+    const m = (G.shake / 0.35) * 7;
+    translate((Math.random() - 0.5) * m * 2, (Math.random() - 0.5) * m * 2);
+  }
+  background(...THEME.snow);
+  drawSlope();
+  drawBanner(CONFIG.PLAYER_Y + 40, "START", false);
+  if (G.mode === "race") drawBanner(COURSE.finishY, "ZIEL", true);
+  drawTrail();
+  drawGates();
+  const P = G.player;
+  drawTrees((t) =&gt; t.wy &lt;= P.wy);
+  if (G.state !== "title") {
+    for (const ex of EXTRAS) runExtra(ex, () =&gt; { if (ex.draw) { push(); ex.draw(welt); pop(); } });
+  }
+  drawPlayerSafe();
+  drawTrees((t) =&gt; t.wy &gt; P.wy);
+  drawParticles();
+  drawPopups();
+  pop();
+
+  drawHUD();
+  if (G.state === "title") drawTitle();
+  if (G.state === "countdown") drawCountdown();
+  if (G.goFlash &gt; 0) drawGo();
+  if (G.state === "finish") drawFinish();
+  if (G.state === "over") drawOver();
+  drawBroken();
+  drawMute();
+}
+
+function drawSlope() {
+  const step = 10, sy = G.scrollY;
+  noStroke(); fill(...THEME.deepSnow);
+  beginShape(); vertex(-20, -20);
+  for (let y = -20; y &lt;= CONFIG.H + 20; y += step) vertex(trackBounds(y + sy).left, y);
+  vertex(-20, CONFIG.H + 20); endShape(CLOSE);
+  beginShape(); vertex(CONFIG.W + 20, -20);
+  for (let y = -20; y &lt;= CONFIG.H + 20; y += step) vertex(trackBounds(y + sy).right, y);
+  vertex(CONFIG.W + 20, CONFIG.H + 20); endShape(CLOSE);
+
+  // Glitzern im Tiefschnee
+  fill(...THEME.sparkle);
+  const cell = 46;
+  for (let wy = Math.floor(sy / cell) * cell; wy &lt; sy + CONFIG.H + cell; wy += cell) {
+    const b = trackBounds(wy);
+    for (let k = 0; k &lt; 5; k++) {
+      const x = hash01(wy * 0.37 + k * 13.1) * CONFIG.W;
+      if (x &gt; b.left - 6 &amp;&amp; x &lt; b.right + 6) continue;
+      const y = wy - sy + hash01(wy + k * 7.7) * cell;
+      ellipse(x, y, 5, 3);
+    }
+  }
+
+  // Kord-Linien auf der Piste (zeigen das Tempo)
+  stroke(...THEME.corduroy); strokeWeight(2);
+  const gap = 22;
+  for (let wy = Math.floor(sy / gap) * gap; wy &lt; sy + CONFIG.H + gap; wy += gap) {
+    const b = trackBounds(wy);
+    line(b.left + 4, wy - sy, b.right - 4, wy - sy);
+  }
+
+  // Pistenränder
+  noFill(); stroke(...THEME.pisteEdge); strokeWeight(3); strokeJoin(ROUND);
+  for (const side of ["left", "right"]) {
+    beginShape();
+    for (let y = -20; y &lt;= CONFIG.H + 20; y += step) vertex(trackBounds(y + sy)[side], y);
+    endShape();
+  }
+}
+
+function drawBanner(wy, label, checker) {
+  const y = wy - G.scrollY;
+  if (y &lt; -100 || y &gt; CONFIG.H + 100) return;
+  const b = trackBounds(wy), sq = 12;
+  if (checker) {
+    noStroke();
+    let ix = 0;
+    for (let x = b.left; x &lt; b.right; x += sq, ix++) {
+      for (let row = 0; row &lt; 2; row++) {
+        fill((ix + row) % 2 ? 30 : 255);
+        rect(x, y - sq + row * sq, Math.min(sq, b.right - x), sq);
+      }
+    }
+  } else {
+    stroke(...THEME.gateB, 160); strokeWeight(3);
+    line(b.left, y, b.right, y);
+  }
+  stroke(70); strokeWeight(4);
+  line(b.left - 8, y + sq, b.left - 8, y - 70);
+  line(b.right + 8, y + sq, b.right + 8, y - 70);
+  noStroke(); fill(...(checker ? THEME.accent : THEME.gateA));
+  rect(b.left - 10, y - 78, b.right - b.left + 20, 24, 6);
+  fill(checker ? 30 : 255); textAlign(CENTER, CENTER); textStyle(BOLD); textSize(15);
+  text(label, (b.left + b.right) / 2, y - 66);
+  textStyle(NORMAL);
+}
+
+function drawTrail() {
+  if (G.trail.length &lt; 2) return;
+  noFill(); stroke(...THEME.trail); strokeWeight(2);
+  const off = G.player.s * 0.32;
+  for (const o of [-off, off]) {
+    let open = false;
+    for (const p of G.trail) {
+      if (p.brk) { if (open) { endShape(); open = false; } continue; }
+      if (!open) { beginShape(); open = true; }
+      vertex(p.x + o, p.wy - G.scrollY);
+    }
+    if (open) endShape();
+  }
+}
+
+function drawGates() {
+  for (const g of COURSE.gates) {
+    const y = g.wy - G.scrollY;
+    if (y &lt; -60 || y &gt; CONFIG.H + 60) continue;
+    const col = g.color ? THEME.gateB : THEME.gateA;
+    const a = g.state === "passed" ? 110 : 255;
+    noStroke(); fill(0, 0, 0, 25);
+    ellipse(g.left + 5, y + 2, 14, 5); ellipse(g.right + 5, y + 2, 14, 5);
+    stroke(...THEME.pole, a); strokeWeight(3);
+    line(g.left, y, g.left, y - 34); line(g.right, y, g.right, y - 34);
+    noStroke(); fill(...col, a);
+    triangle(g.left, y - 34, g.left + 22, y - 28, g.left, y - 20);
+    triangle(g.right, y - 34, g.right - 22, y - 28, g.right, y - 20);
+    if (G.mode === "race") {
+      fill(120, 140, 160, a); textAlign(CENTER, CENTER); textSize(12);
+      text(g.i + 1, (g.left + g.right) / 2, y - 26);
+    }
+    if (g.state === "missed") {
+      stroke(220, 40, 40, 200); strokeWeight(3);
+      const cx = (g.left + g.right) / 2;
+      line(cx - 8, y - 18, cx + 8, y - 2); line(cx + 8, y - 18, cx - 8, y - 2);
+    }
+  }
+}
+
+function drawTrees(filter) {
+  for (const t of COURSE.trees) {
+    if (!filter(t)) continue;
+    const y = t.wy - G.scrollY, x = t.x, r = t.r;
+    if (y &lt; -60 || y &gt; CONFIG.H + 80) continue;
+    noStroke();
+    fill(0, 0, 0, 22); ellipse(x + r * 0.3, y + 2, r * 1.4, r * 0.4);
+    fill(...THEME.trunk); rect(x - r * 0.12, y - r * 0.35, r * 0.24, r * 0.4);
+    fill(...THEME.treeDark); triangle(x - r * 0.85, y - r * 0.3, x, y - r * 1.5, x + r * 0.85, y - r * 0.3);
+    fill(...THEME.tree);     triangle(x - r * 0.65, y - r * 0.95, x, y - r * 2.0, x + r * 0.65, y - r * 0.95);
+    fill(255, 255, 255, 210); triangle(x - r * 0.25, y - r * 1.62, x, y - r * 2.0, x + r * 0.25, y - r * 1.62);
+  }
+}
+
+function drawPlayerSafe() {
+  const P = G.player;
+  const p = {
+    x: P.x, y: P.wy - G.scrollY, s: P.s, lean: P.lean,
+    fallen: P.fallTimer &gt; 0, offPiste: P.offPiste,
+  };
+  const blink = P.ghost &gt; 0 &amp;&amp; Math.floor(G.t * 12) % 2 === 0;
+  if (blink) drawingContext.globalAlpha = 0.35;
+  noStroke(); fill(0, 0, 0, 30); ellipse(p.x + 4, p.y + p.s * 0.8, p.s * 1.1, p.s * 0.35);
+  push();
+  try {
+    if (G.playerBroken) throw new Error("skip");
+    drawPlayer(p);
+  } catch (e) {
+    if (!G.playerBroken) { G.playerBroken = true; G.broken.push("drawPlayer"); console.warn("drawPlayer hat einen Fehler:", e); }
+    noStroke(); fill(230, 60, 60); circle(0, 0, p.s);
+  }
+  pop();
+  drawingContext.globalAlpha = 1;
+}
+
+function drawParticles() {
+  for (const p of G.particles) {
+    const y = p.wy - G.scrollY;
+    const a = Math.max(0, Math.min(1, p.life / p.max)) * 255;
+    if (p.col) { noStroke(); fill(...p.col, a); rect(p.x, y, p.size, p.size * 0.6); }
+    else { stroke(190, 208, 230, a); strokeWeight(1); fill(255, a); circle(p.x, y, p.size); }
+  }
+}
+
+function drawPopups() {
+  textAlign(CENTER, CENTER); textStyle(BOLD); textSize(22);
+  for (const p of G.popups) {
+    const a = (p.life / p.max) * 255;
+    stroke(255, a); strokeWeight(4); fill(...p.col, a);
+    text(p.text, p.x, p.y);
+  }
+  textStyle(NORMAL);
+}
+
+function drawHUD() {
+  if (G.state === "title") return;
+  push();
+  noStroke(); fill(...THEME.hudBg); rect(12, 12, 224, 108, 12);
+  fill(...THEME.hudText); textAlign(LEFT, TOP);
+  if (G.mode === "race") {
+    const total = CONFIG.GATES_TOTAL, done = Math.min(G.passed + G.missed, total);
+    textSize(12); fill(180, 200, 220); text("ZEIT", 26, 22);
+    fill(...THEME.hudText); textStyle(BOLD); textSize(30); text(fmt(G.raceTime + G.penalty), 26, 36);
+    textStyle(NORMAL); textSize(14); text("Tor " + done + " / " + total, 26, 74);
+    fill(180, 200, 220); textSize(13); text("verpasst " + G.missed + " · Stürze " + G.crashes, 26, 95);
+    // Fortschritt oben in der Mitte
+    fill(0, 0, 0, 40); rect(CONFIG.W / 2 - 150, 16, 300, 8, 4);
+    fill(...THEME.accent); rect(CONFIG.W / 2 - 150, 16, 300 * done / total, 8, 4);
+  } else {
+    textSize(12); fill(180, 200, 220); text("PUNKTE", 26, 22);
+    fill(...THEME.hudText); textStyle(BOLD); textSize(30); text(G.score, 26, 36);
+    textStyle(NORMAL); textSize(20); fill(235, 60, 80);
+    let h = "";
+    for (let i = 0; i &lt; CONFIG.HEARTS; i++) h += i &lt; G.hearts ? "♥ " : "♡ ";
+    text(h, 26, 70);
+    fill(180, 200, 220); textSize(13); text("Strecke " + Math.floor(G.scrollY / 20) + " m", 26, 97);
+  }
+  pop();
+}
+
+function panel(cx, cy, w, h) {
+  noStroke(); fill(12, 28, 48, 225);
+  rect(cx - w / 2, cy - h / 2, w, h, 18);
+}
+
+function drawTitle() {
+  push();
+  fill(10, 25, 45, 90); noStroke(); rect(0, 0, CONFIG.W, CONFIG.H);
+  const cx = CONFIG.W / 2;
+  panel(cx, 315, 620, 430);
+  fill(255); textAlign(CENTER, CENTER); textStyle(BOLD); textSize(34);
+  text("⛷ " + CONFIG.TITLE, cx, 145);
+  textStyle(NORMAL); textSize(16); fill(190, 210, 230);
+  text("Wähle deinen Modus", cx, 185);
+
+  const raceBest = loadBest("race"), endBest = loadBest("endless");
+  const cards = [
+    { mode: "race", x: cx - 260, title: "🏁 Rennen",
+      lines: [CONFIG.GATES_TOTAL + " Tore auf Zeit", "Tor verpasst = +" + CONFIG.MISS_PENALTY_S + " s", "Sturz = +" + CONFIG.CRASH_PENALTY_S + " s"],
+      best: raceBest == null ? "Noch keine Bestzeit" : "Bestzeit: " + fmt(raceBest) },
+    { mode: "endless", x: cx + 10, title: "♾ Endlos",
+      lines: ["Fahr so weit du kannst", CONFIG.HEARTS + " Herzen", "Tor = 10 Punkte"],
+      best: endBest == null ? "Noch kein Rekord" : "Rekord: " + endBest + " Punkte" },
+  ];
+  G.buttons = [];
+  for (const c of cards) {
+    const y = 215, w = 250, h = 160, on = G.sel === c.mode;
+    G.buttons.push({ mode: c.mode, x: c.x, y, w, h });
+    if (on) { stroke(...THEME.accent); strokeWeight(3); } else noStroke();
+    fill(on ? 40 : 28, on ? 70 : 50, on ? 115 : 82);
+    rect(c.x, y, w, h, 14);
+    noStroke(); fill(255); textStyle(BOLD); textSize(22); textAlign(LEFT, TOP);
+    text(c.title, c.x + 18, y + 16);
+    textStyle(NORMAL); textSize(14); fill(200, 218, 236);
+    c.lines.forEach((l, i) =&gt; text(l, c.x + 18, y + 54 + i * 20));
+    fill(...THEME.accent); textSize(13); text(c.best, c.x + 18, y + 128);
+  }
+
+  textAlign(CENTER, CENTER); fill(255); textSize(15); textStyle(BOLD);
+  text("Leertaste = Start  ·  E = Modus wechseln  ·  oder Karte antippen", cx, 410);
+  textStyle(NORMAL); fill(170, 192, 215); textSize(13);
+  text("Lenken: ← →  oder  A / D  ·  Tablet: mit dem Finger lenken  ·  M = Ton  ·  R = Neustart  ·  Esc = Menü", cx, 440);
+  text("Neben der Piste ist Tiefschnee – da wirst du langsamer!", cx, 490);
+  pop();
+}
+
+function drawCountdown() {
+  const n = Math.ceil(G.countdown);
+  const f = G.countdown - Math.floor(G.countdown);
+  push();
+  textAlign(CENTER, CENTER); textStyle(BOLD); textSize(110 + f * 40);
+  stroke(15, 32, 52); strokeWeight(8); fill(255);
+  text(n, CONFIG.W / 2, CONFIG.H / 2);
+  textSize(16); strokeWeight(4); text("Bereit machen …", CONFIG.W / 2, CONFIG.H / 2 + 90);
+  pop();
+}
+
+function drawGo() {
+  push();
+  const a = Math.min(1, G.goFlash / 0.8) * 255;
+  textAlign(CENTER, CENTER); textStyle(BOLD); textSize(90);
+  stroke(15, 32, 52, a); strokeWeight(8); fill(...THEME.accent, a);
+  text("LOS!", CONFIG.W / 2, CONFIG.H / 2);
+  pop();
+}
+
+function drawFinish() {
+  const r = G.result, cx = CONFIG.W / 2;
+  push();
+  panel(cx, 330, 480, 340);
+  textAlign(CENTER, CENTER); fill(255); textStyle(BOLD); textSize(38);
+  text("🏁 ZIEL!", cx, 200);
+  fill(...THEME.accent); textSize(56); text(fmt(r.time), cx, 265);
+  textStyle(NORMAL); fill(200, 218, 236); textSize(16);
+  text("Fahrzeit " + fmt(r.raw) + "   +   Strafen " + fmt(r.penalty), cx, 318);
+  text(r.passed + " Tore geschafft · " + r.missed + " verpasst · " + r.crashes + " Stürze", cx, 344);
+  textStyle(BOLD); textSize(20);
+  if (r.newBest) { fill(...THEME.accent); text("★ Neue Bestzeit! ★", cx, 390); }
+  else { fill(255); text("Bestzeit: " + fmt(r.best), cx, 390); }
+  textStyle(NORMAL); fill(170, 192, 215); textSize(14);
+  text("Leertaste oder Tippen = nochmal  ·  Esc = Menü", cx, 450);
+  pop();
+}
+
+function drawOver() {
+  const r = G.result, cx = CONFIG.W / 2;
+  push();
+  panel(cx, 320, 460, 300);
+  textAlign(CENTER, CENTER); fill(255); textStyle(BOLD); textSize(32);
+  text("Keine Herzen mehr!", cx, 210);
+  fill(...THEME.accent); textSize(56); text(r.score + " Punkte", cx, 280);
+  textStyle(BOLD); textSize(20);
+  if (r.newBest) { fill(...THEME.accent); text("★ Neuer Rekord! ★", cx, 345); }
+  else { fill(255); text("Rekord: " + r.best + " Punkte", cx, 345); }
+  textStyle(NORMAL); fill(170, 192, 215); textSize(14);
+  text("Leertaste oder Tippen = nochmal  ·  Esc = Menü", cx, 420);
+  pop();
+}
+
+function drawBroken() {
+  if (!G.broken.length) return;
+  push();
+  noStroke(); fill(255, 235, 235, 230); rect(12, CONFIG.H - 40, 520, 28, 8);
+  fill(180, 30, 30); textAlign(LEFT, CENTER); textSize(13);
+  text("⚠ Ausgeschaltet wegen Fehler: " + G.broken.join(", ") + " (Details in der Konsole)", 22, CONFIG.H - 26);
+  pop();
+}
+
+function drawMute() {
+  push();
+  textAlign(RIGHT, TOP); textSize(22); noStroke(); fill(0, 0, 0, 120);
+  text(G.muted ? "🔇" : "🔊", CONFIG.W - 16, 14);
+  pop();
+}
+
+// --- p5 ----------------------------------------------------------------
+function fitCanvas() {
+  const s = Math.min(window.innerWidth / CONFIG.W, window.innerHeight / CONFIG.H) * 0.98;
+  cnv.elt.style.width = Math.floor(CONFIG.W * s) + "px";
+  cnv.elt.style.height = Math.floor(CONFIG.H * s) + "px";
+}
+
+function setup() {
+  cnv = createCanvas(CONFIG.W, CONFIG.H);
+  textFont("system-ui");
+  fitCanvas();
+  bindPointer();
+  prepareRun("race");
+  G.state = "title";
+}
+
+function windowResized() { fitCanvas(); }
+
+function draw() {
+  stepGame(Math.min(deltaTime / 1000, 1 / 30));
+  renderGame();
+}
+
+// --- Test-Zugang (für Trainer:innen und automatische Checks) -------------
+window.__ski = {
+  CONFIG, G, get COURSE() { return COURSE; },
+  start: (mode) =&gt; startRun(mode || "race"),
+  toTitle,
+  snapshot() {
+    const P = G.player;
+    return {
+      state: G.state, mode: G.mode, time: G.raceTime + G.penalty, raceTime: G.raceTime, penalty: G.penalty,
+      passed: G.passed, missed: G.missed, crashes: G.crashes, hearts: G.hearts, score: G.score,
+      scrollY: G.scrollY, speed: G.speed,
+      player: { x: P.x, wy: P.wy, vx: P.vx, offPiste: P.offPiste, fallen: P.fallTimer &gt; 0 },
+      result: G.result,
+    };
+  },
+  // Spiel ohne Zeichnen vorspulen: opts = { dt, input (-1/0/1), autopilot }
+  sim(seconds, opts = {}) {
+    const dt = opts.dt || 1 / 60;
+    const prevF = G.forcedInput, prevA = G.autopilot;
+    if ("input" in opts) G.forcedInput = opts.input;
+    if (opts.autopilot) G.autopilot = true;
+    const n = Math.round(seconds / dt);
+    for (let i = 0; i &lt; n; i++) stepGame(dt);
+    G.forcedInput = prevF; G.autopilot = prevA;
+    return this.snapshot();
+  },
+};
+&lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+</textarea>
+
+<script>
+// Basis-Spiel (skirennen-v2.html) laden / herunterladen
+(function () {
+  const src = document.getElementById("baseGameSrc").value;
+  const editor = document.getElementById("htmlEditor");
+  function download(text, name) {
+    const file = new File([text], name, { type: "text/html" });
+    const tablet = window.matchMedia && window.matchMedia("(pointer: coarse)").matches;
+    if (tablet && navigator.canShare && navigator.canShare({ files: [file] })) {
+      navigator.share({ files: [file] }).catch(() => { /* abgebrochen */ });
+      return;
+    }
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(new Blob([text], { type: "text/html" }));
+    a.download = name;
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+  }
+  document.getElementById("loadBaseBtn").addEventListener("click", () => {
+    editor.value = src;
+    document.getElementById("runHtmlBtn").click();
+  });
+  // Demo nur in der Vorschau zeigen – der Editor bleibt unverändert
+  document.getElementById("demoBtn").addEventListener("click", () => {
+    const frame = document.getElementById("previewFrame");
+    frame.onload = () => { try { frame.contentWindow.focus(); } catch (e) { /* egal */ } };
+    frame.srcdoc = document.getElementById("demoGameSrc").value;
+  });
+  document.getElementById("downloadBaseBtn").addEventListener("click", () => download(src, "skirennen-v2.html"));
+  document.getElementById("downloadMineBtn").addEventListener("click", () => {
+    if (!editor.value.trim()) return;
+    download(editor.value, "skirennen-meine-version.html");
+  });
+
+  // Gespeicherte Version wieder öffnen (auf dem iPad aus der Dateien-App)
+  const fileInput = document.getElementById("openFileInput");
+  document.getElementById("openFileBtn").addEventListener("click", () => fileInput.click());
+  fileInput.addEventListener("change", () => {
+    const file = fileInput.files && fileInput.files[0];
+    if (!file) return;
+    file.text().then((text) => {
+      editor.value = text;
+      document.getElementById("runHtmlBtn").click();
+    });
+    fileInput.value = "";
+  });
+
+  // Abgeschnittene Antwort: zweiten Teil an der passenden Zeile anhängen
+  const box = document.getElementById("stitchBox"), input = document.getElementById("stitchInput"), msg = document.getElementById("stitchMsg");
+  document.getElementById("stitchOpenBtn").addEventListener("click", () => { box.hidden = !box.hidden; if (!box.hidden) input.focus(); });
+  document.getElementById("stitchBtn").addEventListener("click", () => {
+    const part2 = input.value.replace(/^\s*```[a-z]*\s*\n/i, "").replace(/\n\s*```\s*$/, "").replace(/^\s*\n/, "");
+    const part1 = editor.value.replace(/^\s*```[a-z]*\s*\n/i, "").replace(/\s+$/, "");
+    if (!part1.trim() || !part2.trim()) { msg.textContent = "Bitte beide Teile einfügen."; return; }
+    const first = part2.split("\n")[0].trim();
+    const lines = part1.split("\n");
+    let at = -1;
+    for (let i = lines.length - 1; i >= 0 && first; i--) if (lines[i].trim() === first) { at = i; break; }
+    if (at < 0) at = lines.length - 1; // nicht gefunden: halbe letzte Zeile ersetzen
+    editor.value = lines.slice(0, at).join("\n") + "\n" + part2;
+    msg.textContent = /<\/html>\s*$/i.test(part2.trim()) ? "✅ Zusammengesetzt." : "⚠ Am Ende fehlt noch </html> – nochmal „Weiter“ fragen.";
+    input.value = "";
+    document.getElementById("runHtmlBtn").click();
+  });
+})();
+</script>
+<script>
+// Launcher-Bedienung: Aufgabe zuerst, Schritt-Führung, Fehlerhinweis, Versionen, Trainer-Modus
+(function () {
+  // UI_TEXT_START
+  const T = {
+    rulesSummary: "Regeln für die KI anzeigen (werden automatisch mitkopiert)",
+    stepPart1: (n, title) => `Teil 1 · Schritt ${n}: ${title}`,
+    stepPart2: (n, title) => `Teil 2 · ${n}: ${title}`,
+    doneNext: "✓ Klappt – nächster Schritt",
+    doneLast: "✓ Klappt – Teil 1 geschafft!",
+    donePart2: "✓ Klappt – zurück zu den Ideen",
+    errorTitle: "⚠ Das Spiel hat einen Fehler:",
+    brokenTitle: "⚠ Ein Teil wurde ausgeschaltet, weil er einen Fehler hat:",
+    notStartedTitle: "⚠ Das Spiel startet nicht.",
+    notStartedText: "Vielleicht fehlt ein Stück Code oder es ist kein ganzes Spiel.",
+    cutTitle: "⚠ Der Code ist unvollständig:",
+    cutText: "am Ende fehlt </html>.",
+    copyRepair: "📋 Reparatur-Prompt kopieren",
+    copyWeiter: "📋 Weiter-Prompt kopieren",
+    repairLabel: "Fehlermeldung im Spiel:",
+    copied: "✅ Kopiert – jetzt im Chat einfügen.",
+    copyFailed: "❌ Kopieren hat nicht geklappt.",
+    trainerOn: "👩‍🏫 Trainer-Modus: an",
+    trainerOff: "👩‍🏫 Trainer-Modus: aus",
+    lineWord: "Zeile",
+    taskLabel: "Das sagt ihr der KI",
+    sepHelp1: "Wenn etwas klemmt",
+    sepHelp2: "Hilfe & eigene Ideen",
+  };
+  // UI_TEXT_END
+
+  const $ = (id) => document.getElementById(id);
+  const editor = $("htmlEditor"), frame = $("previewFrame"), runBtn = $("runHtmlBtn");
+  const isRulePrompt = (text) => text.startsWith(V2_RULES);
+
+  function showTab(id) {
+    const btn = document.querySelector(`.tab-btn[data-tab="${id}"]`);
+    if (btn) btn.click();
+    window.scrollTo(0, 0);
+  }
+
+  // --- 1) Aufgabe zuerst, Regeln eingeklappt -----------------------------
+  // Der vollständige Prompt bleibt im versteckten <pre> und wird so kopiert.
+  function setupPromptView(pre) {
+    const task = document.createElement("div");
+    task.className = "prompt-task";
+    const details = document.createElement("details");
+    details.className = "prompt-rules";
+    const summary = document.createElement("summary");
+    summary.textContent = T.rulesSummary;
+    const rules = document.createElement("pre");
+    rules.className = "prompt-text";
+    details.append(summary, rules);
+    pre.after(task, details);
+    pre.hidden = true;
+    const update = () => {
+      let text = pre.textContent, head = "";
+      if (isRulePrompt(text)) {
+        head = V2_RULES;
+        text = text.slice(V2_RULES.length).replace(/^\n+/, "");
+        if (text.startsWith(V2_EXTRA_HELP)) {
+          head += "\n\n" + V2_EXTRA_HELP;
+          text = text.slice(V2_EXTRA_HELP.length).replace(/^\n+/, "");
+        }
+      }
+      const esc = text.trim().replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+      const codeWords = /\b([A-Z][A-Z0-9]*_[A-Z0-9_]+|CONFIG(?:\.[A-Z_]+)?|THEME|EXTRAS(?:\.push\([^)]*\);?)?|SEED|TITLE|SCHNEEFALL|SNOWFALL|DEKO|DECO|BAER|BEAR|drawPlayer\(p\)|on(?:GatePassed|GateMissed|Crash|Finish)(?:\(\w*\))?|(?:welt|world)(?:\.\w+)+(?:\([^)]*\))?)/g;
+      task.innerHTML = '<span class="task-label">' + T.taskLabel + "</span>" + esc.replace(codeWords, "<code>$1</code>");
+      rules.textContent = head;
+      details.hidden = !head;
+    };
+    new MutationObserver(update).observe(pre, { childList: true, characterData: true, subtree: true });
+    update();
+  }
+  setupPromptView($("promptTextTeil1"));
+  setupPromptView($("promptTextTeil2"));
+
+  function decorate(part) {
+    const list = part === 1 ? promptsTeil1 : promptsTeil2;
+    const id = part === 1 ? currentStepTeil1Id : currentStepTeil2Id;
+    const step = list.find((p) => p.id === id);
+    if (!step) return;
+    $("bigNumTeil" + part).textContent = step.number;
+    $("stepTitleTeil" + part).textContent = step.title;
+  }
+  const origSelect1 = selectStepTeil1, origSelect2 = selectStepTeil2;
+  selectStepTeil1 = function (id) { origSelect1(id); decorate(1); };
+  selectStepTeil2 = function (id) { origSelect2(id); decorate(2); };
+  decorate(1);
+  function separator(listId, beforeId, text) {
+    const before = document.querySelector(`#${listId} [data-step-id="${beforeId}"]`);
+    if (!before) return;
+    const li = document.createElement("li");
+    li.className = "steps-sep";
+    li.textContent = text;
+    before.before(li);
+  }
+  // Schmaler Bildschirm (Tablet hochkant): nach dem Antippen direkt zum Prompt springen
+  ["stepsListTeil1", "stepsListTeil2"].forEach((listId) => $(listId).addEventListener("click", (e) => {
+    if (!e.target.closest(".step-item") || window.innerWidth > 900) return;
+    const head = $(listId).closest(".tab-panel").querySelector(".step-head");
+    setTimeout(() => head.scrollIntoView({ behavior: "smooth", block: "start" }), 50);
+  }));
+  separator("stepsListTeil1", "check", T.sepHelp1);
+  separator("stepsListTeil2", "safemode", T.sepHelp2);
+
+  // --- 2) Schritt-Führung: Prompt → Live Editor → ✓ Klappt → nächster Schritt
+  let ctx = null;   // { part: 1 | 2, id }
+  const bar = $("stepBar"), barText = $("stepBarText"), doneBtn = $("stepDoneBtn");
+  const mainSteps = () => promptsTeil1.filter((p) => isRulePrompt(p.prompt) || p.id === "step1" || p.id === "step2")
+                                      .filter((p) => p.id !== "check");
+
+  function updateBar() {
+    bar.hidden = !ctx;
+    if (!ctx) return;
+    const list = ctx.part === 1 ? promptsTeil1 : promptsTeil2;
+    const step = list.find((p) => p.id === ctx.id);
+    if (!step) { bar.hidden = true; return; }
+    if (ctx.part === 1) {
+      barText.textContent = T.stepPart1(step.number, step.title);
+      const steps = mainSteps(), i = steps.findIndex((p) => p.id === ctx.id);
+      doneBtn.textContent = i >= 0 && i < steps.length - 1 ? T.doneNext : T.doneLast;
+    } else {
+      barText.textContent = T.stepPart2(step.number, step.title);
+      doneBtn.textContent = T.donePart2;
+    }
+  }
+  function setCtx(part) {
+    const id = part === 1 ? currentStepTeil1Id : currentStepTeil2Id;
+    ctx = id ? { part, id } : null;
+    updateBar();
+  }
+  $("copyBtnTeil1").addEventListener("click", () => {
+    setCtx(1);
+    // Schritte ohne Code (nur Erklärung) gelten mit dem Kopieren als erledigt
+    const step = promptsTeil1.find((p) => p.id === currentStepTeil1Id);
+    if (step && !isRulePrompt(step.prompt) && mainSteps().includes(step)) markStepCompletedTeil1(step.id);
+  });
+  $("copyBtnTeil2").addEventListener("click", () => setCtx(2));
+  document.querySelectorAll(".go-editor").forEach((b) => b.addEventListener("click", () => {
+    setCtx(Number(b.dataset.part));
+    showTab("editor");
+  }));
+  doneBtn.addEventListener("click", () => {
+    if (!ctx) return;
+    if (ctx.part === 1) {
+      markStepCompletedTeil1(ctx.id);
+      const steps = mainSteps(), i = steps.findIndex((p) => p.id === ctx.id);
+      if (i >= 0 && i < steps.length - 1) selectStepTeil1(steps[i + 1].id);
+      ctx = null; updateBar();
+      showTab("teil1");
+    } else {
+      ctx = null; updateBar();
+      showTab("teil2");
+    }
+  });
+  $("stepBackBtn").addEventListener("click", () => { if (ctx) showTab(ctx.part === 1 ? "teil1" : "teil2"); });
+
+  // --- 3) Fehlerhinweis über dem Spiel -----------------------------------
+  const alertBox = $("gameAlert"), alertTitle = $("gameAlertTitle"), alertText = $("gameAlertText");
+  const alertBtn = $("gameAlertCopyBtn"), alertMsg = $("gameAlertMsg");
+  let alertKind = null, alertDetail = "", lastBroken = "";
+
+  window.withErrorHook = function (code) {
+    const hook = "<script>addEventListener(\"error\",function(e){parent.postMessage({skiGameError:String(e.message||e)+" +
+      "(e.lineno?\" (" + T.lineWord + " \"+e.lineno+\")\":\"\")},\"*\")});<\/script>";
+    return /<head[^>]*>/i.test(code) ? code.replace(/<head[^>]*>/i, (m) => m + hook) : hook + code;
+  };
+  function showAlert(kind, detail) {
+    if (alertKind === "error" && kind !== "error") return;   // echte Fehlermeldung hat Vorrang
+    alertKind = kind; alertDetail = detail || "";
+    alertTitle.textContent = { error: T.errorTitle, broken: T.brokenTitle, notStarted: T.notStartedTitle, cut: T.cutTitle }[kind];
+    alertText.textContent = kind === "notStarted" ? T.notStartedText : kind === "cut" ? T.cutText : alertDetail;
+    alertBtn.textContent = kind === "cut" ? T.copyWeiter : T.copyRepair;
+    alertMsg.textContent = "";
+    alertBox.hidden = false;
+  }
+  function hideAlert() { alertBox.hidden = true; alertKind = null; lastBroken = ""; }
+  window.addEventListener("message", (e) => {
+    if (e.data && e.data.skiGameError && e.source === frame.contentWindow) showAlert("error", e.data.skiGameError);
+  });
+  alertBtn.addEventListener("click", async () => {
+    const check = promptsTeil1.find((p) => p.id === "check").prompt;
+    const text = alertKind === "cut" ? WEITER_PROMPT
+      : check + (alertKind === "notStarted" ? "" : "\n\n" + T.repairLabel + " " + alertDetail);
+    alertMsg.textContent = (await copyToClipboard(text)) ? T.copied : T.copyFailed;
+  });
+  setInterval(() => {   // Extras, die der Spiel-Motor wegen eines Fehlers ausgeschaltet hat
+    try {
+      const broken = frame.contentWindow.__ski && frame.contentWindow.__ski.G.broken.join(", ");
+      if (broken && broken !== lastBroken) { lastBroken = broken; showAlert("broken", broken); }
+    } catch (e) { /* kein Spiel geladen */ }
+  }, 1500);
+
+  // --- 4) Spiel anzeigen: Versionen merken, Editor verkleinern, Prüfungen ---
+  const versions = [], undoBtn = $("undoBtn");
+  runBtn.addEventListener("click", () => {
+    hideAlert();
+    const code = editor.value;
+    if (code.trim() && code !== versions[versions.length - 1]) versions.push(code);
+    undoBtn.disabled = versions.length < 2;
+    if (code.length > 500) editor.classList.add("compact");
+    if (code.trim() && !/<\/html>\s*(```)?\s*$/i.test(code.trim())) showAlert("cut");
+    setTimeout(() => {
+      try { if (code.trim() && !frame.contentWindow.__ski) showAlert("notStarted"); } catch (e) { /* egal */ }
+    }, 3000);
+    frame.scrollIntoView({ behavior: "smooth", block: "nearest" });
+  });
+  undoBtn.addEventListener("click", () => {
+    if (versions.length < 2) return;
+    versions.pop();
+    editor.value = versions[versions.length - 1];
+    runBtn.click();
+  });
+  editor.addEventListener("focus", () => editor.classList.remove("compact"));
+
+  // --- 5) Startseite und Trainer-Modus ------------------------------------
+  document.querySelectorAll("[data-go]").forEach((b) => b.addEventListener("click", () => {
+    const go = b.dataset.go;
+    if (go === "play") { showTab("editor"); $("loadBaseBtn").click(); }
+    else if (go === "demo") { showTab("editor"); $("demoBtn").click(); }
+    else showTab(go);
+  }));
+  const trainerBtn = $("trainerToggle");
+  let trainer = new URLSearchParams(location.search).has("trainer");
+  try { trainer = trainer || localStorage.getItem("ski_trainer_mode") === "1"; } catch (e) { /* egal */ }
+  function applyTrainer() {
+    document.body.classList.toggle("trainer", trainer);
+    trainerBtn.textContent = trainer ? T.trainerOn : T.trainerOff;
+  }
+  trainerBtn.addEventListener("click", () => {
+    trainer = !trainer;
+    try { localStorage.setItem("ski_trainer_mode", trainer ? "1" : "0"); } catch (e) { /* egal */ }
+    applyTrainer();
+  });
+  applyTrainer();
+})();
+</script>
+</body>
+</html>

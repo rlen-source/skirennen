@@ -1,0 +1,1461 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+<title>Ski Race v3 – Demo</title>
+<script src="https://cdn.jsdelivr.net/npm/p5@1.9.0/lib/p5.min.js"></script>
+<style>
+  html, body { margin: 0; height: 100%; overflow: hidden; background: #0f1d2b; touch-action: none; }
+  body { display: flex; align-items: center; justify-content: center; }
+  main { line-height: 0; }
+  canvas { display: block; border-radius: 10px; box-shadow: 0 8px 30px rgba(0,0,0,.45); }
+  /* Tablet: no text selection, magnifier or menu on long press */
+  html, body, canvas { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; -webkit-tap-highlight-color: transparent; }
+  .rotate { display: none; position: fixed; top: 16px; left: 16px; right: 16px; text-align: center;
+            color: #cfe3f5; font: 600 16px system-ui, Arial, sans-serif; }
+  @media (orientation: portrait) and (max-width: 1100px) { .rotate { display: block; } }
+</style>
+</head>
+<body>
+<div class="rotate">📱↻ Please turn your phone or tablet sideways</div>
+<script>
+// =====================================================================
+// 1) SETTINGS – all the game's numbers in one place
+// =====================================================================
+const CONFIG = {
+  TITLE: "Ski Race – Demo",
+  W: 900, H: 630,              // playing field (coordinates always stay 900×630)
+  SEED: 2026,                  // same number = same course for everyone
+
+  GATES_TOTAL: 25,             // gates in a race
+  GATE_SPACING: 330,           // distance between gates (pixels)
+  GATE_WIDTH: 150,             // width of a gate
+  FIRST_GATE_Y: 700,
+  POLE_R: 6,
+
+  MISS_PENALTY_S: 2,           // missed gate = +2 seconds
+  CRASH_PENALTY_S: 1.5,        // crash = +1.5 seconds
+  FALL_S: 1.0,                 // how long you lie in the snow after a crash
+  GHOST_S: 1.2,                // then briefly invincible
+  HEARTS: 3,                   // hearts in endless mode
+
+  PLAYER_Y: 190,               // height of the skier on the screen
+  PLAYER_SIZE: 24,
+  SPEED_START: 230,            // pixels per second
+  SPEED_PER_GATE: 7,
+  SPEED_MAX: 430,
+  DEEP_SNOW_MULT: 0.6,         // off the piste: 60 % speed
+
+  STEER_ACCEL: 3200,
+  STEER_FRICTION: 3.2,
+  STEER_MAX: 480,
+  TOUCH_FOLLOW: true,          // tablet: skier follows your finger (false = hold left/right half)
+
+  TRACK_HALF: 165,             // half the piste width
+  BAND_LEFT: 0.17, BAND_RIGHT: 0.83,
+  TREE_EVERY: 42,
+};
+
+// =====================================================================
+// 2) YOU MAY CHANGE THIS – look, player figure, extras, events
+// =====================================================================
+// DEMO VERSION: everything new is only in this area. The game engine is
+// exactly the same as in the base game – so all of this works with prompts too!
+
+// --- Colours --------------------------------------------------------
+const THEME = {
+  snow:      [250, 252, 255],
+  deepSnow:  [226, 236, 247],
+  sparkle:   [200, 216, 236],
+  corduroy:  [238, 243, 250],
+  pisteEdge: [170, 190, 212],
+  trail:     [200, 214, 232],
+  gateA:     [40, 90, 220],
+  gateB:     [220, 40, 40],
+  pole:      [80, 80, 80],
+  trunk:     [120, 72, 36],
+  tree:      [30, 135, 70],
+  treeDark:  [18, 98, 50],
+  hudBg:     [15, 32, 52, 215],
+  hudText:   [255, 255, 255],
+  accent:    [255, 190, 40],
+};
+
+// --- The player figure ----------------------------------------------
+// p = { x, y, s (size), lean (-1 left … 1 right), fallen, offPiste }
+function drawPlayer(p) {
+  translate(p.x, p.y);
+  rotate(p.fallen ? (p.lean >= 0 ? 1.4 : -1.4) : p.lean * 0.35);
+  const s = p.s;
+  // Skis
+  stroke(30); strokeWeight(3); strokeCap(ROUND);
+  line(-s * 0.32, -s * 0.5, -s * 0.32, s * 0.95);
+  line( s * 0.32, -s * 0.5,  s * 0.32, s * 0.95);
+  // Poles
+  stroke(90); strokeWeight(1.5);
+  line(-s * 0.55, -s * 0.05, -s * 0.85, -s * 0.85);
+  line( s * 0.55, -s * 0.05,  s * 0.85, -s * 0.85);
+  // Scarf – blows against the steering direction
+  const w = -p.lean, flutter = Math.sin(frameCount * 0.4) * s * 0.08;
+  stroke(255, 200, 40); strokeWeight(s * 0.18);
+  line(0, -s * 0.45, s * (0.35 + w * 0.5), -s * 0.2);
+  line(s * (0.35 + w * 0.5), -s * 0.2, s * (0.6 + w * 0.7), -s * 0.05 + flutter);
+  // Jacket
+  noStroke(); fill(230, 60, 60); ellipse(0, 0, s * 1.0, s * 1.2);
+  fill(255, 255, 255, 120); rect(-s * 0.06, -s * 0.5, s * 0.12, s * 0.9, 2);
+  // Head, goggles, hat, bobble
+  fill(255, 220, 170); ellipse(0, -s * 0.75, s * 0.6, s * 0.6);
+  fill(40); rect(-s * 0.3, -s * 0.8, s * 0.6, s * 0.17, 3);
+  fill(255, 170, 40); rect(-s * 0.24, -s * 0.78, s * 0.48, s * 0.12, 3);
+  fill(40, 110, 230); arc(0, -s * 0.82, s * 0.66, s * 0.6, PI, TWO_PI);
+  fill(255);          ellipse(0, -s * 1.12, s * 0.22, s * 0.22);
+}
+
+// --- Extras: new things in the game ---------------------------------
+// Every extra is an object with (all optional):
+//   name, spawn(world), update(dt, world), draw(world), hits(player, world) → true = crash
+// "world" knows: player, scrollY, speed, state, toScreenY(wy), trackBounds(wy),
+//                trackCenter(wy), rnd(), popup(text, x, y, colour), addScore(n)
+// If an extra has an error, only that extra is switched off.
+const EXTRAS = [];
+
+// Small helpers for the extras -------------------------------------------
+// Finds a spot in the deep snow next to the piste (left or right).
+function spotInDeepSnow(world, wy, gap, margin) {
+  const b = world.trackBounds(wy);
+  const sides = world.rnd() < 0.5 ? ["L", "R"] : ["R", "L"];
+  const r = world.rnd();
+  for (const side of sides) {
+    const lo = side === "L" ? margin : b.right + gap;
+    const hi = side === "L" ? b.left - gap : CONFIG.W - margin;
+    if (hi - lo > 10) return { x: lo + r * (hi - lo), side, lo, hi };
+  }
+  return null;
+}
+// Is the area free of trees? (only reads the trees, changes nothing)
+// x, wy = bottom centre, width/height = size of the thing
+function noTreeNear(x, wy, width, height) {
+  for (const t of COURSE.trees) {
+    if (Math.abs(t.x - x) < width / 2 + t.r * 0.6 && t.wy > wy - height - 10 && t.wy - t.r * 1.4 < wy + 6) return false;
+  }
+  return true;
+}
+// Tries a few spots in the deep snow until one is free.
+function freeSpot(world, wy, gap, margin, width, height) {
+  for (let attempt = 0; attempt < 8; attempt++) {
+    const p = spotInDeepSnow(world, wy, gap + width / 2, margin + width / 2);
+    if (p && noTreeNear(p.x, wy, width, height)) return p;
+  }
+  return null;
+}
+// Fills the list ex.items to below the screen and tidies up at the top.
+function refill(ex, world, spacing, make) {
+  while (ex.nextWY < world.scrollY + CONFIG.H + 200) {
+    const thing = make(ex.nextWY);
+    if (thing) ex.items.push(thing);
+    ex.nextWY += spacing * (0.7 + world.rnd() * 0.6);
+  }
+  ex.items = ex.items.filter((d) => d.wy > world.scrollY - 150);
+}
+function onScreen(y) { return y > -80 && y < CONFIG.H + 80; }
+
+// Counters used by several extras and events
+let combo = 0;
+let stars = 0;
+
+// --- Ski huts & mountain café --------------------------------------------
+const HUTS = {
+  name: "Ski huts",
+  items: [], nextWY: 0,
+  spawn(world) { this.items = []; this.nextWY = 420; this.update(0, world); },
+  update(dt, world) {
+    refill(this, world, 700, (wy) => {
+      const big = world.rnd() < 0.4;
+      const p = big ? freeSpot(world, wy, 20, 10, 150, 70) : freeSpot(world, wy, 20, 10, 60, 60);
+      return p ? { x: p.x, wy, big } : null;
+    });
+  },
+  draw(world) {
+    for (const h of this.items) {
+      const y = world.toScreenY(h.wy);
+      if (!onScreen(y)) continue;
+      push(); translate(h.x, y);
+      const w = h.big ? 96 : 50, hh = h.big ? 40 : 32;
+      // Smoke from the chimney
+      noStroke();
+      for (let i = 0; i < 4; i++) {
+        const t = (millis() / 1400 + i / 4) % 1;
+        fill(235, 238, 242, 200 * (1 - t));
+        circle(w * 0.28 + Math.sin(t * 6 + i) * 4, -hh - 26 - t * 40, 8 + t * 14);
+      }
+      fill(90, 60, 50); rect(w * 0.22, -hh - 28, 9, 16);
+      // House
+      fill(150, 95, 55); rect(-w / 2, -hh, w, hh, 2);
+      stroke(120, 75, 40); strokeWeight(1);
+      for (let k = 1; k < 4; k++) line(-w / 2, -hh + k * hh / 4, w / 2, -hh + k * hh / 4);
+      noStroke();
+      fill(170, 40, 40); triangle(-w / 2 - 8, -hh, w / 2 + 8, -hh, 0, -hh - 26);
+      fill(255); triangle(-w / 2 - 4, -hh - 2, w / 2 + 4, -hh - 2, 0, -hh - 20);
+      fill(170, 40, 40); triangle(-w / 2 + 6, -hh - 4, w / 2 - 6, -hh - 4, 0, -hh - 16);
+      // Door and lit windows
+      fill(80, 50, 30); rect(-6, -18, 12, 18, 2);
+      fill(255, 220, 110); rect(-w / 2 + 6, -hh + 8, 10, 9, 1); rect(w / 2 - 16, -hh + 8, 10, 9, 1);
+      if (h.big) {
+        // Sign and sun umbrellas
+        fill(255); rect(-30, -hh - 2, 60, 13, 3);
+        fill(150, 40, 40); textAlign(CENTER, CENTER); textSize(9); textStyle(BOLD);
+        text("SKI CAFÉ", 0, -hh + 4.5); textStyle(NORMAL);
+        for (const sx of [-w / 2 - 22, w / 2 + 22]) {
+          fill(110); rect(sx - 1, -24, 2, 24);
+          fill(220, 40, 40); arc(sx, -22, 34, 22, PI, TWO_PI);
+          fill(255); arc(sx, -22, 12, 22, PI, TWO_PI);
+          fill(140, 95, 60); rect(sx - 8, -8, 16, 3);
+        }
+      }
+      pop();
+    }
+  },
+};
+EXTRAS.push(HUTS);
+
+// --- Animals in the deep snow: mountain goat, marmot, hare ---------------
+const ANIMALS = {
+  name: "Animals",
+  items: [], nextWY: 0,
+  spawn(world) { this.items = []; this.nextWY = 300; this.update(0, world); },
+  update(dt, world) {
+    refill(this, world, 480, (wy) => {
+      const p = freeSpot(world, wy, 20, 10, 36, 30);
+      if (!p) return null;
+      const r = world.rnd();
+      const kind = r < 0.35 ? "goat" : r < 0.7 ? "marmot" : "hare";
+      return { kind, x: p.x, wy, lo: p.lo, hi: p.hi, h: 0, vx: world.rnd() < 0.5 ? -45 : 45, phase: world.rnd() * 6 };
+    });
+    for (const t of this.items) {
+      if (t.kind === "marmot") {
+        // pops up when you are close
+        const target = Math.abs(world.player.wy - t.wy) < 260 ? 1 : 0;
+        t.h += (target - t.h) * Math.min(1, dt * 5);
+      }
+      if (t.kind === "hare") {
+        t.x += t.vx * dt;
+        if (t.x < t.lo || t.x > t.hi) { t.vx = -t.vx; t.x = constrain(t.x, t.lo, t.hi); }
+      }
+    }
+  },
+  draw(world) {
+    const time = millis() / 1000;
+    for (const t of this.items) {
+      const y = world.toScreenY(t.wy);
+      if (!onScreen(y)) continue;
+      push(); translate(t.x, y); noStroke();
+      if (t.kind === "goat") {
+        const nod = Math.sin(time * 2 + t.phase) * 2;
+        fill(0, 0, 0, 25); ellipse(0, 2, 30, 7);
+        fill(245, 240, 230); ellipse(0, -12, 26, 14);
+        stroke(120); strokeWeight(2);
+        line(-8, -6, -8, 2); line(-3, -6, -3, 2); line(4, -6, 4, 2); line(9, -6, 9, 2);
+        noStroke(); fill(240, 235, 225); ellipse(14, -20 + nod, 11, 9);
+        stroke(90); strokeWeight(2); noFill();
+        arc(12, -26 + nod, 10, 10, PI, PI + HALF_PI);
+        noStroke(); fill(30); circle(16, -21 + nod, 2);
+        fill(200); triangle(15, -16 + nod, 19, -16 + nod, 17, -11 + nod);
+      } else if (t.kind === "marmot") {
+        fill(110, 90, 75); ellipse(0, 0, 26, 9);
+        if (t.h > 0.05) {
+          const hh = 18 * t.h;
+          fill(160, 115, 70); rect(-6, -hh, 12, hh, 6, 6, 0, 0);
+          fill(140, 100, 60); circle(0, -hh, 12);
+          fill(30); circle(-2.5, -hh - 1, 2); circle(2.5, -hh - 1, 2);
+          fill(255); rect(-1.5, -hh + 3, 3, 2);
+        }
+      } else {
+        const hop = Math.abs(Math.sin(time * 9 + t.phase)) * 7;
+        const dir = t.vx > 0 ? 1 : -1;
+        fill(0, 0, 0, 20); ellipse(0, 2, 16, 4);
+        fill(250); ellipse(0, -6 - hop, 16, 11);
+        circle(7 * dir, -12 - hop, 9);
+        ellipse(5 * dir, -20 - hop, 4, 11); ellipse(8 * dir, -20 - hop, 4, 11);
+        fill(255, 190, 200); ellipse(5 * dir, -20 - hop, 2, 7);
+        fill(30); circle(9 * dir, -13 - hop, 1.8);
+      }
+      pop();
+    }
+  },
+};
+EXTRAS.push(ANIMALS);
+
+// --- Crowd: spectators along the piste and at the finish -----------------
+const CROWD = {
+  name: "Crowd",
+  items: [], nextWY: 0, cheer: 0,
+  colours: [[230, 60, 60], [40, 110, 230], [40, 170, 90], [255, 190, 40], [160, 70, 200], [255, 120, 30]],
+  newGroup(world, wy, side, count, rows) {
+    const people = [];
+    for (let i = 0; i < count; i++) {
+      people.push({
+        dwy: Math.floor(i / rows) * 26 + (i % rows) * 13, row: i % rows,
+        jacket: this.colours[Math.floor(world.rnd() * this.colours.length)],
+        hat: this.colours[Math.floor(world.rnd() * this.colours.length)],
+        flag: world.rnd() < 0.25, phase: world.rnd() * 6,
+      });
+    }
+    return { wy, side, people, length: Math.ceil(count / rows) * 26 };
+  },
+  spawn(world) {
+    this.items = []; this.cheer = 0;
+    this.nextWY = 900;
+    // In a race: lots of spectators left and right of the finish
+    if (G.mode === "race") {
+      for (const side of ["left", "right"]) {
+        for (let k = 0; k < 4; k++) {
+          const group = this.newGroup(world, COURSE.finishY - 480 + k * 230, side, 16, 2);
+          group.finish = true;
+          this.items.push(group);
+        }
+      }
+    }
+    this.update(0, world);
+  },
+  update(dt, world) {
+    this.cheer = Math.max(0, this.cheer - dt);
+    const finish = this.items.filter((g) => g.finish);
+    this.items = this.items.filter((g) => !g.finish);
+    refill(this, world, 1100, (wy) => {
+      if (G.mode === "race" && wy > COURSE.finishY - 700) return null;   // the finish has its own spectators
+      return this.newGroup(world, wy, world.rnd() < 0.5 ? "left" : "right", 4 + Math.floor(world.rnd() * 4), 2);
+    });
+    this.items.push(...finish);
+  },
+  draw(world) {
+    const P = world.player, time = millis() / 1000;
+    for (const g of this.items) {
+      const y0 = world.toScreenY(g.wy);
+      if (y0 > CONFIG.H + 60 || y0 + g.length < -60) continue;
+      const out = g.side === "left" ? -1 : 1;
+      // Barrier (orange net) along the piste
+      stroke(255, 120, 30); strokeWeight(3); noFill();
+      beginShape();
+      for (let d = -10; d <= g.length + 10; d += 10) {
+        vertex(world.trackBounds(g.wy + d)[g.side] + out * 12, y0 + d);
+      }
+      endShape();
+      stroke(90); strokeWeight(2);
+      for (let d = -10; d <= g.length + 10; d += 30) {
+        const x = world.trackBounds(g.wy + d)[g.side] + out * 12;
+        line(x, y0 + d + 3, x, y0 + d - 7);
+      }
+      noStroke();
+      for (const m of g.people) {
+        const wy = g.wy + m.dwy, y = world.toScreenY(wy);
+        if (!onScreen(y)) continue;
+        const x = world.trackBounds(wy)[g.side] + out * (26 + m.row * 16);
+        const near = Math.abs(P.wy - wy) < 220 || this.cheer > 0 || world.state === "finish";
+        const jump = near ? Math.abs(Math.sin(time * 9 + m.phase)) * 5 : 0;
+        push(); translate(x, y - jump);
+        fill(...m.jacket); ellipse(0, 0, 13, 15);
+        fill(255, 220, 170); circle(0, -10, 9);
+        fill(...m.hat); arc(0, -11, 10, 9, PI, TWO_PI);
+        stroke(...m.jacket); strokeWeight(3);
+        if (near) { line(-5, -3, -8, -15); line(5, -3, 8, -15); }
+        else      { line(-5, -2, -7, 5);   line(5, -2, 7, 5); }
+        if (m.flag) {
+          stroke(80); strokeWeight(1.5); line(8, -15, 8, -32);
+          noStroke(); fill(220, 30, 30); rect(8, -32, 14, 10);
+          fill(255); rect(13, -30, 4, 6); rect(12, -28, 6, 2);
+        }
+        noStroke(); pop();
+      }
+    }
+  },
+};
+EXTRAS.push(CROWD);
+
+// --- Collect stars on the piste --------------------------------------------
+const STARS = {
+  name: "Stars",
+  items: [], nextWY: 0,
+  spawn(world) { this.items = []; stars = 0; this.nextWY = CONFIG.FIRST_GATE_Y + CONFIG.GATE_SPACING / 2; this.update(0, world); },
+  update(dt, world) {
+    while (this.nextWY < world.scrollY + CONFIG.H + 200) {
+      if (G.mode === "endless" || this.nextWY < COURSE.finishY - 200) {
+        const c = world.trackCenter(this.nextWY);
+        this.items.push({ x: c + (world.rnd() - 0.5) * CONFIG.TRACK_HALF * 1.1, wy: this.nextWY, gone: false });
+      }
+      this.nextWY += CONFIG.GATE_SPACING;
+    }
+    const P = world.player;
+    for (const s of this.items) {
+      if (!s.gone && P.fallTimer <= 0 && dist(P.x, P.wy, s.x, s.wy) < 24) {
+        s.gone = true; stars++;
+        world.addScore(5);
+        world.popup("⭐", s.x, world.toScreenY(s.wy) - 20, [255, 170, 0]);
+        SFX.tone(1320, 0.08, "triangle", 0.08); SFX.tone(1760, 0.1, "triangle", 0.07, null, 0.06);
+      }
+    }
+    this.items = this.items.filter((s) => s.wy > world.scrollY - 60);
+  },
+  draw(world) {
+    const time = millis() / 1000;
+    for (const s of this.items) {
+      if (s.gone) continue;
+      const y = world.toScreenY(s.wy);
+      if (!onScreen(y)) continue;
+      push(); translate(s.x, y); rotate(time * 1.5);
+      noStroke(); fill(255, 220, 60, 70); circle(0, 0, 30 + Math.sin(time * 6) * 4);
+      fill(255, 200, 0); stroke(200, 130, 0); strokeWeight(1.5);
+      beginShape();
+      for (let i = 0; i < 10; i++) {
+        const r = i % 2 ? 5 : 12, a = -HALF_PI + i * PI / 5;
+        vertex(Math.cos(a) * r, Math.sin(a) * r);
+      }
+      endShape(CLOSE);
+      pop();
+    }
+  },
+};
+EXTRAS.push(STARS);
+
+// --- The bear: comes down the slope from behind ----------------------------
+const BEAR = {
+  name: "Bear",
+  bear: null, timer: 0,
+  spawn(world) { this.bear = null; this.timer = 10 + world.rnd() * 6; },
+  update(dt, world) {
+    if (!this.bear) {
+      this.timer -= dt;
+      if (this.timer <= 0) {
+        this.bear = { x: world.player.x, wy: world.scrollY - 60 };
+        this.timer = 12 + world.rnd() * 8;
+      }
+      return;
+    }
+    const b = this.bear;
+    b.wy += (world.speed + 70) * dt;
+    const dx = world.player.x - b.x;
+    b.x += Math.sign(dx) * Math.min(Math.abs(dx), 90 * dt);
+    if (b.wy > world.scrollY + CONFIG.H + 60) this.bear = null;
+  },
+  hits(player, world) {
+    return !!this.bear && dist(this.bear.x, this.bear.wy, player.x, player.wy) < 22;
+  },
+  draw(world) {
+    // Warning just before the bear arrives
+    if (!this.bear && this.timer < 1.3 && world.state === "run" && Math.floor(millis() / 150) % 2) {
+      noStroke(); fill(220, 40, 40, 220); rect(world.player.x - 32, 6, 64, 26, 8);
+      fill(255); textAlign(CENTER, CENTER); textSize(16); text("⚠ 🐻", world.player.x, 19);
+    }
+    if (!this.bear) return;
+    const b = this.bear, y = world.toScreenY(b.wy), run = Math.sin(millis() / 60) * 4;
+    push(); translate(b.x, y); noStroke();
+    fill(0, 0, 0, 30); ellipse(0, 18, 34, 10);
+    fill(95, 60, 30);
+    ellipse(-9, 10 + run, 9, 12); ellipse(9, 10 - run, 9, 12);
+    ellipse(0, 0, 32, 28);
+    circle(0, 15, 20);
+    circle(-8, 22, 8); circle(8, 22, 8);
+    fill(200, 160, 110); ellipse(0, 19, 10, 7);
+    fill(20); circle(0, 17, 4); circle(-4, 12, 3); circle(4, 12, 3);
+    pop();
+  },
+};
+EXTRAS.push(BEAR);
+
+// --- Eagle: flies over the piste now and then -------------------------------
+const EAGLE = {
+  name: "Eagle",
+  bird: null, timer: 0,
+  spawn(world) { this.bird = null; this.timer = 5 + world.rnd() * 5; },
+  update(dt, world) {
+    if (!this.bird) {
+      this.timer -= dt;
+      if (this.timer <= 0) {
+        const fromLeft = world.rnd() < 0.5;
+        this.bird = { x: fromLeft ? -40 : CONFIG.W + 40, y: 80 + world.rnd() * 220, vx: fromLeft ? 170 : -170 };
+        this.timer = 14 + world.rnd() * 10;
+      }
+      return;
+    }
+    this.bird.x += this.bird.vx * dt;
+    this.bird.y += Math.sin(this.bird.x * 0.02) * 20 * dt;
+    if (this.bird.x < -60 || this.bird.x > CONFIG.W + 60) this.bird = null;
+  },
+  draw(world) {
+    if (!this.bird) return;
+    const v = this.bird, flap = Math.sin(millis() / 90) * 9, dir = v.vx > 0 ? 1 : -1;
+    noStroke(); fill(60, 80, 110, 35); ellipse(v.x - 30 * dir, v.y + 90, 40, 9);   // shadow
+    push(); translate(v.x, v.y);
+    stroke(70, 45, 25); strokeWeight(4); noFill();
+    line(0, 0, -18, -6 - flap); line(-18, -6 - flap, -30, -2 - flap * 1.4);
+    line(0, 0, 18, -6 - flap);  line(18, -6 - flap, 30, -2 - flap * 1.4);
+    noStroke(); fill(80, 50, 25); ellipse(0, 0, 22 * dir, 9);
+    fill(250); circle(10 * dir, -2, 8);
+    fill(255, 190, 30); triangle(13 * dir, -3, 13 * dir, 0, 18 * dir, -1);
+    pop();
+  },
+};
+EXTRAS.push(EAGLE);
+
+// --- Snowfall ---------------------------------------------------------------
+const SNOWFALL = {
+  name: "Snowfall",
+  flakes: [],
+  spawn(world) {
+    this.flakes = [];
+    for (let i = 0; i < 110; i++) {
+      this.flakes.push({ x: world.rnd() * CONFIG.W, y: world.rnd() * CONFIG.H, v: 25 + world.rnd() * 45, r: 2 + world.rnd() * 3 });
+    }
+  },
+  update(dt, world) {
+    for (const f of this.flakes) {
+      f.y += f.v * dt;
+      f.x += Math.sin(f.y * 0.02) * 12 * dt;
+      if (f.y > CONFIG.H) { f.y = -5; f.x = world.rnd() * CONFIG.W; }
+    }
+  },
+  draw(world) {
+    noStroke(); fill(170, 195, 225, 200);
+    for (const f of this.flakes) circle(f.x, f.y, f.r);
+  },
+};
+EXTRAS.push(SNOWFALL);
+
+// --- Fireworks at the finish -------------------------------------------------
+// Runs in draw(), because update() is no longer called after the finish.
+const FIREWORKS = {
+  name: "Fireworks",
+  active: false, t: 0, next: 0, rockets: [], sparks: [],
+  spawn(world) { this.active = false; this.rockets = []; this.sparks = []; },
+  start() { this.active = true; this.t = 0; this.next = 0; },
+  draw(world) {
+    if (!this.active) return;
+    const dt = Math.min(deltaTime / 1000, 0.05);
+    this.t += dt;
+    this.next -= dt;
+    if (this.t < 6 && this.next <= 0) {
+      this.next = 0.35;
+      // left and right of the result panel
+      const x = Math.random() < 0.5 ? 50 + Math.random() * 160 : CONFIG.W - 210 + Math.random() * 160;
+      this.rockets.push({ x, y: CONFIG.H + 10, vy: -430 - Math.random() * 120, burst: 90 + Math.random() * 220,
+                          col: random([[255, 80, 80], [255, 210, 60], [90, 200, 255], [150, 255, 120], [255, 120, 230]]) });
+    }
+    for (const r of this.rockets) {
+      r.y += r.vy * dt;
+      if (r.y < r.burst && !r.done) {
+        r.done = true;
+        for (let i = 0; i < 40; i++) {
+          const a = Math.random() * TWO_PI, v = 60 + Math.random() * 160;
+          this.sparks.push({ x: r.x, y: r.y, vx: Math.cos(a) * v, vy: Math.sin(a) * v, life: 1.2, col: r.col });
+        }
+      }
+    }
+    this.rockets = this.rockets.filter((r) => !r.done);
+    for (const f of this.sparks) { f.x += f.vx * dt; f.y += f.vy * dt; f.vy += 90 * dt; f.life -= dt; }
+    this.sparks = this.sparks.filter((f) => f.life > 0);
+    noStroke();
+    for (const r of this.rockets) { fill(255, 240, 200); circle(r.x, r.y, 4); }
+    for (const f of this.sparks) { fill(...f.col, 255 * Math.min(1, f.life)); circle(f.x, f.y, 4); }
+  },
+};
+EXTRAS.push(FIREWORKS);
+
+// --- Display top right: stars and combo streak --------------------------------
+const INFO_DISPLAY = {
+  name: "Info display",
+  spawn(world) { combo = 0; },
+  draw(world) {
+    noStroke(); fill(15, 32, 52, 200); rect(CONFIG.W - 140, 54, 126, combo >= 2 ? 62 : 36, 10);
+    fill(255); textAlign(LEFT, CENTER); textSize(17);
+    text("⭐ " + stars, CONFIG.W - 128, 72);
+    if (combo >= 2) { fill(255, 170, 40); text("🔥 " + combo + " in a row", CONFIG.W - 128, 98); }
+  },
+};
+EXTRAS.push(INFO_DISPLAY);
+
+// --- Events -------------------------------------------------------------------
+function onGatePassed(gate) {
+  combo++;
+  CROWD.cheer = 0.8;
+  if (combo % 5 === 0) world.popup("🔥 " + combo + " in a row!", world.player.x, 120, [255, 140, 0]);
+}
+function onGateMissed(gate) { combo = 0; }
+function onCrash(kind) {
+  combo = 0;
+  if (kind === "Bear") world.popup("The bear got you!", world.player.x, 110, [140, 80, 30]);
+}
+function onFinish(result) {
+  FIREWORKS.start();
+  world.popup("⭐ " + stars + " stars collected!", CONFIG.W / 2, 570, [255, 170, 0]);
+}
+
+// =====================================================================
+// 3) GAME ENGINE – DO NOT CHANGE
+// =====================================================================
+
+function mulberry32(a) {
+  return function () {
+    a |= 0; a = (a + 0x6D2B79F5) | 0;
+    let t = Math.imul(a ^ (a >>> 15), 1 | a);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+function hash01(n) {
+  const s = Math.sin(n * 127.1 + 311.7) * 43758.5453;
+  return s - Math.floor(s);
+}
+
+// --- Sound (WebAudio, no files) --------------------------------------
+const SFX = {
+  ctx: null, muted: false,
+  init() {
+    if (!this.ctx) {
+      try { this.ctx = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) { this.ctx = null; }
+    }
+    if (this.ctx && this.ctx.state === "suspended") this.ctx.resume();
+  },
+  tone(freq, dur, type = "sine", vol = 0.12, to = null, delay = 0) {
+    if (this.muted || !this.ctx) return;
+    const t = this.ctx.currentTime + delay;
+    const o = this.ctx.createOscillator(), g = this.ctx.createGain();
+    o.type = type;
+    o.frequency.setValueAtTime(freq, t);
+    if (to) o.frequency.exponentialRampToValueAtTime(to, t + dur);
+    g.gain.setValueAtTime(vol, t);
+    g.gain.exponentialRampToValueAtTime(0.001, t + dur);
+    o.connect(g).connect(this.ctx.destination);
+    o.start(t); o.stop(t + dur + 0.02);
+  },
+  gate()   { this.tone(880, 0.12, "triangle", 0.12); this.tone(1320, 0.15, "triangle", 0.1, null, 0.07); },
+  miss()   { this.tone(240, 0.25, "sawtooth", 0.06, 140); },
+  crash()  { this.tone(180, 0.35, "square", 0.1, 50); },
+  tick()   { this.tone(600, 0.1, "sine", 0.12); },
+  go()     { this.tone(1000, 0.3, "sine", 0.15); },
+  finish() { [523, 659, 784, 1047].forEach((f, i) => this.tone(f, 0.28, "triangle", 0.12, null, i * 0.12)); },
+};
+
+// --- State ------------------------------------------------------------
+const G = {
+  state: "title", mode: "race", sel: "race",
+  t: 0, endAt: 0, muted: false,
+  pointers: new Map(), forcedInput: null, autopilot: false,
+  buttons: [], broken: [],
+};
+let COURSE = null;
+let cnv;
+
+const world = {
+  get player()  { return G.player; },
+  get scrollY() { return G.scrollY; },
+  get speed()   { return G.speed; },
+  get state()   { return G.state; },
+  toScreenY:   (wy) => wy - G.scrollY,
+  trackBounds: (wy) => trackBounds(wy),
+  trackCenter: (wy) => trackCenter(wy),
+  rnd:         () => COURSE.extraRnd(),
+  popup:       (text, x, y, col) => popup(text, x, y, col),
+  addScore:    (n) => { G.score += n; },
+};
+
+// --- Course -----------------------------------------------------------
+function newCourse() {
+  const r = mulberry32(CONFIG.SEED);
+  COURSE = {
+    p1: r() * Math.PI * 2, p2: r() * Math.PI * 2,
+    gateRnd: mulberry32(CONFIG.SEED + 101),
+    treeRnd: mulberry32(CONFIG.SEED + 202),
+    extraRnd: mulberry32(CONFIG.SEED + 303),
+    gates: [], trees: [], gateCount: 0,
+    nextGateWY: CONFIG.FIRST_GATE_Y, nextTreeWY: -40,
+    finishY: CONFIG.FIRST_GATE_Y + (CONFIG.GATES_TOTAL - 1) * CONFIG.GATE_SPACING + 300,
+  };
+}
+
+function trackCenter(wy) {
+  const minX = CONFIG.W * CONFIG.BAND_LEFT, maxX = CONFIG.W * CONFIG.BAND_RIGHT;
+  const mid = (minX + maxX) / 2;
+  const room = Math.max(0, (maxX - minX) / 2 - CONFIG.TRACK_HALF);
+  const ease = Math.min(1, Math.max(0, wy / 700));   // straight start, then curves
+  const t = wy * 0.0042;
+  return mid + ease * room * (0.75 * Math.sin(t + COURSE.p1) + 0.25 * Math.sin(t * 2.3 + COURSE.p2));
+}
+
+function trackBounds(wy) {
+  const c = trackCenter(wy);
+  return { left: c - CONFIG.TRACK_HALF, right: c + CONFIG.TRACK_HALF };
+}
+
+function makeGate() {
+  const i = COURSE.gateCount, wy = COURSE.nextGateWY;
+  const r = COURSE.gateRnd();
+  const side = i % 2 === 0 ? -1 : 1;
+  const b = trackBounds(wy), half = CONFIG.GATE_WIDTH / 2;
+  const c = constrain(trackCenter(wy) + side * (25 + r * 45), b.left + half + 10, b.right - half - 10);
+  COURSE.gates.push({ i, wy, left: c - half, right: c + half, color: i % 2, state: "open" });
+  COURSE.gateCount++;
+  COURSE.nextGateWY += G.mode === "endless" ? Math.max(240, CONFIG.GATE_SPACING - i * 2) : CONFIG.GATE_SPACING;
+}
+
+function makeTrees(wy) {
+  const r = COURSE.treeRnd;
+  const a = r(), b = r(), c = r(), d = r(), e = r(), f = r();   // always 6 random numbers → same course
+  const bb = trackBounds(wy);
+  if (a < 0.7) {
+    const size = 16 + e * 14, lo = 14, hi = bb.left - 22 - size * 0.8;
+    if (hi > lo) COURSE.trees.push({ x: lo + b * (hi - lo), wy: wy + (f - 0.5) * 20, r: size });
+  }
+  if (c < 0.7) {
+    const size = 16 + f * 14, lo = bb.right + 22 + size * 0.8, hi = CONFIG.W - 14;
+    if (hi > lo) COURSE.trees.push({ x: lo + d * (hi - lo), wy: wy + (e - 0.5) * 20, r: size });
+  }
+}
+
+function ensureWorld(untilWY) {
+  while (COURSE.nextGateWY < untilWY && (G.mode === "endless" || COURSE.gateCount < CONFIG.GATES_TOTAL)) makeGate();
+  while (COURSE.nextTreeWY < untilWY) { makeTrees(COURSE.nextTreeWY); COURSE.nextTreeWY += CONFIG.TREE_EVERY; }
+}
+
+function cleanupWorld() {
+  const cut = G.scrollY - 100;
+  if (COURSE.trees.length && COURSE.trees[0].wy < cut) COURSE.trees = COURSE.trees.filter((t) => t.wy >= cut);
+  while (COURSE.gates.length && COURSE.gates[0].wy < cut) COURSE.gates.shift();
+}
+
+// --- Start / end a run -----------------------------------------------
+function prepareRun(mode) {
+  G.mode = mode;
+  newCourse();
+  Object.assign(G, {
+    scrollY: 0, speed: 0, raceTime: 0, penalty: 0,
+    passed: 0, missed: 0, crashes: 0, hearts: CONFIG.HEARTS, score: 0,
+    shake: 0, goFlash: 0, sprayAcc: 0, overPending: false, result: null,
+    trail: [], particles: [], popups: [],
+  });
+  G.player = {
+    x: trackCenter(CONFIG.PLAYER_Y), wy: CONFIG.PLAYER_Y, vx: 0, lean: 0,
+    s: CONFIG.PLAYER_SIZE, fallTimer: 0, ghost: 0, offPiste: false,
+  };
+  G.pointers.clear();
+  ensureWorld(CONFIG.H + 400);
+  for (const ex of EXTRAS) runExtra(ex, () => ex.spawn && ex.spawn(world));
+}
+
+function startRun(mode) {
+  prepareRun(mode);
+  G.state = "countdown"; G.countdown = 3; G.lastBeep = 4;
+}
+
+function toTitle() {
+  prepareRun(G.mode);
+  G.sel = G.mode;
+  G.state = "title";
+}
+
+function finishRace() {
+  const total = G.raceTime + G.penalty;
+  const prev = loadBest("race");
+  const newBest = prev == null || total < prev;
+  if (newBest) saveBest("race", total);
+  G.result = {
+    time: total, raw: G.raceTime, penalty: G.penalty,
+    passed: G.passed, missed: G.missed, crashes: G.crashes,
+    best: newBest ? total : prev, newBest,
+  };
+  G.state = "finish"; G.endAt = G.t;
+  SFX.finish(); confetti();
+  safeHook(onFinish, G.result);
+}
+
+function endEndless() {
+  const prev = loadBest("endless");
+  const newBest = prev == null || G.score > prev;
+  if (newBest) saveBest("endless", G.score);
+  G.result = { score: G.score, passed: G.passed, best: newBest ? G.score : prev, newBest };
+  G.state = "over"; G.endAt = G.t;
+  SFX.finish();
+}
+
+function crash(kind) {
+  const P = G.player;
+  if (P.fallTimer > 0 || P.ghost > 0) return;
+  P.fallTimer = CONFIG.FALL_S;
+  P.vx *= 0.2;
+  G.speed *= 0.25;
+  G.crashes++;
+  G.shake = 0.35;
+  G.trail.push({ brk: true, wy: P.wy });
+  SFX.crash();
+  burst(P, 22);
+  const sy = P.wy - G.scrollY;
+  if (G.mode === "race") {
+    G.penalty += CONFIG.CRASH_PENALTY_S;
+    popup("+" + CONFIG.CRASH_PENALTY_S + " s", P.x, sy - 40, [220, 50, 50]);
+  } else {
+    G.hearts--;
+    popup("−1 ♥", P.x, sy - 40, [220, 50, 50]);
+    if (G.hearts <= 0) G.overPending = true;
+  }
+  safeHook(onCrash, kind);
+}
+
+// --- Helpers ------------------------------------------------------------
+function bestKey(mode) { return "skirace_v2_" + mode + "_" + CONFIG.SEED; }
+function loadBest(mode) {
+  try { const v = localStorage.getItem(bestKey(mode)); return v == null ? null : parseFloat(v); } catch (e) { return null; }
+}
+function saveBest(mode, v) {
+  try { localStorage.setItem(bestKey(mode), String(v)); } catch (e) { /* egal */ }
+}
+function fmt(t) { return t.toFixed(2) + " s"; }
+
+function safeHook(fn, arg) {
+  try { fn(arg); } catch (e) { console.warn("Error in " + fn.name, e); }
+}
+
+function runExtra(ex, fn) {
+  if (ex._broken) return false;
+  try { return fn(); } catch (e) {
+    ex._broken = true;
+    const name = ex.name || "Extra";
+    G.broken.push(name);
+    console.warn("Extra \"" + name + "\" switched off:", e);
+    return false;
+  }
+}
+
+function popup(text, x, y, col) {
+  G.popups.push({ text, x, y, col: col || [40, 160, 80], life: 0.9, max: 0.9 });
+}
+
+function spray(P, n, big) {
+  for (let i = 0; i < n; i++) {
+    G.particles.push({
+      x: P.x + (Math.random() - 0.5) * 16, wy: P.wy + P.s * 0.7,
+      vx: -P.vx * 0.3 + (Math.random() - 0.5) * (big ? 260 : 90),
+      vy: (Math.random() - 0.5) * (big ? 200 : 60) - 20,
+      g: 0, life: 0.4 + Math.random() * 0.4, max: 0.8,
+      size: (big ? 4 : 3) + Math.random() * 4, col: null,
+    });
+  }
+}
+function burst(P, n) { spray(P, n, true); }
+
+function confetti() {
+  const P = G.player, cols = [THEME.gateA, THEME.gateB, THEME.accent, [40, 170, 90]];
+  for (let i = 0; i < 70; i++) {
+    G.particles.push({
+      x: P.x + (Math.random() - 0.5) * 60, wy: P.wy - 20,
+      vx: (Math.random() - 0.5) * 420, vy: -150 - Math.random() * 300,
+      g: 520, life: 1.4 + Math.random(), max: 2.4,
+      size: 4 + Math.random() * 4, col: cols[i % cols.length],
+    });
+  }
+}
+
+// --- Input --------------------------------------------------------------
+function readInput() {
+  if (G.forcedInput !== null) return G.forcedInput;
+  if (G.autopilot) return autoInput();
+  let v = 0;
+  if (keyIsDown(LEFT_ARROW) || keyIsDown(65)) v -= 1;
+  if (keyIsDown(RIGHT_ARROW) || keyIsDown(68)) v += 1;
+  if (G.pointers.size) {
+    if (CONFIG.TOUCH_FOLLOW) {
+      // The finger put down last is the target; the skier brakes just before it
+      const P = G.player, fingerX = [...G.pointers.values()].pop();
+      v += (fingerX - (P.x + P.vx * 0.1)) / 15;
+    } else {
+      for (const x of G.pointers.values()) v += x < CONFIG.W / 2 ? -1 : 1;
+    }
+  }
+  return Math.max(-1, Math.min(1, v));
+}
+
+function autoInput() {
+  const P = G.player;
+  let tx = trackCenter(P.wy + 150);
+  const g = COURSE.gates.find((g) => g.state === "open" && g.wy > P.wy - 5);
+  if (g && g.wy - P.wy < 450) tx = (g.left + g.right) / 2;
+  const err = tx - (P.x + P.vx * 0.25);
+  return Math.abs(err) < 6 ? 0 : Math.sign(err);
+}
+
+function bindPointer() {
+  const el = cnv.elt;
+  const toLogical = (e) => {
+    const r = el.getBoundingClientRect();
+    return { x: (e.clientX - r.left) * CONFIG.W / r.width, y: (e.clientY - r.top) * CONFIG.H / r.height };
+  };
+  el.addEventListener("pointerdown", (e) => {
+    e.preventDefault();
+    SFX.init();
+    const p = toLogical(e);
+    if (p.x > CONFIG.W - 56 && p.y < 50) { G.muted = !G.muted; SFX.muted = G.muted; return; }
+    if (G.state === "title") {
+      for (const b of G.buttons) {
+        if (p.x > b.x && p.x < b.x + b.w && p.y > b.y && p.y < b.y + b.h) startRun(b.mode);
+      }
+      return;
+    }
+    if (G.state === "finish" || G.state === "over") {
+      if (G.t - G.endAt > 0.6) startRun(G.mode);
+      return;
+    }
+    G.pointers.set(e.pointerId, p.x);
+    try { el.setPointerCapture(e.pointerId); } catch (_) { /* egal */ }
+  });
+  el.addEventListener("pointermove", (e) => {
+    if (G.pointers.has(e.pointerId)) G.pointers.set(e.pointerId, toLogical(e).x);
+  });
+  const up = (e) => G.pointers.delete(e.pointerId);
+  el.addEventListener("pointerup", up);
+  el.addEventListener("pointercancel", up);
+  el.addEventListener("lostpointercapture", up);
+}
+
+function keyPressed() {
+  SFX.init();
+  const k = typeof key === "string" ? key.toLowerCase() : "";
+  if (k === "m") { G.muted = !G.muted; SFX.muted = G.muted; return false; }
+  if (G.state === "title") {
+    if (k === "e" || k === "a" || k === "d" || keyCode === LEFT_ARROW || keyCode === RIGHT_ARROW) {
+      G.sel = G.sel === "race" ? "endless" : "race";
+      return false;
+    }
+    if (k === " " || keyCode === ENTER) { startRun(G.sel); return false; }
+    return;
+  }
+  if (keyCode === ESCAPE) { toTitle(); return false; }
+  if (k === "r") { startRun(G.mode); return false; }
+  if ((G.state === "finish" || G.state === "over") && (k === " " || keyCode === ENTER) && G.t - G.endAt > 0.6) {
+    startRun(G.mode);
+    return false;
+  }
+  if (keyCode === LEFT_ARROW || keyCode === RIGHT_ARROW || k === " ") return false;
+}
+
+// --- Game logic per time step ---------------------------------------------
+function stepGame(dt) {
+  G.t += dt;
+  G.shake = Math.max(0, G.shake - dt);
+  if (G.goFlash > 0) G.goFlash -= dt;
+  stepParticles(dt);
+
+  if (G.state === "title") return;
+  if (G.state === "countdown") {
+    G.countdown -= dt;
+    const n = Math.ceil(G.countdown);
+    if (n !== G.lastBeep && n > 0) { G.lastBeep = n; SFX.tick(); }
+    if (G.countdown <= 0) { G.state = "run"; G.goFlash = 0.8; SFX.go(); }
+    return;
+  }
+
+  const P = G.player;
+  const running = G.state === "run";
+  let input = running ? readInput() : 0;
+
+  if (P.fallTimer > 0) {
+    P.fallTimer -= dt; input = 0;
+    if (P.fallTimer <= 0) {
+      P.fallTimer = 0; P.ghost = CONFIG.GHOST_S;
+      if (G.overPending) endEndless();
+    }
+  } else if (P.ghost > 0) {
+    P.ghost = Math.max(0, P.ghost - dt);
+  }
+  if (running) G.raceTime += dt;
+
+  // Steering with momentum
+  P.vx += input * CONFIG.STEER_ACCEL * dt;
+  P.vx *= Math.exp(-CONFIG.STEER_FRICTION * dt);
+  P.vx = constrain(P.vx, -CONFIG.STEER_MAX, CONFIG.STEER_MAX);
+  P.x += P.vx * dt;
+  if (P.x < 12) { P.x = 12; P.vx = 0; }
+  if (P.x > CONFIG.W - 12) { P.x = CONFIG.W - 12; P.vx = 0; }
+  P.lean = P.vx / CONFIG.STEER_MAX;
+  const b = trackBounds(P.wy);
+  P.offPiste = P.x < b.left || P.x > b.right;
+
+  // Speed
+  let target = 0;
+  if (running && P.fallTimer <= 0) {
+    target = G.mode === "race"
+      ? CONFIG.SPEED_START + CONFIG.SPEED_PER_GATE * (G.passed + G.missed)
+      : CONFIG.SPEED_START + G.scrollY * 0.012;
+    target = Math.min(target, CONFIG.SPEED_MAX);
+    if (P.offPiste) target *= CONFIG.DEEP_SNOW_MULT;
+  }
+  const k = running && P.fallTimer <= 0 ? (target > G.speed ? 1.5 : 4) : 2.5;
+  G.speed += (target - G.speed) * Math.min(1, k * dt);
+
+  const prevWY = P.wy;
+  G.scrollY += G.speed * dt;
+  P.wy = G.scrollY + CONFIG.PLAYER_Y;
+  ensureWorld(G.scrollY + CONFIG.H + 300);
+  cleanupWorld();
+
+  // Tracks in the snow
+  const last = G.trail[G.trail.length - 1];
+  if (P.fallTimer <= 0 && G.speed > 5 && (!last || P.wy - last.wy > 6)) G.trail.push({ x: P.x, wy: P.wy });
+  while (G.trail.length && G.trail[0].wy < G.scrollY - 30) G.trail.shift();
+
+  // Snow spray when carving and in deep snow
+  if (P.fallTimer <= 0 && G.speed > 40) {
+    const carve = Math.abs(P.vx) / CONFIG.STEER_MAX * (G.speed / CONFIG.SPEED_MAX);
+    G.sprayAcc += (carve * 45 + (P.offPiste ? 30 : 0)) * dt;
+    while (G.sprayAcc >= 1) { G.sprayAcc -= 1; spray(P, 1, false); }
+  }
+
+  if (!running) return;
+
+  // Gates
+  for (const g of COURSE.gates) {
+    if (g.wy > P.wy + 40) break;
+    if (g.state !== "open") continue;
+    if (P.fallTimer <= 0 && P.ghost <= 0) {
+      for (const px of [g.left, g.right]) {
+        if (Math.abs(P.x - px) < CONFIG.POLE_R + 7 && Math.abs(P.wy - (g.wy - 10)) < 16) { crash("pole"); break; }
+      }
+    }
+    if (prevWY < g.wy && P.wy >= g.wy) {
+      const sy = P.wy - G.scrollY;
+      if (P.x > g.left && P.x < g.right) {
+        g.state = "passed"; G.passed++; G.score += 10;
+        SFX.gate();
+        popup(G.mode === "race" ? "✓" : "+10", P.x, sy - 40, [40, 160, 80]);
+        safeHook(onGatePassed, g);
+      } else {
+        g.state = "missed"; G.missed++;
+        SFX.miss();
+        if (G.mode === "race") {
+          G.penalty += CONFIG.MISS_PENALTY_S;
+          popup("+" + CONFIG.MISS_PENALTY_S + " s", P.x, sy - 40, [220, 50, 50]);
+        }
+        safeHook(onGateMissed, g);
+      }
+    }
+  }
+
+  // Trees
+  if (P.fallTimer <= 0 && P.ghost <= 0) {
+    for (const t of COURSE.trees) {
+      if (Math.abs(t.wy - P.wy) > 70) continue;
+      if (dist(P.x, P.wy, t.x, t.wy - t.r * 0.6) < t.r * 0.55 + 8) { crash("tree"); break; }
+    }
+  }
+
+  // Extras
+  for (const ex of EXTRAS) {
+    runExtra(ex, () => {
+      if (ex.update) ex.update(dt, world);
+      if (ex.hits && P.fallTimer <= 0 && P.ghost <= 0 && ex.hits(P, world)) crash(ex.name || "Extra");
+    });
+  }
+
+  // Finish
+  if (G.mode === "race" && P.wy >= COURSE.finishY) finishRace();
+}
+
+function stepParticles(dt) {
+  for (const p of G.particles) {
+    p.x += p.vx * dt; p.wy += p.vy * dt;
+    p.vx *= Math.exp(-2.5 * dt);
+    p.vy += p.g * dt;
+    p.life -= dt;
+  }
+  G.particles = G.particles.filter((p) => p.life > 0).slice(-500);
+  for (const p of G.popups) { p.y -= 45 * dt; p.life -= dt; }
+  G.popups = G.popups.filter((p) => p.life > 0);
+}
+
+// --- Drawing --------------------------------------------------------------
+function renderGame() {
+  push();
+  if (G.shake > 0) {
+    const m = (G.shake / 0.35) * 7;
+    translate((Math.random() - 0.5) * m * 2, (Math.random() - 0.5) * m * 2);
+  }
+  background(...THEME.snow);
+  drawSlope();
+  drawBanner(CONFIG.PLAYER_Y + 40, "START", false);
+  if (G.mode === "race") drawBanner(COURSE.finishY, "FINISH", true);
+  drawTrail();
+  drawGates();
+  const P = G.player;
+  drawTrees((t) => t.wy <= P.wy);
+  if (G.state !== "title") {
+    for (const ex of EXTRAS) runExtra(ex, () => { if (ex.draw) { push(); ex.draw(world); pop(); } });
+  }
+  drawPlayerSafe();
+  drawTrees((t) => t.wy > P.wy);
+  drawParticles();
+  drawPopups();
+  pop();
+
+  drawHUD();
+  if (G.state === "title") drawTitle();
+  if (G.state === "countdown") drawCountdown();
+  if (G.goFlash > 0) drawGo();
+  if (G.state === "finish") drawFinish();
+  if (G.state === "over") drawOver();
+  drawBroken();
+  drawMute();
+}
+
+function drawSlope() {
+  const step = 10, sy = G.scrollY;
+  noStroke(); fill(...THEME.deepSnow);
+  beginShape(); vertex(-20, -20);
+  for (let y = -20; y <= CONFIG.H + 20; y += step) vertex(trackBounds(y + sy).left, y);
+  vertex(-20, CONFIG.H + 20); endShape(CLOSE);
+  beginShape(); vertex(CONFIG.W + 20, -20);
+  for (let y = -20; y <= CONFIG.H + 20; y += step) vertex(trackBounds(y + sy).right, y);
+  vertex(CONFIG.W + 20, CONFIG.H + 20); endShape(CLOSE);
+
+  // Sparkles in the deep snow
+  fill(...THEME.sparkle);
+  const cell = 46;
+  for (let wy = Math.floor(sy / cell) * cell; wy < sy + CONFIG.H + cell; wy += cell) {
+    const b = trackBounds(wy);
+    for (let k = 0; k < 5; k++) {
+      const x = hash01(wy * 0.37 + k * 13.1) * CONFIG.W;
+      if (x > b.left - 6 && x < b.right + 6) continue;
+      const y = wy - sy + hash01(wy + k * 7.7) * cell;
+      ellipse(x, y, 5, 3);
+    }
+  }
+
+  // Corduroy lines on the piste (show the speed)
+  stroke(...THEME.corduroy); strokeWeight(2);
+  const gap = 22;
+  for (let wy = Math.floor(sy / gap) * gap; wy < sy + CONFIG.H + gap; wy += gap) {
+    const b = trackBounds(wy);
+    line(b.left + 4, wy - sy, b.right - 4, wy - sy);
+  }
+
+  // Piste edges
+  noFill(); stroke(...THEME.pisteEdge); strokeWeight(3); strokeJoin(ROUND);
+  for (const side of ["left", "right"]) {
+    beginShape();
+    for (let y = -20; y <= CONFIG.H + 20; y += step) vertex(trackBounds(y + sy)[side], y);
+    endShape();
+  }
+}
+
+function drawBanner(wy, label, checker) {
+  const y = wy - G.scrollY;
+  if (y < -100 || y > CONFIG.H + 100) return;
+  const b = trackBounds(wy), sq = 12;
+  if (checker) {
+    noStroke();
+    let ix = 0;
+    for (let x = b.left; x < b.right; x += sq, ix++) {
+      for (let row = 0; row < 2; row++) {
+        fill((ix + row) % 2 ? 30 : 255);
+        rect(x, y - sq + row * sq, Math.min(sq, b.right - x), sq);
+      }
+    }
+  } else {
+    stroke(...THEME.gateB, 160); strokeWeight(3);
+    line(b.left, y, b.right, y);
+  }
+  stroke(70); strokeWeight(4);
+  line(b.left - 8, y + sq, b.left - 8, y - 70);
+  line(b.right + 8, y + sq, b.right + 8, y - 70);
+  noStroke(); fill(...(checker ? THEME.accent : THEME.gateA));
+  rect(b.left - 10, y - 78, b.right - b.left + 20, 24, 6);
+  fill(checker ? 30 : 255); textAlign(CENTER, CENTER); textStyle(BOLD); textSize(15);
+  text(label, (b.left + b.right) / 2, y - 66);
+  textStyle(NORMAL);
+}
+
+function drawTrail() {
+  if (G.trail.length < 2) return;
+  noFill(); stroke(...THEME.trail); strokeWeight(2);
+  const off = G.player.s * 0.32;
+  for (const o of [-off, off]) {
+    let open = false;
+    for (const p of G.trail) {
+      if (p.brk) { if (open) { endShape(); open = false; } continue; }
+      if (!open) { beginShape(); open = true; }
+      vertex(p.x + o, p.wy - G.scrollY);
+    }
+    if (open) endShape();
+  }
+}
+
+function drawGates() {
+  for (const g of COURSE.gates) {
+    const y = g.wy - G.scrollY;
+    if (y < -60 || y > CONFIG.H + 60) continue;
+    const col = g.color ? THEME.gateB : THEME.gateA;
+    const a = g.state === "passed" ? 110 : 255;
+    noStroke(); fill(0, 0, 0, 25);
+    ellipse(g.left + 5, y + 2, 14, 5); ellipse(g.right + 5, y + 2, 14, 5);
+    stroke(...THEME.pole, a); strokeWeight(3);
+    line(g.left, y, g.left, y - 34); line(g.right, y, g.right, y - 34);
+    noStroke(); fill(...col, a);
+    triangle(g.left, y - 34, g.left + 22, y - 28, g.left, y - 20);
+    triangle(g.right, y - 34, g.right - 22, y - 28, g.right, y - 20);
+    if (G.mode === "race") {
+      fill(120, 140, 160, a); textAlign(CENTER, CENTER); textSize(12);
+      text(g.i + 1, (g.left + g.right) / 2, y - 26);
+    }
+    if (g.state === "missed") {
+      stroke(220, 40, 40, 200); strokeWeight(3);
+      const cx = (g.left + g.right) / 2;
+      line(cx - 8, y - 18, cx + 8, y - 2); line(cx + 8, y - 18, cx - 8, y - 2);
+    }
+  }
+}
+
+function drawTrees(filter) {
+  for (const t of COURSE.trees) {
+    if (!filter(t)) continue;
+    const y = t.wy - G.scrollY, x = t.x, r = t.r;
+    if (y < -60 || y > CONFIG.H + 80) continue;
+    noStroke();
+    fill(0, 0, 0, 22); ellipse(x + r * 0.3, y + 2, r * 1.4, r * 0.4);
+    fill(...THEME.trunk); rect(x - r * 0.12, y - r * 0.35, r * 0.24, r * 0.4);
+    fill(...THEME.treeDark); triangle(x - r * 0.85, y - r * 0.3, x, y - r * 1.5, x + r * 0.85, y - r * 0.3);
+    fill(...THEME.tree);     triangle(x - r * 0.65, y - r * 0.95, x, y - r * 2.0, x + r * 0.65, y - r * 0.95);
+    fill(255, 255, 255, 210); triangle(x - r * 0.25, y - r * 1.62, x, y - r * 2.0, x + r * 0.25, y - r * 1.62);
+  }
+}
+
+function drawPlayerSafe() {
+  const P = G.player;
+  const p = {
+    x: P.x, y: P.wy - G.scrollY, s: P.s, lean: P.lean,
+    fallen: P.fallTimer > 0, offPiste: P.offPiste,
+  };
+  const blink = P.ghost > 0 && Math.floor(G.t * 12) % 2 === 0;
+  if (blink) drawingContext.globalAlpha = 0.35;
+  noStroke(); fill(0, 0, 0, 30); ellipse(p.x + 4, p.y + p.s * 0.8, p.s * 1.1, p.s * 0.35);
+  push();
+  try {
+    if (G.playerBroken) throw new Error("skip");
+    drawPlayer(p);
+  } catch (e) {
+    if (!G.playerBroken) { G.playerBroken = true; G.broken.push("drawPlayer"); console.warn("drawPlayer has an error:", e); }
+    noStroke(); fill(230, 60, 60); circle(0, 0, p.s);
+  }
+  pop();
+  drawingContext.globalAlpha = 1;
+}
+
+function drawParticles() {
+  for (const p of G.particles) {
+    const y = p.wy - G.scrollY;
+    const a = Math.max(0, Math.min(1, p.life / p.max)) * 255;
+    if (p.col) { noStroke(); fill(...p.col, a); rect(p.x, y, p.size, p.size * 0.6); }
+    else { stroke(190, 208, 230, a); strokeWeight(1); fill(255, a); circle(p.x, y, p.size); }
+  }
+}
+
+function drawPopups() {
+  textAlign(CENTER, CENTER); textStyle(BOLD); textSize(22);
+  for (const p of G.popups) {
+    const a = (p.life / p.max) * 255;
+    stroke(255, a); strokeWeight(4); fill(...p.col, a);
+    text(p.text, p.x, p.y);
+  }
+  textStyle(NORMAL);
+}
+
+function drawHUD() {
+  if (G.state === "title") return;
+  push();
+  noStroke(); fill(...THEME.hudBg); rect(12, 12, 224, 108, 12);
+  fill(...THEME.hudText); textAlign(LEFT, TOP);
+  if (G.mode === "race") {
+    const total = CONFIG.GATES_TOTAL, done = Math.min(G.passed + G.missed, total);
+    textSize(12); fill(180, 200, 220); text("TIME", 26, 22);
+    fill(...THEME.hudText); textStyle(BOLD); textSize(30); text(fmt(G.raceTime + G.penalty), 26, 36);
+    textStyle(NORMAL); textSize(14); text("Gate " + done + " / " + total, 26, 74);
+    fill(180, 200, 220); textSize(13); text("missed " + G.missed + " · crashes " + G.crashes, 26, 95);
+    // Progress at the top centre
+    fill(0, 0, 0, 40); rect(CONFIG.W / 2 - 150, 16, 300, 8, 4);
+    fill(...THEME.accent); rect(CONFIG.W / 2 - 150, 16, 300 * done / total, 8, 4);
+  } else {
+    textSize(12); fill(180, 200, 220); text("POINTS", 26, 22);
+    fill(...THEME.hudText); textStyle(BOLD); textSize(30); text(G.score, 26, 36);
+    textStyle(NORMAL); textSize(20); fill(235, 60, 80);
+    let h = "";
+    for (let i = 0; i < CONFIG.HEARTS; i++) h += i < G.hearts ? "♥ " : "♡ ";
+    text(h, 26, 70);
+    fill(180, 200, 220); textSize(13); text("Distance " + Math.floor(G.scrollY / 20) + " m", 26, 97);
+  }
+  pop();
+}
+
+function panel(cx, cy, w, h) {
+  noStroke(); fill(12, 28, 48, 225);
+  rect(cx - w / 2, cy - h / 2, w, h, 18);
+}
+
+function drawTitle() {
+  push();
+  fill(10, 25, 45, 90); noStroke(); rect(0, 0, CONFIG.W, CONFIG.H);
+  const cx = CONFIG.W / 2;
+  panel(cx, 315, 620, 430);
+  fill(255); textAlign(CENTER, CENTER); textStyle(BOLD); textSize(34);
+  text("⛷ " + CONFIG.TITLE, cx, 145);
+  textStyle(NORMAL); textSize(16); fill(190, 210, 230);
+  text("Choose your mode", cx, 185);
+
+  const raceBest = loadBest("race"), endBest = loadBest("endless");
+  const cards = [
+    { mode: "race", x: cx - 260, title: "🏁 Race",
+      lines: [CONFIG.GATES_TOTAL + " gates against the clock", "Missed gate = +" + CONFIG.MISS_PENALTY_S + " s", "Crash = +" + CONFIG.CRASH_PENALTY_S + " s"],
+      best: raceBest == null ? "No best time yet" : "Best time: " + fmt(raceBest) },
+    { mode: "endless", x: cx + 10, title: "♾ Endless",
+      lines: ["Ski as far as you can", CONFIG.HEARTS + " hearts", "Gate = 10 points"],
+      best: endBest == null ? "No record yet" : "Record: " + endBest + " points" },
+  ];
+  G.buttons = [];
+  for (const c of cards) {
+    const y = 215, w = 250, h = 160, on = G.sel === c.mode;
+    G.buttons.push({ mode: c.mode, x: c.x, y, w, h });
+    if (on) { stroke(...THEME.accent); strokeWeight(3); } else noStroke();
+    fill(on ? 40 : 28, on ? 70 : 50, on ? 115 : 82);
+    rect(c.x, y, w, h, 14);
+    noStroke(); fill(255); textStyle(BOLD); textSize(22); textAlign(LEFT, TOP);
+    text(c.title, c.x + 18, y + 16);
+    textStyle(NORMAL); textSize(14); fill(200, 218, 236);
+    c.lines.forEach((l, i) => text(l, c.x + 18, y + 54 + i * 20));
+    fill(...THEME.accent); textSize(13); text(c.best, c.x + 18, y + 128);
+  }
+
+  textAlign(CENTER, CENTER); fill(255); textSize(15); textStyle(BOLD);
+  text("Space = start  ·  E = switch mode  ·  or tap a card", cx, 410);
+  textStyle(NORMAL); fill(170, 192, 215); textSize(13);
+  text("Steer: ← →  or  A / D  ·  Tablet: steer with your finger  ·  M = sound  ·  R = restart  ·  Esc = menu", cx, 440);
+  text("Next to the piste is deep snow – it slows you down!", cx, 490);
+  pop();
+}
+
+function drawCountdown() {
+  const n = Math.ceil(G.countdown);
+  const f = G.countdown - Math.floor(G.countdown);
+  push();
+  textAlign(CENTER, CENTER); textStyle(BOLD); textSize(110 + f * 40);
+  stroke(15, 32, 52); strokeWeight(8); fill(255);
+  text(n, CONFIG.W / 2, CONFIG.H / 2);
+  textSize(16); strokeWeight(4); text("Get ready …", CONFIG.W / 2, CONFIG.H / 2 + 90);
+  pop();
+}
+
+function drawGo() {
+  push();
+  const a = Math.min(1, G.goFlash / 0.8) * 255;
+  textAlign(CENTER, CENTER); textStyle(BOLD); textSize(90);
+  stroke(15, 32, 52, a); strokeWeight(8); fill(...THEME.accent, a);
+  text("GO!", CONFIG.W / 2, CONFIG.H / 2);
+  pop();
+}
+
+function drawFinish() {
+  const r = G.result, cx = CONFIG.W / 2;
+  push();
+  panel(cx, 330, 480, 340);
+  textAlign(CENTER, CENTER); fill(255); textStyle(BOLD); textSize(38);
+  text("🏁 FINISH!", cx, 200);
+  fill(...THEME.accent); textSize(56); text(fmt(r.time), cx, 265);
+  textStyle(NORMAL); fill(200, 218, 236); textSize(16);
+  text("Run time " + fmt(r.raw) + "   +   penalties " + fmt(r.penalty), cx, 318);
+  text(r.passed + " gates passed · " + r.missed + " missed · " + r.crashes + " crashes", cx, 344);
+  textStyle(BOLD); textSize(20);
+  if (r.newBest) { fill(...THEME.accent); text("★ New best time! ★", cx, 390); }
+  else { fill(255); text("Best time: " + fmt(r.best), cx, 390); }
+  textStyle(NORMAL); fill(170, 192, 215); textSize(14);
+  text("Space or tap = again  ·  Esc = menu", cx, 450);
+  pop();
+}
+
+function drawOver() {
+  const r = G.result, cx = CONFIG.W / 2;
+  push();
+  panel(cx, 320, 460, 300);
+  textAlign(CENTER, CENTER); fill(255); textStyle(BOLD); textSize(32);
+  text("No hearts left!", cx, 210);
+  fill(...THEME.accent); textSize(56); text(r.score + " points", cx, 280);
+  textStyle(BOLD); textSize(20);
+  if (r.newBest) { fill(...THEME.accent); text("★ New record! ★", cx, 345); }
+  else { fill(255); text("Record: " + r.best + " points", cx, 345); }
+  textStyle(NORMAL); fill(170, 192, 215); textSize(14);
+  text("Space or tap = again  ·  Esc = menu", cx, 420);
+  pop();
+}
+
+function drawBroken() {
+  if (!G.broken.length) return;
+  push();
+  noStroke(); fill(255, 235, 235, 230); rect(12, CONFIG.H - 40, 520, 28, 8);
+  fill(180, 30, 30); textAlign(LEFT, CENTER); textSize(13);
+  text("⚠ Switched off because of an error: " + G.broken.join(", ") + " (details in the console)", 22, CONFIG.H - 26);
+  pop();
+}
+
+function drawMute() {
+  push();
+  textAlign(RIGHT, TOP); textSize(22); noStroke(); fill(0, 0, 0, 120);
+  text(G.muted ? "🔇" : "🔊", CONFIG.W - 16, 14);
+  pop();
+}
+
+// --- p5 ----------------------------------------------------------------
+function fitCanvas() {
+  const s = Math.min(window.innerWidth / CONFIG.W, window.innerHeight / CONFIG.H) * 0.98;
+  cnv.elt.style.width = Math.floor(CONFIG.W * s) + "px";
+  cnv.elt.style.height = Math.floor(CONFIG.H * s) + "px";
+}
+
+function setup() {
+  cnv = createCanvas(CONFIG.W, CONFIG.H);
+  textFont("system-ui");
+  fitCanvas();
+  bindPointer();
+  prepareRun("race");
+  G.state = "title";
+}
+
+function windowResized() { fitCanvas(); }
+
+function draw() {
+  stepGame(Math.min(deltaTime / 1000, 1 / 30));
+  renderGame();
+}
+
+// --- Test access (for trainers and automatic checks) ---------------------
+window.__ski = {
+  CONFIG, G, get COURSE() { return COURSE; },
+  start: (mode) => startRun(mode || "race"),
+  toTitle,
+  snapshot() {
+    const P = G.player;
+    return {
+      state: G.state, mode: G.mode, time: G.raceTime + G.penalty, raceTime: G.raceTime, penalty: G.penalty,
+      passed: G.passed, missed: G.missed, crashes: G.crashes, hearts: G.hearts, score: G.score,
+      scrollY: G.scrollY, speed: G.speed,
+      player: { x: P.x, wy: P.wy, vx: P.vx, offPiste: P.offPiste, fallen: P.fallTimer > 0 },
+      result: G.result,
+    };
+  },
+  // Fast-forward the game without drawing: opts = { dt, input (-1/0/1), autopilot }
+  sim(seconds, opts = {}) {
+    const dt = opts.dt || 1 / 60;
+    const prevF = G.forcedInput, prevA = G.autopilot;
+    if ("input" in opts) G.forcedInput = opts.input;
+    if (opts.autopilot) G.autopilot = true;
+    const n = Math.round(seconds / dt);
+    for (let i = 0; i < n; i++) stepGame(dt);
+    G.forcedInput = prevF; G.autopilot = prevA;
+    return this.snapshot();
+  },
+};
+</script>
+</body>
+</html>

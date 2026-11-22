@@ -1,0 +1,16 @@
+{
+  "name": "KI-Spielwerkstatt: Skirennen",
+  "short_name": "Skirennen",
+  "description": "Kinder bauen ein Ski-Spiel mit Prompts / Kids build a ski game with prompts",
+  "lang": "de",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "landscape",
+  "background_color": "#f3f4f6",
+  "theme_color": "#1e3a8a",
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png" }
+  ]
+}
