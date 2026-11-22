@@ -114,7 +114,7 @@ Die [Demo-Version](https://rlen-source.github.io/skirennen/skirennen-v3.html) ze
 
 ## Vorbereitung für Trainer:innen
 
-- [ ] **Chat-Zugang klären.** Gebraucht wird ein Chat mit KI, zum Beispiel ChatGPT oder Claude, in dem man Dateien hochladen kann. Die Anbieter haben Altersgrenzen. Bei jüngeren Teilnehmer:innen läuft der Chat deshalb meist über das Konto einer erwachsenen Person, die beim Team sitzt.
+- [ ] **Chat-Zugang klären.** Gebraucht wird ein Chat mit KI, zum Beispiel ChatGPT oder Claude, in dem man Dateien hochladen kann. **Dafür braucht es ein Konto:** Ohne Anmeldung lässt sich die Spieldatei nicht hochladen. Konten deshalb vor dem Workshop einrichten und auf den Geräten anmelden. Die Anbieter haben Altersgrenzen. Bei jüngeren Teilnehmer:innen läuft der Chat deshalb meist über das Konto einer erwachsenen Person, die beim Team sitzt.
 - [ ] **WLAN testen.** Der Launcher lädt von `rlen-source.github.io`, die Spiel-Bibliothek von `cdn.jsdelivr.net` und die Schrift von `fonts.googleapis.com`. Schul- und Firmen-WLANs blockieren manchmal einzelne davon – am besten vorher einmal auf einem Workshop-Gerät öffnen.
 - [ ] **Einen Durchlauf selbst machen**, mindestens Teil 1 bis Schritt 3, mit dem Chat, den die Teilnehmer:innen benutzen.
 - [ ] **Infoblatt ausdrucken** und aufhängen: [Deutsch (PDF)](https://rlen-source.github.io/skirennen/trainer-de.pdf) · [English (PDF)](https://rlen-source.github.io/skirennen/trainer-en.pdf). Der QR-Code führt direkt zum Launcher.
@@ -284,7 +284,7 @@ The [demo version](https://rlen-source.github.io/skirennen/ski-race-v3.html) sho
 
 ### Preparation for trainers
 
-- [ ] **Sort out chat access.** You need an AI chat such as ChatGPT or Claude that accepts file uploads. The providers have age limits, so with younger participants the chat usually runs on the account of an adult sitting with the team.
+- [ ] **Sort out chat access.** You need an AI chat such as ChatGPT or Claude that accepts file uploads. **This needs an account:** without signing in, the game file cannot be uploaded. Set up the accounts before the workshop and sign in on the devices. The providers have age limits, so with younger participants the chat usually runs on the account of an adult sitting with the team.
 - [ ] **Test the Wi-Fi.** The launcher loads from `rlen-source.github.io`, the game library from `cdn.jsdelivr.net` and the font from `fonts.googleapis.com`. School and company networks sometimes block one of them – open it once on a workshop device beforehand.
 - [ ] **Do a run yourself**, at least Part 1 up to step 3, with the chat the participants will use.
 - [ ] **Print the info sheet** and put it up: [English (PDF)](https://rlen-source.github.io/skirennen/trainer-en.pdf) · [German (PDF)](https://rlen-source.github.io/skirennen/trainer-de.pdf). The QR code leads straight to the launcher.
