@@ -123,6 +123,14 @@
     .step3 b { display: block; font-size: 1.15rem; font-weight: 900; }
     .step3 small { color: var(--muted); font-size: .95rem; font-weight: 600; }
     .step3 .go { margin-left: auto; font-size: 1.5rem; color: var(--muted); }
+    .length-pick { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 10px; margin: 0 0 14px; }
+    .length-pick > span { grid-column: 1 / -1; font-weight: 800; color: var(--muted); }
+    .len-btn { padding: 8px 14px; border-radius: var(--radius-sm); border: 2px solid var(--line); background: var(--white);
+               color: var(--ink); font: inherit; cursor: pointer; text-align: left; }
+    .len-btn b { display: block; font-weight: 900; }
+    .len-btn small { color: var(--muted); font-weight: 600; }
+    .len-btn.active { border-color: var(--sky-700); background: var(--sky-100); }
+    .trainer-note { margin: 8px 0 0; font-size: .92rem; color: var(--muted); }
     .rule { margin-top: 18px; padding: 12px 16px; border-radius: var(--radius-sm); background: var(--sky-100);
             font-weight: 700; color: var(--sky-900); }
     .demo-card { position: relative; border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow); background: var(--sky-100); }
@@ -264,6 +272,15 @@
     .builder-extra textarea { width: 100%; padding: 8px 12px; border-radius: var(--radius-sm); border: 2px solid var(--line);
                               font: 600 1rem/1.4 "Nunito", system-ui, sans-serif; resize: vertical; }
     .builder-extra textarea:focus { outline: none; border-color: var(--part); }
+    .parts-hint { margin: 0 0 8px; color: var(--muted); font-weight: 700; }
+    .part-card { margin: 8px 0; padding: 8px 12px; border-radius: var(--radius-sm); background: var(--white); border: 2px solid var(--line); }
+    .part-card.off { opacity: .55; }
+    .part-card.off .choice-row { display: none; }
+    .part-head { display: flex; align-items: center; gap: 8px; font-weight: 900; cursor: pointer; }
+    .part-head input { width: 20px; height: 20px; accent-color: var(--part); }
+    .split { margin-top: 10px; }
+    .split summary { cursor: pointer; font-weight: 800; color: var(--muted); }
+    .split p { margin: 6px 0; color: var(--muted); font-size: .92rem; }
     .exact { margin-top: 12px; padding: 10px 14px; border-radius: var(--radius-sm); border: 1px dashed var(--line); }
     .exact summary { cursor: pointer; font-weight: 800; color: var(--muted); }
     .exact p { margin: 8px 0; color: var(--muted); font-size: .92rem; }
@@ -333,10 +350,15 @@
           <div>
             <h2>Today you build your own ski race.</h2>
             <p class="lead">You tell the AI what you want. The AI writes the code. You play and check whether it is right.</p>
+            <div class="length-pick">
+              <span>How much time do you have?</span>
+              <button type="button" class="len-btn" data-len="short"><b>⏱ Short</b><small>about 1½–2 hours</small></button>
+              <button type="button" class="len-btn" data-len="long"><b>🧭 Extended</b><small>about 3 hours</small></button>
+            </div>
             <div class="steps3">
               <button class="step3" type="button" data-go="play"><span class="num">1</span><span><b>Try the game</b><small>Do one race and remember your time</small></span><span class="go">›</span></button>
-              <button class="step3 s1" type="button" data-go="teil1"><span class="num">2</span><span><b>Part 1: Tune the game</b><small>8 steps with ready-made prompts</small></span><span class="go">›</span></button>
-              <button class="step3 s2" type="button" data-go="teil2"><span class="num">3</span><span><b>Part 2: Your own ideas</b><small>Bear, ninja, colours and more</small></span><span class="go">›</span></button>
+              <button class="step3 s1" type="button" data-go="teil1"><span class="num">2</span><span><b>Part 1: Tune the game</b><small id="startTeil1Sub">8 steps: say what you want</small></span><span class="go">›</span></button>
+              <button class="step3 s2" type="button" data-go="teil2"><span class="num">3</span><span><b>Part 2: Your own ideas</b><small id="startTeil2Sub">Bear, ninja, colours and more</small></span><span class="go">›</span></button>
             </div>
             <div class="rule">The rule: we never change code by hand – only with prompts.</div>
           </div>
@@ -680,7 +702,7 @@
 
   <footer>
     <span>No selecting needed – choose, copy, paste.</span>
-    <span><a href="../trainer.html#en">📄 Printable info sheet with QR code</a> · <button type="button" class="link-btn" id="trainerToggle">👩‍🏫 Trainer mode: off</button></span>
+    <span><a href="../trainer.html#en">📄 Printable info sheet with QR code</a> · <button type="button" class="link-btn" id="lengthToggle">🧭 Version: extended</button> · <button type="button" class="link-btn" id="trainerToggle">👩‍🏫 Trainer mode: off</button></span>
     <span class="copyright">© 2026 Reto Lenz · <a href="https://creativecommons.org/licenses/by-nc/4.0/" target="_blank" rel="license noopener">CC BY-NC 4.0</a> – free to use and adapt with attribution, non-commercial</span>
   </footer>
 
@@ -732,6 +754,7 @@ Please do NOT write the file again from the beginning.
   const promptsTeil1 = [
     {
       id: "step1",
+      short: true,
       number: 1,
       title: "Get the base game & play",
       subtitle: "Load the game, do one race, give the file to the chat.",
@@ -784,6 +807,7 @@ Explain in simple language (for someone with no programming experience), without
     },
     {
       id: "step3",
+      short: true, shortNumber: "2",
       number: 3,
       title: "Camera – how far ahead can you see?",
       subtitle: "The skier moves up or down – the gates come into view earlier or later.",
@@ -838,6 +862,7 @@ In your 1–2 sentences, also explain why TRACK_HALF is called "half".`
     },
     {
       id: "step5",
+      short: true, shortNumber: "3",
       number: 5,
       title: "Steering – slippery or direct",
       subtitle: "How long does the skier slide on after steering?",
@@ -923,6 +948,7 @@ In your 1–2 sentences, also explain why a smaller number for TREE_EVERY means 
     },
     {
       id: "step8",
+      short: true, shortNumber: "4",
       number: 8,
       title: "Your own course – version 1 done",
       subtitle: "Your own course, your own title. Then set a best time!",
@@ -964,6 +990,7 @@ Do not add new features, only repair. Write in 1–2 sentences what was broken.`
     },
     {
       id: "weiter",
+      short: true,
       number: "↻",
       title: "Answer cut off? Continue!",
       subtitle: "When the code stops in the middle.",
@@ -978,6 +1005,91 @@ Do not add new features, only repair. Write in 1–2 sentences what was broken.`
   // ------------------------------------------------------------
 
   const promptsTeil2 = [
+    {
+      id: "aufpeppen",
+      number: "A",
+      short: true,
+      longHidden: true,   // short version only
+      title: "Spice up the game",
+      subtitle: "Snowfall, decoration, speed and combo streak – four wishes in one prompt.",
+      tag: "Several wishes at once",
+      info: "Tick what you want. The AI does everything in one answer. Then ski and tick off each point one by one.",
+      trainerNote: "Here participants practise bundling several wishes in one prompt. After testing, ask: which sentence did what? If it gets stuck, use “Split into two rounds”.",
+      type: "template",
+      user: {
+        parts: [
+          {
+            key: "snow", label: "❄️ Snowfall",
+            sentence: "It should snow {amount}. The flakes should be {colour}.",
+            choices: [
+              { key: "amount", label: "How much?", options: [{ label: "a little", text: "a little" }, { label: "heavily", text: "really heavily" }] },
+              { key: "colour", label: "Colour?", options: [{ label: "white", text: "white" }, { label: "light blue", text: "light blue" }, { label: "colourful", text: "colourful" }] }
+            ],
+            done: ["It snows {amount}, the flakes are {colour}."],
+            frame: "Area 2 already has the extra SNOWFALL. Switch it on (remove the // in front of EXTRAS.push(SNOWFALL);) and adjust the number, colour and size of the flakes.",
+            expect: { extraName: "SNOWFALL" }
+          },
+          {
+            key: "deco", label: "🏠 Decoration", extraHelp: true,
+            sentence: "Now and then there should be {what} in the deep snow next to the piste. If you touch them, {touch}. They should appear {often}.",
+            choices: [
+              { key: "what", label: "What?", options: [{ label: "huts, rocks, goats", text: "huts, rocks and mountain goats" }, { label: "snowmen", text: "snowmen" }, { label: "igloos", text: "igloos" }] },
+              { key: "touch", label: "Touching?", options: [{ label: "ski through", text: "you just ski through" }, { label: "crash", text: "you crash like at a tree" }] },
+              { key: "often", label: "How often?", options: [{ label: "rarely", text: "rarely" }, { label: "often", text: "often" }] }
+            ],
+            done: ["There are {what} next to the piste (not on it)."],
+            frame: "Build this as a new extra in area 2 and switch it on with EXTRAS.push(...). The things are only next to the piste, never on it, and inside the playing field. If you can ski through them, the extra gets no hits() function; otherwise hits() returns true when the player is close enough. Draw with simple p5 shapes.",
+            expect: { extra: true }
+          },
+          {
+            key: "tempo", label: "⚡ Speed",
+            sentence: "The game should get {speed}. The gates should be {gates}.",
+            choices: [
+              { key: "speed", label: "Speed?", options: [{ label: "faster", text: "faster and harder" }, { label: "slower", text: "slower and easier" }] },
+              { key: "gates", label: "Gates?", options: [{ label: "narrower", text: "narrower" }, { label: "the same", text: "as wide as now" }, { label: "wider", text: "wider" }] }
+            ],
+            done: ["The game is noticeably {speed}, the gates are {gates}."],
+            frame: "To do this, change only numbers in CONFIG: the start speed and the top speed, the width of the gates, and if it gets faster, also how fast you can steer sideways, so you can still make it round the bends. Otherwise CONFIG stays the same.",
+            expect: { config: ["SPEED_START", "SPEED_MAX"], allow: ["GATE_WIDTH", "STEER_MAX", "STEER_ACCEL", "SPEED_PER_GATE"] }
+          },
+          {
+            key: "combo", label: "🔥 Combo streak",
+            sentence: "When I pass several gates in a row, {display} should appear. {message} After a missed gate or a crash the streak starts again.",
+            choices: [
+              { key: "display", label: "Display?", options: [{ label: "🔥 fire", text: "a fire display with the number at the top right (e.g. “🔥 7”)" }, { label: "counter", text: "a counter “Streak: 7” at the top right" }] },
+              { key: "message", label: "Message?", options: [{ label: "every 5 gates", text: "Every 5 gates a message “🔥 5 in a row!” should flash." }, { label: "none", text: "" }] }
+            ],
+            done: ["The combo display appears after 2 gates in a row and starts again after a mistake."],
+            frame: "Use the events onGatePassed, onGateMissed and onCrash in area 2 for this (their names stay the same) and a variable for the streak. For the display, build a small extra with EXTRAS.push(...) that draws at the top right below the speaker symbol, but only from 2 gates in a row. Messages work with world.popup(text, x, y, colour).",
+            expect: { extra: true, funcs: ["onGatePassed"] }
+          }
+        ],
+        extraPlaceholder: "e.g. “The igloos should have a small window.”"
+      },
+      prompt: `${V2_RULES}
+
+${V2_EXTRA_HELP}
+
+Task: spice up the game – do all four parts in one answer.
+
+1. Snowfall: area 2 already has the extra SNOWFALL. Switch it on by removing the // in front of EXTRAS.push(SNOWFALL);. Make 180 flakes instead of 90, light blue and of different sizes (2 to 5 pixels).
+
+2. Decoration: create a new extra DECO in area 2 and switch it on with EXTRAS.push(DECO);
+- DECO has a list items. spawn(world) empties the list and fills it right away up to world.scrollY + CONFIG.H + 200; update(dt, world) keeps filling it, a new object about every 260 pixels (wy).
+- Every object is NEXT TO the piste: left of world.trackBounds(wy).left - 40 or right of world.trackBounds(wy).right + 40, but inside 0 to CONFIG.W.
+- Random kind with world.rnd(): hut, rock or mountain goat, drawn with simple p5 shapes.
+- Remove objects with wy < world.scrollY - 100. NO hits() function.
+
+3. Speed – change only these numbers in CONFIG: SPEED_START from 230 to 300, SPEED_MAX from 430 to 520, GATE_WIDTH from 150 to 120, STEER_MAX from 480 to 560.
+
+4. Combo streak:
+- Create a variable combo = 0 in area 2.
+- In onGatePassed(gate): increase combo by 1. At 5, 10, 15 … world.popup("🔥 " + combo + " in a row!", world.player.x, 120, [255, 140, 0]).
+- In onGateMissed(gate) and onCrash(kind): combo = 0.
+- Create a small extra COMBO_DISPLAY (EXTRAS.push(COMBO_DISPLAY);) that shows "🔥 " + combo at the top right (below the speaker symbol), but only when combo is at least 2.
+
+In your 1–2 sentences, say briefly what you did for 1, 2, 3 and 4.`
+    },
     {
       id: "schnee",
       number: "0",
@@ -1075,6 +1187,7 @@ Tip for you as a player: you can change the numbers in the prompt yourself befor
     },
     {
       id: "baer",
+      short: true, shortNumber: "B",
       number: "C",
       title: "New enemy: who is chasing you?",
       subtitle: "A bear, yeti or snowman comes down the slope from behind.",
@@ -1142,6 +1255,7 @@ Task: combo streak
     },
     {
       id: "theme",
+      short: true, shortNumber: "C",
       number: "D",
       title: "Colours for the whole game",
       subtitle: "Night, neon, candy or retro.",
@@ -1171,6 +1285,7 @@ Important: the piste (snow) and the deep snow (deepSnow) must be easy to tell ap
     },
     {
       id: "figur",
+      short: true, shortNumber: "D",
       number: "F",
       title: "Your own player figure",
       subtitle: "A princess, ninja, penguin or robot instead of the skier.",
@@ -1198,6 +1313,7 @@ Task: new player figure
     },
     {
       id: "weiter",
+      short: true,
       number: "↻",
       title: "Answer cut off? Continue!",
       subtitle: "When the code stops in the middle.",
@@ -1208,6 +1324,7 @@ Task: new player figure
     },
     {
       id: "own",
+      short: true,
       number: "★",
       title: "Free idea",
       subtitle: "Your very own idea – with the formula for good prompts.",
@@ -1221,6 +1338,10 @@ Task: new player figure
   // ------------------------------------------------------------
   // Allgemeine Helper (Copy etc.)
   // ------------------------------------------------------------
+
+  // Kurz- oder Ausführlich-Version: welche Schritte sind sichtbar?
+  let workshopShort = false;
+  const stepVisible = (p) => !p.hidden && (workshopShort ? !!p.short : !p.longHidden);
 
   const hiddenClipboardEl = document.getElementById("hiddenClipboard");
 
@@ -1413,8 +1534,9 @@ Task: new player figure
 
   function updateProgressUITeil1() {
     const optional = ["check", "weiter"]; // Hilfs-Einträge zählen nicht zum Fortschritt
-    const total = promptsTeil1.filter(p => !optional.includes(p.id)).length;
-    const done = Array.from(completedStepsTeil1).filter(id => !optional.includes(id)).length;
+    const counted = promptsTeil1.filter(p => stepVisible(p) && !optional.includes(p.id)).map(p => p.id);
+    const total = counted.length;
+    const done = Array.from(completedStepsTeil1).filter(id => counted.includes(id)).length;
     if (progressCountTeil1El) {
       progressCountTeil1El.textContent = `${done} / ${total}`;
     }
@@ -1438,7 +1560,7 @@ Task: new player figure
 
   function renderStepsTeil1() {
     stepsListTeil1El.innerHTML = "";
-    promptsTeil1.forEach((step) => {
+    promptsTeil1.filter(stepVisible).forEach((step) => {
       const li = document.createElement("li");
       li.className = "step-item";
       li.dataset.stepId = step.id;
@@ -1540,7 +1662,7 @@ if (toggleDidaktikBtnEl) {
 
   function renderStepsTeil2() {
     stepsListTeil2El.innerHTML = "";
-    promptsTeil2.forEach((step) => {
+    promptsTeil2.filter(stepVisible).forEach((step) => {
       const li = document.createElement("li");
       li.className = "step-item";
       li.dataset.stepId = step.id;
@@ -4316,6 +4438,20 @@ window.__ski = {
     repairPlaceholder: "e.g. “The yeti never comes.” (optional)",
     repairFound: "This is what I noticed – please correct only this:",
     bonus: "Bonus",
+    startTeil1: (n) => `${n} steps: say what you want`,
+    startTeil2Long: "Bear, ninja, colours and more",
+    startTeil2Short: "Spice up the game, enemy, colours, figure",
+    lengthShort: "⏱ Version: short",
+    lengthLong: "🧭 Version: extended",
+    trainerNoteLabel: "For trainers:",
+    pWishParts: "This is what I want – do all points in one answer:",
+    pPartsEnd: "Change nothing else. In your 1–2 sentences, say briefly what you did for each number.",
+    chPartMissing: (l) => `${l}: not visible yet`,
+    bPartsHint: "Tick what the AI should do:",
+    splitSummary: "Doesn't work all at once? Split into two rounds",
+    splitHint: "Send round 1 first, check the game, then send round 2 in the same chat.",
+    split1: "📋 Round 1: snowfall + speed",
+    split2: "📋 Round 2: decoration + combo",
   };
   // UI_TEXT_END
 
@@ -4394,23 +4530,55 @@ window.__ski = {
     const head = $(listId).closest(".tab-panel").querySelector(".step-head");
     setTimeout(() => head.scrollIntoView({ behavior: "smooth", block: "start" }), 50);
   }));
-  promptsTeil1.concat(promptsTeil2).filter((p) => p.hidden).forEach((p) => {
-    document.querySelectorAll(`[data-step-id="${p.id}"]`).forEach((li) => li.remove());
-  });
-  separator("stepsListTeil1", "weiter", T.sepHelp1);
-  separator("stepsListTeil2", "weiter", T.sepHelp1);
-  separator("stepsListTeil2", "own", T.sepFree);
-  // Bonus-Schritte kennzeichnen
-  promptsTeil1.filter((p) => p.bonus).forEach((p) => {
-    const h = document.querySelector(`#stepsListTeil1 [data-step-id="${p.id}"] h3`);
-    if (h) h.insertAdjacentHTML("beforeend", ` <span class="bonus-tag">${T.bonus}</span>`);
-  });
+  function decorateLists() {
+    separator("stepsListTeil1", "weiter", T.sepHelp1);
+    separator("stepsListTeil2", "weiter", T.sepHelp1);
+    separator("stepsListTeil2", "own", T.sepFree);
+    // Bonus-Schritte kennzeichnen (in der Kurz-Version ist Teil 3 ein Bonus)
+    promptsTeil1.concat(promptsTeil2).filter((p) => p.bonus || (workshopShort && p.id === "own")).forEach((p) => {
+      document.querySelectorAll(`[data-step-id="${p.id}"] h3`).forEach((h) =>
+        h.insertAdjacentHTML("beforeend", ` <span class="bonus-tag">${T.bonus}</span>`));
+    });
+  }
+
+  // --- Kurz- oder Ausführlich-Version --------------------------------------
+  function applyLength(short) {
+    workshopShort = short;
+    promptsTeil1.concat(promptsTeil2).forEach((p) => {
+      if (p.longNumber === undefined) p.longNumber = p.number;
+      p.number = short && p.shortNumber ? p.shortNumber : p.longNumber;
+    });
+    renderStepsTeil1();
+    renderStepsTeil2();
+    decorateLists();
+    const keep = (list, id, select) => {
+      const cur = list.find((p) => p.id === id);
+      select(cur && stepVisible(cur) ? id : list.find(stepVisible).id);
+    };
+    keep(promptsTeil1, currentStepTeil1Id, selectStepTeil1);
+    if (currentStepTeil2Id) keep(promptsTeil2, currentStepTeil2Id, selectStepTeil2);
+    document.body.classList.toggle("short", short);
+    document.querySelectorAll(".len-btn").forEach((b) => b.classList.toggle("active", (b.dataset.len === "short") === short));
+    const n = promptsTeil1.filter((p) => stepVisible(p) && p.id !== "weiter").length;
+    $("startTeil1Sub").textContent = T.startTeil1(n);
+    $("startTeil2Sub").textContent = short ? T.startTeil2Short : T.startTeil2Long;
+    $("lengthToggle").textContent = short ? T.lengthShort : T.lengthLong;
+    try { localStorage.setItem("ski_length", short ? "short" : "long"); } catch (e) { /* egal */ }
+  }
+  let startShort = false;
+  try { startShort = localStorage.getItem("ski_length") === "short"; } catch (e) { /* egal */ }
+  const q = new URLSearchParams(location.search);
+  if (q.has("kurz") || q.has("short")) startShort = true;
+  if (q.has("lang") || q.has("long")) startShort = false;
+  document.querySelectorAll(".len-btn").forEach((b) => b.addEventListener("click", () => applyLength(b.dataset.len === "short")));
+  $("lengthToggle").addEventListener("click", () => applyLength(!workshopShort));
+  applyLength(startShort);
 
   // --- 2) Schritt-Führung: Prompt → Live Editor → ✓ Klappt → nächster Schritt
   let ctx = null;   // { part: 1 | 2, id }
   const bar = $("stepBar"), barText = $("stepBarText"), doneBtn = $("stepDoneBtn");
   const mainSteps = () => promptsTeil1.filter((p) => isRulePrompt(p.prompt) || p.id === "step1" || p.id === "step2")
-                                      .filter((p) => p.id !== "check");
+                                      .filter((p) => p.id !== "check" && stepVisible(p));
 
   function updateBar() {
     bar.hidden = !ctx;
@@ -4543,18 +4711,32 @@ window.__ski = {
         items.push({ cls: mark(ok), html: tag(ok, T.chConfig(k, esc(cb[k]), esc(ca[k]))) });
       }
     }
-    for (const k of wanted) if (!changedKeys.includes(k)) items.push({ cls: "warn", html: T.chMissing(k) });
+    const byParts = !!(expect && expect.parts);   // Teil-Schritte: Fehlendes zeigt die Teil-Zeile
+    for (const k of wanted) if (!changedKeys.includes(k) && !byParts) items.push({ cls: "warn", html: T.chMissing(k) });
     const eb = activeExtras(before.area2), ea = activeExtras(after.area2);
     const newExtras = [...ea].filter((n) => !eb.has(n));
     for (const n of newExtras) items.push({ cls: mark(!!(expect && expect.extra)), html: tag(!!(expect && expect.extra), T.chExtraNew(n)) });
-    if (expect && expect.extra && !newExtras.length) items.push({ cls: "warn", html: T.chMissingExtra });
+    if (expect && expect.extra && !newExtras.length && !byParts) items.push({ cls: "warn", html: T.chMissingExtra });
     for (const n of eb) if (!ea.has(n)) items.push({ html: T.chExtraOff(n) });
+    if (expect && expect.parts) {   // Teilaufgaben einzeln abhaken
+      const others = newExtras.filter((n) => !expect.extraNames.includes(n)).length;
+      const changedFn = (n) => funcBody(before.area2, n) !== funcBody(after.area2, n);
+      const head = expect.parts.map((pt) => {
+        const x = pt.expect;
+        const ok = (!x.extraName || newExtras.includes(x.extraName)) &&
+          (!x.extra || others >= expect.newExtras) &&
+          (x.config || []).every((k) => changedKeys.includes(k)) &&
+          (x.funcs || []).every(changedFn);
+        return { cls: ok ? "ok" : "warn", html: ok ? pt.label : T.chPartMissing(pt.label) };
+      });
+      items.unshift(...head);
+    }
     let explained = items.length > 0;
     const funcs = (expect && expect.funcs) || [];
     for (const n of ["drawPlayer", "onGatePassed", "onGateMissed", "onCrash", "onFinish"]) {
       const changed = funcBody(before.area2, n) !== funcBody(after.area2, n);
       if (changed) { items.push({ cls: funcs.includes(n) ? "ok" : "", html: T.chFunc(n) }); explained = true; }
-      else if (funcs.includes(n)) items.push({ cls: "warn", html: T.chMissing(n) });
+      else if (funcs.includes(n) && !byParts) items.push({ cls: "warn", html: T.chMissing(n) });
     }
     const tb = themeColours(before.area2), ta = themeColours(after.area2);
     const themeChanged = Object.keys(ta).filter((k) => tb[k] !== ta[k]).length;
@@ -4585,7 +4767,7 @@ window.__ski = {
     if (!after || !before || after.lang !== before.lang) { changeBox.hidden = true; return; }
     const list = ctx && (ctx.part === 1 ? promptsTeil1 : promptsTeil2);
     const step = list && list.find((p) => p.id === ctx.id);
-    const items = describeChanges(before, after, step && step.user ? step.user.expect : null);
+    const items = describeChanges(before, after, window.expectFor(step));
     lastFindings = items.filter((i) => i.cls === "warn").map((i) => i.html.replace(/<[^>]+>/g, "").replace(/^⚠\s*/, ""));
     repair.querySelector("input").value = "";
     repair.querySelector(".status").textContent = "";
@@ -4631,11 +4813,14 @@ window.__ski = {
 
   // --- 6) Eigener Satz statt fertigem Prompt (Schritte mit Feld `user`) ------
   const userState = {};   // Schritt-ID → { choices: { key: Index }, extra: "" }
-  const stateFor = (step) => (userState[step.id] = userState[step.id] || { choices: {}, extra: "" });
+  const stateFor = (step) => (userState[step.id] = userState[step.id] || { choices: {}, extra: "", off: {} });
+  // Schritte mit Teilaufgaben (user.parts): nur angehakte Teile gehen mit
+  const allChoices = (u) => (u.parts ? u.parts.flatMap((p) => p.choices) : u.choices);
+  const activeParts = (step) => step.user.parts.filter((p) => !stateFor(step).off[p.key]);
   function fillTemplate(tpl, step) {
     const st = stateFor(step);
     return tpl.replace(/\{(\w+)\}/g, (m, key, off, whole) => {
-      const group = step.user.choices.find((c) => c.key === key);
+      const group = allChoices(step.user).find((c) => c.key === key);
       if (!group) return m;
       let text = group.options[st.choices[key] || 0].text;
       const before = whole.slice(0, off).trimEnd();
@@ -4643,8 +4828,38 @@ window.__ski = {
       return text;
     });
   }
+  function buildPartsPrompt(step, only) {
+    const u = step.user, st = stateFor(step);
+    const ps = activeParts(step).filter((p) => !only || only.includes(p.key));
+    const n = (i) => (ps.length > 1 ? i + 1 + ". " : "");
+    let p = V2_RULES + (ps.some((x) => x.extraHelp) ? "\n\n" + V2_EXTRA_HELP : "") + "\n\n";
+    p += (ps.length > 1 ? T.pWishParts : T.pWish) + "\n" +
+      ps.map((x, i) => n(i) + x.label.replace(/^\S+\s/, "") + ": " + fillTemplate(x.sentence, step).replace(/ {2,}/g, " ")).join("\n") +
+      (st.extra.trim() ? "\n" + st.extra.trim() : "");
+    p += "\n\n" + T.pDone + "\n" + ps.map((x) => x.done.map((d) => "- " + fillTemplate(d, step)).join("\n")).join("\n");
+    p += "\n\n" + T.pFrame + "\n" + ps.map((x, i) => n(i) + (ps.length > 1 ? x.label.replace(/^\S+\s/, "") + ": " : "") + x.frame).join("\n") + (ps.length > 1 ? "\n" + T.pPartsEnd : "");
+    return p;
+  }
+  // Erwartung für „Was hat sich geändert?“ aus den angehakten Teilen
+  window.expectFor = function (step) {
+    if (!step || !step.user) return null;
+    if (!step.user.parts) return step.user.expect;
+    const only = stateFor(step).only;   // nach „Runde 1/2 kopieren“ nur diese Teile erwarten
+    const ps = activeParts(step).filter((p) => !only || only.includes(p.key));
+    const e = { config: [], allow: [], funcs: [], extra: false, parts: [] };
+    ps.forEach((x) => {
+      const x2 = x.expect;
+      e.config.push(...(x2.config || [])); e.allow.push(...(x2.allow || [])); e.funcs.push(...(x2.funcs || []));
+      e.parts.push({ label: x.label, expect: x2 });
+    });
+    e.newExtras = ps.filter((x) => x.expect.extra).length;
+    e.extraNames = ps.map((x) => x.expect.extraName).filter(Boolean);
+    e.extra = e.newExtras > 0 || e.extraNames.length > 0;
+    return e;
+  };
   function buildUserPrompt(step) {
     const u = step.user, st = stateFor(step);
+    if (u.parts) return buildPartsPrompt(step);
     let p = u.noRules ? "" : V2_RULES + (u.extraHelp ? "\n\n" + V2_EXTRA_HELP : "") + "\n\n";
     p += T.pWish + "\n" + fillTemplate(u.sentence, step) + (st.extra.trim() ? "\n" + st.extra.trim() : "");
     p += "\n\n" + T.pDone + "\n" + u.done.map((d) => "- " + fillTemplate(d, step)).join("\n");
@@ -4682,28 +4897,57 @@ window.__ski = {
     u.exact.open = false;
     u.exact.querySelector("pre").textContent = step.prompt;
     u.exact.querySelector(".status").textContent = "";
-    const st = stateFor(step);
-    u.builder.innerHTML = `<div class="builder-title">${T.bTitle}</div>` + step.user.choices.map((g) =>
-      `<div class="choice-row"><span class="choice-label">${g.label}</span>` + g.options.map((o, i) =>
-        `<button type="button" class="chip-btn${(st.choices[g.key] || 0) === i ? " active" : ""}" data-key="${g.key}" data-i="${i}">${o.label}</button>`).join("") +
-      "</div>").join("") +
-      `<label class="builder-extra"><span>${T.bExtra}</span><textarea rows="2" placeholder="${step.user.extraPlaceholder || ""}"></textarea></label>`;
+    const st = stateFor(step), su = step.user;
+    const row = (g) => `<div class="choice-row"><span class="choice-label">${g.label}</span>` + g.options.map((o, i) =>
+      `<button type="button" class="chip-btn${(st.choices[g.key] || 0) === i ? " active" : ""}" data-key="${g.key}" data-i="${i}">${o.label}</button>`).join("") + "</div>";
+    const extraField = `<label class="builder-extra"><span>${T.bExtra}</span><textarea rows="2" placeholder="${su.extraPlaceholder || ""}"></textarea></label>`;
+    if (su.parts) {
+      u.builder.innerHTML = `<div class="builder-title">${T.bTitle}</div><p class="parts-hint">${T.bPartsHint}</p>` +
+        su.parts.map((pt) => `<div class="part-card${st.off[pt.key] ? " off" : ""}" data-part="${pt.key}">` +
+          `<label class="part-head"><input type="checkbox"${st.off[pt.key] ? "" : " checked"}> ${pt.label}</label>` +
+          pt.choices.map(row).join("") + "</div>").join("") + extraField +
+        `<details class="split"><summary>${T.splitSummary}</summary><p>${T.splitHint}</p>` +
+        `<button class="secondary-btn" type="button" data-only="snow,tempo">${T.split1}</button> ` +
+        `<button class="secondary-btn" type="button" data-only="deco,combo">${T.split2}</button> <span class="status"></span></details>`;
+    } else {
+      u.builder.innerHTML = `<div class="builder-title">${T.bTitle}</div>` + su.choices.map(row).join("") + extraField;
+    }
     const ta = u.builder.querySelector("textarea");
     ta.value = st.extra;
+    const doneItems = () => (su.parts ? activeParts(step).flatMap((pt) => pt.done) : su.done);
     const refresh = () => {
       u.pre.textContent = buildUserPrompt(step);
-      u.info.innerHTML = '<ul class="done-list">' + step.user.done.map((d) =>
-        `<li><label><input type="checkbox"> ${fillTemplate(d, step)}</label></li>`).join("") + "</ul>";
+      u.info.innerHTML = '<ul class="done-list">' + doneItems().map((d) =>
+        `<li><label><input type="checkbox"> ${fillTemplate(d, step)}</label></li>`).join("") + "</ul>" +
+        (step.trainerNote ? `<p class="trainer-only trainer-note"><b>${T.trainerNoteLabel}</b> ${step.trainerNote}</p>` : "");
     };
     u.builder.querySelectorAll(".chip-btn").forEach((b) => b.addEventListener("click", () => {
       st.choices[b.dataset.key] = Number(b.dataset.i);
       u.builder.querySelectorAll(`.chip-btn[data-key="${b.dataset.key}"]`).forEach((x) => x.classList.toggle("active", x === b));
       refresh();
     }));
+    u.builder.querySelectorAll(".part-head input").forEach((cb) => cb.addEventListener("change", () => {
+      const card = cb.closest(".part-card");
+      if (!cb.checked && activeParts(step).length === 1) { cb.checked = true; return; }   // mindestens ein Teil
+      st.off[card.dataset.part] = !cb.checked;
+      card.classList.toggle("off", !cb.checked);
+      refresh();
+    }));
+    u.builder.querySelectorAll("[data-only]").forEach((b) => b.addEventListener("click", async () => {
+      const only = b.dataset.only.split(",");
+      const status = u.builder.querySelector(".split .status");
+      status.textContent = (await copyToClipboard(buildPartsPrompt(step, only))) ? T.copied : T.copyFailed;
+      st.only = only;
+      setCtx(part);
+    }));
     ta.addEventListener("input", () => { st.extra = ta.value; refresh(); });
     refresh();
   }
   window.__renderUser = renderUser;
+  $("copyBtnTeil2").addEventListener("click", () => {
+    const step = promptsTeil2.find((p) => p.id === currentStepTeil2Id);
+    if (step && step.user) stateFor(step).only = null;
+  });
   decorate(1);
   if (currentStepTeil2Id) decorate(2);
 

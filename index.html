@@ -123,6 +123,14 @@
     .step3 b { display: block; font-size: 1.15rem; font-weight: 900; }
     .step3 small { color: var(--muted); font-size: .95rem; font-weight: 600; }
     .step3 .go { margin-left: auto; font-size: 1.5rem; color: var(--muted); }
+    .length-pick { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 10px; margin: 0 0 14px; }
+    .length-pick > span { grid-column: 1 / -1; font-weight: 800; color: var(--muted); }
+    .len-btn { padding: 8px 14px; border-radius: var(--radius-sm); border: 2px solid var(--line); background: var(--white);
+               color: var(--ink); font: inherit; cursor: pointer; text-align: left; }
+    .len-btn b { display: block; font-weight: 900; }
+    .len-btn small { color: var(--muted); font-weight: 600; }
+    .len-btn.active { border-color: var(--sky-700); background: var(--sky-100); }
+    .trainer-note { margin: 8px 0 0; font-size: .92rem; color: var(--muted); }
     .rule { margin-top: 18px; padding: 12px 16px; border-radius: var(--radius-sm); background: var(--sky-100);
             font-weight: 700; color: var(--sky-900); }
     .demo-card { position: relative; border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow); background: var(--sky-100); }
@@ -264,6 +272,15 @@
     .builder-extra textarea { width: 100%; padding: 8px 12px; border-radius: var(--radius-sm); border: 2px solid var(--line);
                               font: 600 1rem/1.4 "Nunito", system-ui, sans-serif; resize: vertical; }
     .builder-extra textarea:focus { outline: none; border-color: var(--part); }
+    .parts-hint { margin: 0 0 8px; color: var(--muted); font-weight: 700; }
+    .part-card { margin: 8px 0; padding: 8px 12px; border-radius: var(--radius-sm); background: var(--white); border: 2px solid var(--line); }
+    .part-card.off { opacity: .55; }
+    .part-card.off .choice-row { display: none; }
+    .part-head { display: flex; align-items: center; gap: 8px; font-weight: 900; cursor: pointer; }
+    .part-head input { width: 20px; height: 20px; accent-color: var(--part); }
+    .split { margin-top: 10px; }
+    .split summary { cursor: pointer; font-weight: 800; color: var(--muted); }
+    .split p { margin: 6px 0; color: var(--muted); font-size: .92rem; }
     .exact { margin-top: 12px; padding: 10px 14px; border-radius: var(--radius-sm); border: 1px dashed var(--line); }
     .exact summary { cursor: pointer; font-weight: 800; color: var(--muted); }
     .exact p { margin: 8px 0; color: var(--muted); font-size: .92rem; }
@@ -333,10 +350,15 @@
           <div>
             <h2>Heute baut ihr euer eigenes Skirennen.</h2>
             <p class="lead">Ihr sagt der KI, was ihr wollt. Die KI schreibt den Code. Ihr spielt und prüft, ob es stimmt.</p>
+            <div class="length-pick">
+              <span>Wie viel Zeit habt ihr?</span>
+              <button type="button" class="len-btn" data-len="short"><b>⏱ Kurz</b><small>ca. 1½–2 Stunden</small></button>
+              <button type="button" class="len-btn" data-len="long"><b>🧭 Ausführlich</b><small>ca. 3 Stunden</small></button>
+            </div>
             <div class="steps3">
               <button class="step3" type="button" data-go="play"><span class="num">1</span><span><b>Spiel ausprobieren</b><small>Ein Rennen fahren und die Zeit merken</small></span><span class="go">›</span></button>
-              <button class="step3 s1" type="button" data-go="teil1"><span class="num">2</span><span><b>Teil 1: Spiel einstellen</b><small>8 Schritte mit fertigen Prompts</small></span><span class="go">›</span></button>
-              <button class="step3 s2" type="button" data-go="teil2"><span class="num">3</span><span><b>Teil 2: Eigene Ideen</b><small>Bär, Ninja, Farben und mehr</small></span><span class="go">›</span></button>
+              <button class="step3 s1" type="button" data-go="teil1"><span class="num">2</span><span><b>Teil 1: Spiel einstellen</b><small id="startTeil1Sub">8 Schritte: sagen, was ihr wollt</small></span><span class="go">›</span></button>
+              <button class="step3 s2" type="button" data-go="teil2"><span class="num">3</span><span><b>Teil 2: Eigene Ideen</b><small id="startTeil2Sub">Bär, Ninja, Farben und mehr</small></span><span class="go">›</span></button>
             </div>
             <div class="rule">Die Regel: Wir ändern keinen Code von Hand – nur mit Prompts.</div>
           </div>
@@ -680,7 +702,7 @@
 
   <footer>
     <span>Nichts markieren nötig – auswählen, kopieren, einfügen.</span>
-    <span><a href="trainer.html">📄 Infoblatt mit QR-Code zum Ausdrucken</a> · <button type="button" class="link-btn" id="trainerToggle">👩‍🏫 Trainer-Modus: aus</button></span>
+    <span><a href="trainer.html">📄 Infoblatt mit QR-Code zum Ausdrucken</a> · <button type="button" class="link-btn" id="lengthToggle">🧭 Version: Ausführlich</button> · <button type="button" class="link-btn" id="trainerToggle">👩‍🏫 Trainer-Modus: aus</button></span>
     <span class="copyright">© 2026 Reto Lenz · <a href="https://creativecommons.org/licenses/by-nc/4.0/" target="_blank" rel="license noopener">CC BY-NC 4.0</a> – frei nutzbar und anpassbar mit Namensnennung, nicht kommerziell</span>
   </footer>
 
@@ -732,6 +754,7 @@ Bitte schreib die Datei NICHT nochmal von vorne.
   const promptsTeil1 = [
     {
       id: "step1",
+      short: true,
       number: 1,
       title: "Basis-Spiel holen & spielen",
       subtitle: "Spiel laden, ein Rennen fahren, Datei in den Chat geben.",
@@ -784,6 +807,7 @@ Erkläre mir in einfacher Sprache (für jemanden ohne Programmier-Erfahrung), oh
     },
     {
       id: "step3",
+      short: true, shortNumber: "2",
       number: 3,
       title: "Kamera – wie weit siehst du voraus?",
       subtitle: "Der Skifahrer rückt nach oben oder unten – die Tore kommen früher oder später ins Bild.",
@@ -838,6 +862,7 @@ Erkläre in deinen 1–2 Sätzen zusätzlich, warum TRACK_HALF „halb“ heisst
     },
     {
       id: "step5",
+      short: true, shortNumber: "3",
       number: 5,
       title: "Lenkung – rutschig oder direkt",
       subtitle: "Wie lange rutscht der Skifahrer nach dem Lenken nach?",
@@ -923,6 +948,7 @@ Erkläre in deinen 1–2 Sätzen zusätzlich, warum eine kleinere Zahl bei TREE_
     },
     {
       id: "step8",
+      short: true, shortNumber: "4",
       number: 8,
       title: "Eure eigene Strecke – Version 1 fertig",
       subtitle: "Eigene Strecke, eigener Titel. Dann Bestzeit fahren!",
@@ -964,6 +990,7 @@ Keine neuen Features einbauen, nur reparieren. Schreib in 1–2 Sätzen, was kap
     },
     {
       id: "weiter",
+      short: true,
       number: "↻",
       title: "Antwort abgeschnitten? Weiter!",
       subtitle: "Wenn der Code mittendrin aufhört.",
@@ -978,6 +1005,91 @@ Keine neuen Features einbauen, nur reparieren. Schreib in 1–2 Sätzen, was kap
   // ------------------------------------------------------------
 
   const promptsTeil2 = [
+    {
+      id: "aufpeppen",
+      number: "A",
+      short: true,
+      longHidden: true,   // nur in der Kurz-Version
+      title: "Spiel aufpeppen",
+      subtitle: "Schneefall, Deko, Tempo und Kombo-Serie – vier Wünsche in einem Prompt.",
+      tag: "Mehrere Wünsche auf einmal",
+      info: "Hakt an, was ihr wollt. Die KI macht alles in einer Antwort. Danach fahren und jeden Punkt einzeln abhaken.",
+      trainerNote: "Hier üben die Teilnehmer:innen, mehrere Wünsche in einem Prompt zu bündeln. Nach dem Testen nachfragen: Welcher Satz hat was bewirkt? Klemmt es, „In zwei Runden aufteilen“ nehmen.",
+      type: "template",
+      user: {
+        parts: [
+          {
+            key: "snow", label: "❄️ Schneefall",
+            sentence: "Es soll {menge} schneien. Die Flocken sollen {farbe} sein.",
+            choices: [
+              { key: "menge", label: "Wie viel?", options: [{ label: "ein bisschen", text: "ein bisschen" }, { label: "stark", text: "richtig stark" }] },
+              { key: "farbe", label: "Farbe?", options: [{ label: "weiss", text: "weiss" }, { label: "hellblau", text: "hellblau" }, { label: "bunt", text: "bunt" }] }
+            ],
+            done: ["Es schneit {menge}, die Flocken sind {farbe}."],
+            frame: "Im Bereich 2 gibt es schon das Extra SCHNEEFALL. Schalte es ein (die // vor EXTRAS.push(SCHNEEFALL); entfernen) und passe Anzahl, Farbe und Grösse der Flocken an.",
+            expect: { extraName: "SCHNEEFALL" }
+          },
+          {
+            key: "deco", label: "🏠 Deko", extraHelp: true,
+            sentence: "Neben der Piste im Tiefschnee sollen ab und zu {was} stehen. Wenn man sie berührt, {beruehrt}. Sie kommen {haeufig} vor.",
+            choices: [
+              { key: "was", label: "Was?", options: [{ label: "Hütten, Steine, Ziegen", text: "Hütten, Steine und Bergziegen" }, { label: "Schneemänner", text: "Schneemänner" }, { label: "Iglus", text: "Iglus" }] },
+              { key: "beruehrt", label: "Berühren?", options: [{ label: "durchfahren", text: "fährt man einfach durch" }, { label: "stürzen", text: "stürzt man wie bei einem Baum" }] },
+              { key: "haeufig", label: "Wie oft?", options: [{ label: "selten", text: "selten" }, { label: "oft", text: "oft" }] }
+            ],
+            done: ["Neben der Piste (nicht auf der Piste) stehen {was}."],
+            frame: "Baue das als neues Extra im Bereich 2 und schalte es mit EXTRAS.push(...) ein. Die Dinge stehen nur neben der Piste, nie auf der Piste, und innerhalb des Spielfelds. Wenn man durchfahren kann, bekommt das Extra keine hits()-Funktion; sonst gibt hits() true zurück, wenn der Spieler nah genug ist. Zeichne mit einfachen p5-Formen.",
+            expect: { extra: true }
+          },
+          {
+            key: "tempo", label: "⚡ Tempo",
+            sentence: "Das Spiel soll {tempo} werden. Die Tore sollen {tore} sein.",
+            choices: [
+              { key: "tempo", label: "Tempo?", options: [{ label: "schneller", text: "schneller und schwieriger" }, { label: "langsamer", text: "langsamer und leichter" }] },
+              { key: "tore", label: "Tore?", options: [{ label: "enger", text: "enger" }, { label: "gleich", text: "gleich breit wie jetzt" }, { label: "breiter", text: "breiter" }] }
+            ],
+            done: ["Das Spiel ist spürbar {tempo}, die Tore sind {tore}."],
+            frame: "Ändere dafür nur Zahlen in CONFIG: das Tempo am Start und das Höchsttempo, die Breite der Tore, und wenn es schneller wird, auch wie schnell man seitwärts lenken kann, damit man noch um die Kurven kommt. Sonst bleibt CONFIG gleich.",
+            expect: { config: ["SPEED_START", "SPEED_MAX"], allow: ["GATE_WIDTH", "STEER_MAX", "STEER_ACCEL", "SPEED_PER_GATE"] }
+          },
+          {
+            key: "combo", label: "🔥 Kombo-Serie",
+            sentence: "Wenn ich mehrere Tore hintereinander schaffe, soll {anzeige} erscheinen. {meldung} Bei einem verpassten Tor oder einem Sturz beginnt die Serie von vorne.",
+            choices: [
+              { key: "anzeige", label: "Anzeige?", options: [{ label: "🔥 Feuer", text: "oben rechts eine Feuer-Anzeige mit der Anzahl (z. B. „🔥 7“)" }, { label: "Zähler", text: "oben rechts ein Zähler „Serie: 7“" }] },
+              { key: "meldung", label: "Meldung?", options: [{ label: "alle 5 Tore", text: "alle 5 Tore soll eine Meldung „🔥 5er-Serie!“ aufblitzen." }, { label: "keine", text: "" }] }
+            ],
+            done: ["Ab 2 Toren in Folge erscheint die Kombo-Anzeige, nach einem Fehler beginnt sie von vorne."],
+            frame: "Nutze dafür die Ereignisse onGatePassed, onGateMissed und onCrash im Bereich 2 (ihre Namen bleiben gleich) und eine Variable für die Serie. Für die Anzeige baue ein kleines Extra mit EXTRAS.push(...), das oben rechts unter dem Lautsprecher-Symbol zeichnet, aber erst ab 2 Toren in Folge. Meldungen gehen mit welt.popup(text, x, y, farbe).",
+            expect: { extra: true, funcs: ["onGatePassed"] }
+          }
+        ],
+        extraPlaceholder: "z. B. „Die Iglus sollen ein kleines Fenster haben.“"
+      },
+      prompt: `${V2_RULES}
+
+${V2_EXTRA_HELP}
+
+Aufgabe: Spiel aufpeppen – mach alle vier Teile in einer Antwort.
+
+1. Schneefall: Im Bereich 2 gibt es schon das Extra SCHNEEFALL. Schalte es ein, indem du die // vor EXTRAS.push(SCHNEEFALL); entfernst. Mach 180 Flocken statt 90, hellblau und unterschiedlich gross (2 bis 5 Pixel).
+
+2. Deko: Lege im Bereich 2 ein neues Extra DEKO an und schalte es mit EXTRAS.push(DEKO); ein.
+- DEKO hat eine Liste items. spawn(welt) leert die Liste und füllt sie gleich bis welt.scrollY + CONFIG.H + 200; update(dt, welt) füllt sie weiter, ungefähr alle 260 Pixel (wy) ein neues Objekt.
+- Jedes Objekt liegt NEBEN der Piste: links von welt.trackBounds(wy).left - 40 oder rechts von welt.trackBounds(wy).right + 40, aber innerhalb von 0 bis CONFIG.W.
+- Art zufällig mit welt.rnd(): Hütte, Stein oder Bergziege, mit einfachen p5-Formen gezeichnet.
+- Objekte mit wy < welt.scrollY - 100 entfernen. KEINE hits()-Funktion.
+
+3. Tempo – ändere in CONFIG nur diese Zahlen: SPEED_START von 230 auf 300, SPEED_MAX von 430 auf 520, GATE_WIDTH von 150 auf 120, STEER_MAX von 480 auf 560.
+
+4. Kombo-Serie:
+- Lege im Bereich 2 eine Variable kombo = 0 an.
+- In onGatePassed(gate): kombo um 1 erhöhen. Bei 5, 10, 15 … welt.popup("🔥 " + kombo + "er-Serie!", welt.player.x, 120, [255, 140, 0]).
+- In onGateMissed(gate) und onCrash(kind): kombo = 0.
+- Lege ein kleines Extra KOMBO_ANZEIGE an (EXTRAS.push(KOMBO_ANZEIGE);), das oben rechts (unter dem Lautsprecher-Symbol) "🔥 " + kombo anzeigt, aber nur wenn kombo mindestens 2 ist.
+
+Schreib in deinen 1–2 Sätzen kurz, was du für 1, 2, 3 und 4 gemacht hast.`
+    },
     {
       id: "schnee",
       number: "0",
@@ -1075,6 +1187,7 @@ Tipp für dich als Spieler:in: Du kannst die Zahlen im Prompt auch selbst änder
     },
     {
       id: "baer",
+      short: true, shortNumber: "B",
       number: "C",
       title: "Neuer Gegner: Wer jagt dich?",
       subtitle: "Bär, Yeti oder Schneemann kommen von hinten den Hang hinunter.",
@@ -1142,6 +1255,7 @@ Aufgabe: Kombo-Serie
     },
     {
       id: "theme",
+      short: true, shortNumber: "C",
       number: "D",
       title: "Farben fürs ganze Spiel",
       subtitle: "Nacht, Neon, Bonbon oder Retro.",
@@ -1171,6 +1285,7 @@ Wichtig: Piste (snow) und Tiefschnee (deepSnow) müssen sich gut unterscheiden, 
     },
     {
       id: "figur",
+      short: true, shortNumber: "D",
       number: "F",
       title: "Eigene Spielfigur",
       subtitle: "Prinzessin, Ninja, Pinguin oder Roboter statt Skifahrer.",
@@ -1198,6 +1313,7 @@ Aufgabe: Neue Spielfigur
     },
     {
       id: "weiter",
+      short: true,
       number: "↻",
       title: "Antwort abgeschnitten? Weiter!",
       subtitle: "Wenn der Code mittendrin aufhört.",
@@ -1208,6 +1324,7 @@ Aufgabe: Neue Spielfigur
     },
     {
       id: "own",
+      short: true,
       number: "★",
       title: "Freie Idee",
       subtitle: "Eure ganz eigene Idee – mit der Formel für gute Prompts.",
@@ -1221,6 +1338,10 @@ Aufgabe: Neue Spielfigur
   // ------------------------------------------------------------
   // Allgemeine Helper (Copy etc.)
   // ------------------------------------------------------------
+
+  // Kurz- oder Ausführlich-Version: welche Schritte sind sichtbar?
+  let workshopShort = false;
+  const stepVisible = (p) => !p.hidden && (workshopShort ? !!p.short : !p.longHidden);
 
   const hiddenClipboardEl = document.getElementById("hiddenClipboard");
 
@@ -1413,8 +1534,9 @@ Aufgabe: Neue Spielfigur
 
   function updateProgressUITeil1() {
     const optional = ["check", "weiter"]; // Hilfs-Einträge zählen nicht zum Fortschritt
-    const total = promptsTeil1.filter(p => !optional.includes(p.id)).length;
-    const done = Array.from(completedStepsTeil1).filter(id => !optional.includes(id)).length;
+    const counted = promptsTeil1.filter(p => stepVisible(p) && !optional.includes(p.id)).map(p => p.id);
+    const total = counted.length;
+    const done = Array.from(completedStepsTeil1).filter(id => counted.includes(id)).length;
     if (progressCountTeil1El) {
       progressCountTeil1El.textContent = `${done} / ${total}`;
     }
@@ -1438,7 +1560,7 @@ Aufgabe: Neue Spielfigur
 
   function renderStepsTeil1() {
     stepsListTeil1El.innerHTML = "";
-    promptsTeil1.forEach((step) => {
+    promptsTeil1.filter(stepVisible).forEach((step) => {
       const li = document.createElement("li");
       li.className = "step-item";
       li.dataset.stepId = step.id;
@@ -1540,7 +1662,7 @@ if (toggleDidaktikBtnEl) {
 
   function renderStepsTeil2() {
     stepsListTeil2El.innerHTML = "";
-    promptsTeil2.forEach((step) => {
+    promptsTeil2.filter(stepVisible).forEach((step) => {
       const li = document.createElement("li");
       li.className = "step-item";
       li.dataset.stepId = step.id;
@@ -4316,6 +4438,20 @@ window.__ski = {
     repairPlaceholder: "z. B. „Der Yeti kommt nie.“ (freiwillig)",
     repairFound: "Das ist mir aufgefallen – bitte nur das korrigieren:",
     bonus: "Bonus",
+    startTeil1: (n) => `${n} Schritte: sagen, was ihr wollt`,
+    startTeil2Long: "Bär, Ninja, Farben und mehr",
+    startTeil2Short: "Spiel aufpeppen, Gegner, Farben, Figur",
+    lengthShort: "⏱ Version: Kurz",
+    lengthLong: "🧭 Version: Ausführlich",
+    trainerNoteLabel: "Für Trainer:innen:",
+    pWishParts: "Das möchte ich – mach alle Punkte in einer Antwort:",
+    pPartsEnd: "Ändere sonst nichts. Schreib in deinen 1–2 Sätzen kurz, was du für jede Nummer gemacht hast.",
+    chPartMissing: (l) => `${l}: noch nicht zu sehen`,
+    bPartsHint: "Hakt an, was die KI machen soll:",
+    splitSummary: "Klappt es nicht auf einmal? In zwei Runden aufteilen",
+    splitHint: "Zuerst Runde 1 schicken, Spiel prüfen, dann Runde 2 im selben Chat.",
+    split1: "📋 Runde 1: Schneefall + Tempo",
+    split2: "📋 Runde 2: Deko + Kombo",
   };
   // UI_TEXT_END
 
@@ -4394,23 +4530,55 @@ window.__ski = {
     const head = $(listId).closest(".tab-panel").querySelector(".step-head");
     setTimeout(() => head.scrollIntoView({ behavior: "smooth", block: "start" }), 50);
   }));
-  promptsTeil1.concat(promptsTeil2).filter((p) => p.hidden).forEach((p) => {
-    document.querySelectorAll(`[data-step-id="${p.id}"]`).forEach((li) => li.remove());
-  });
-  separator("stepsListTeil1", "weiter", T.sepHelp1);
-  separator("stepsListTeil2", "weiter", T.sepHelp1);
-  separator("stepsListTeil2", "own", T.sepFree);
-  // Bonus-Schritte kennzeichnen
-  promptsTeil1.filter((p) => p.bonus).forEach((p) => {
-    const h = document.querySelector(`#stepsListTeil1 [data-step-id="${p.id}"] h3`);
-    if (h) h.insertAdjacentHTML("beforeend", ` <span class="bonus-tag">${T.bonus}</span>`);
-  });
+  function decorateLists() {
+    separator("stepsListTeil1", "weiter", T.sepHelp1);
+    separator("stepsListTeil2", "weiter", T.sepHelp1);
+    separator("stepsListTeil2", "own", T.sepFree);
+    // Bonus-Schritte kennzeichnen (in der Kurz-Version ist Teil 3 ein Bonus)
+    promptsTeil1.concat(promptsTeil2).filter((p) => p.bonus || (workshopShort && p.id === "own")).forEach((p) => {
+      document.querySelectorAll(`[data-step-id="${p.id}"] h3`).forEach((h) =>
+        h.insertAdjacentHTML("beforeend", ` <span class="bonus-tag">${T.bonus}</span>`));
+    });
+  }
+
+  // --- Kurz- oder Ausführlich-Version --------------------------------------
+  function applyLength(short) {
+    workshopShort = short;
+    promptsTeil1.concat(promptsTeil2).forEach((p) => {
+      if (p.longNumber === undefined) p.longNumber = p.number;
+      p.number = short && p.shortNumber ? p.shortNumber : p.longNumber;
+    });
+    renderStepsTeil1();
+    renderStepsTeil2();
+    decorateLists();
+    const keep = (list, id, select) => {
+      const cur = list.find((p) => p.id === id);
+      select(cur && stepVisible(cur) ? id : list.find(stepVisible).id);
+    };
+    keep(promptsTeil1, currentStepTeil1Id, selectStepTeil1);
+    if (currentStepTeil2Id) keep(promptsTeil2, currentStepTeil2Id, selectStepTeil2);
+    document.body.classList.toggle("short", short);
+    document.querySelectorAll(".len-btn").forEach((b) => b.classList.toggle("active", (b.dataset.len === "short") === short));
+    const n = promptsTeil1.filter((p) => stepVisible(p) && p.id !== "weiter").length;
+    $("startTeil1Sub").textContent = T.startTeil1(n);
+    $("startTeil2Sub").textContent = short ? T.startTeil2Short : T.startTeil2Long;
+    $("lengthToggle").textContent = short ? T.lengthShort : T.lengthLong;
+    try { localStorage.setItem("ski_length", short ? "short" : "long"); } catch (e) { /* egal */ }
+  }
+  let startShort = false;
+  try { startShort = localStorage.getItem("ski_length") === "short"; } catch (e) { /* egal */ }
+  const q = new URLSearchParams(location.search);
+  if (q.has("kurz") || q.has("short")) startShort = true;
+  if (q.has("lang") || q.has("long")) startShort = false;
+  document.querySelectorAll(".len-btn").forEach((b) => b.addEventListener("click", () => applyLength(b.dataset.len === "short")));
+  $("lengthToggle").addEventListener("click", () => applyLength(!workshopShort));
+  applyLength(startShort);
 
   // --- 2) Schritt-Führung: Prompt → Live Editor → ✓ Klappt → nächster Schritt
   let ctx = null;   // { part: 1 | 2, id }
   const bar = $("stepBar"), barText = $("stepBarText"), doneBtn = $("stepDoneBtn");
   const mainSteps = () => promptsTeil1.filter((p) => isRulePrompt(p.prompt) || p.id === "step1" || p.id === "step2")
-                                      .filter((p) => p.id !== "check");
+                                      .filter((p) => p.id !== "check" && stepVisible(p));
 
   function updateBar() {
     bar.hidden = !ctx;
@@ -4543,18 +4711,32 @@ window.__ski = {
         items.push({ cls: mark(ok), html: tag(ok, T.chConfig(k, esc(cb[k]), esc(ca[k]))) });
       }
     }
-    for (const k of wanted) if (!changedKeys.includes(k)) items.push({ cls: "warn", html: T.chMissing(k) });
+    const byParts = !!(expect && expect.parts);   // Teil-Schritte: Fehlendes zeigt die Teil-Zeile
+    for (const k of wanted) if (!changedKeys.includes(k) && !byParts) items.push({ cls: "warn", html: T.chMissing(k) });
     const eb = activeExtras(before.area2), ea = activeExtras(after.area2);
     const newExtras = [...ea].filter((n) => !eb.has(n));
     for (const n of newExtras) items.push({ cls: mark(!!(expect && expect.extra)), html: tag(!!(expect && expect.extra), T.chExtraNew(n)) });
-    if (expect && expect.extra && !newExtras.length) items.push({ cls: "warn", html: T.chMissingExtra });
+    if (expect && expect.extra && !newExtras.length && !byParts) items.push({ cls: "warn", html: T.chMissingExtra });
     for (const n of eb) if (!ea.has(n)) items.push({ html: T.chExtraOff(n) });
+    if (expect && expect.parts) {   // Teilaufgaben einzeln abhaken
+      const others = newExtras.filter((n) => !expect.extraNames.includes(n)).length;
+      const changedFn = (n) => funcBody(before.area2, n) !== funcBody(after.area2, n);
+      const head = expect.parts.map((pt) => {
+        const x = pt.expect;
+        const ok = (!x.extraName || newExtras.includes(x.extraName)) &&
+          (!x.extra || others >= expect.newExtras) &&
+          (x.config || []).every((k) => changedKeys.includes(k)) &&
+          (x.funcs || []).every(changedFn);
+        return { cls: ok ? "ok" : "warn", html: ok ? pt.label : T.chPartMissing(pt.label) };
+      });
+      items.unshift(...head);
+    }
     let explained = items.length > 0;
     const funcs = (expect && expect.funcs) || [];
     for (const n of ["drawPlayer", "onGatePassed", "onGateMissed", "onCrash", "onFinish"]) {
       const changed = funcBody(before.area2, n) !== funcBody(after.area2, n);
       if (changed) { items.push({ cls: funcs.includes(n) ? "ok" : "", html: T.chFunc(n) }); explained = true; }
-      else if (funcs.includes(n)) items.push({ cls: "warn", html: T.chMissing(n) });
+      else if (funcs.includes(n) && !byParts) items.push({ cls: "warn", html: T.chMissing(n) });
     }
     const tb = themeColours(before.area2), ta = themeColours(after.area2);
     const themeChanged = Object.keys(ta).filter((k) => tb[k] !== ta[k]).length;
@@ -4585,7 +4767,7 @@ window.__ski = {
     if (!after || !before || after.lang !== before.lang) { changeBox.hidden = true; return; }
     const list = ctx && (ctx.part === 1 ? promptsTeil1 : promptsTeil2);
     const step = list && list.find((p) => p.id === ctx.id);
-    const items = describeChanges(before, after, step && step.user ? step.user.expect : null);
+    const items = describeChanges(before, after, window.expectFor(step));
     lastFindings = items.filter((i) => i.cls === "warn").map((i) => i.html.replace(/<[^>]+>/g, "").replace(/^⚠\s*/, ""));
     repair.querySelector("input").value = "";
     repair.querySelector(".status").textContent = "";
@@ -4631,11 +4813,14 @@ window.__ski = {
 
   // --- 6) Eigener Satz statt fertigem Prompt (Schritte mit Feld `user`) ------
   const userState = {};   // Schritt-ID → { choices: { key: Index }, extra: "" }
-  const stateFor = (step) => (userState[step.id] = userState[step.id] || { choices: {}, extra: "" });
+  const stateFor = (step) => (userState[step.id] = userState[step.id] || { choices: {}, extra: "", off: {} });
+  // Schritte mit Teilaufgaben (user.parts): nur angehakte Teile gehen mit
+  const allChoices = (u) => (u.parts ? u.parts.flatMap((p) => p.choices) : u.choices);
+  const activeParts = (step) => step.user.parts.filter((p) => !stateFor(step).off[p.key]);
   function fillTemplate(tpl, step) {
     const st = stateFor(step);
     return tpl.replace(/\{(\w+)\}/g, (m, key, off, whole) => {
-      const group = step.user.choices.find((c) => c.key === key);
+      const group = allChoices(step.user).find((c) => c.key === key);
       if (!group) return m;
       let text = group.options[st.choices[key] || 0].text;
       const before = whole.slice(0, off).trimEnd();
@@ -4643,8 +4828,38 @@ window.__ski = {
       return text;
     });
   }
+  function buildPartsPrompt(step, only) {
+    const u = step.user, st = stateFor(step);
+    const ps = activeParts(step).filter((p) => !only || only.includes(p.key));
+    const n = (i) => (ps.length > 1 ? i + 1 + ". " : "");
+    let p = V2_RULES + (ps.some((x) => x.extraHelp) ? "\n\n" + V2_EXTRA_HELP : "") + "\n\n";
+    p += (ps.length > 1 ? T.pWishParts : T.pWish) + "\n" +
+      ps.map((x, i) => n(i) + x.label.replace(/^\S+\s/, "") + ": " + fillTemplate(x.sentence, step).replace(/ {2,}/g, " ")).join("\n") +
+      (st.extra.trim() ? "\n" + st.extra.trim() : "");
+    p += "\n\n" + T.pDone + "\n" + ps.map((x) => x.done.map((d) => "- " + fillTemplate(d, step)).join("\n")).join("\n");
+    p += "\n\n" + T.pFrame + "\n" + ps.map((x, i) => n(i) + (ps.length > 1 ? x.label.replace(/^\S+\s/, "") + ": " : "") + x.frame).join("\n") + (ps.length > 1 ? "\n" + T.pPartsEnd : "");
+    return p;
+  }
+  // Erwartung für „Was hat sich geändert?“ aus den angehakten Teilen
+  window.expectFor = function (step) {
+    if (!step || !step.user) return null;
+    if (!step.user.parts) return step.user.expect;
+    const only = stateFor(step).only;   // nach „Runde 1/2 kopieren“ nur diese Teile erwarten
+    const ps = activeParts(step).filter((p) => !only || only.includes(p.key));
+    const e = { config: [], allow: [], funcs: [], extra: false, parts: [] };
+    ps.forEach((x) => {
+      const x2 = x.expect;
+      e.config.push(...(x2.config || [])); e.allow.push(...(x2.allow || [])); e.funcs.push(...(x2.funcs || []));
+      e.parts.push({ label: x.label, expect: x2 });
+    });
+    e.newExtras = ps.filter((x) => x.expect.extra).length;
+    e.extraNames = ps.map((x) => x.expect.extraName).filter(Boolean);
+    e.extra = e.newExtras > 0 || e.extraNames.length > 0;
+    return e;
+  };
   function buildUserPrompt(step) {
     const u = step.user, st = stateFor(step);
+    if (u.parts) return buildPartsPrompt(step);
     let p = u.noRules ? "" : V2_RULES + (u.extraHelp ? "\n\n" + V2_EXTRA_HELP : "") + "\n\n";
     p += T.pWish + "\n" + fillTemplate(u.sentence, step) + (st.extra.trim() ? "\n" + st.extra.trim() : "");
     p += "\n\n" + T.pDone + "\n" + u.done.map((d) => "- " + fillTemplate(d, step)).join("\n");
@@ -4682,28 +4897,57 @@ window.__ski = {
     u.exact.open = false;
     u.exact.querySelector("pre").textContent = step.prompt;
     u.exact.querySelector(".status").textContent = "";
-    const st = stateFor(step);
-    u.builder.innerHTML = `<div class="builder-title">${T.bTitle}</div>` + step.user.choices.map((g) =>
-      `<div class="choice-row"><span class="choice-label">${g.label}</span>` + g.options.map((o, i) =>
-        `<button type="button" class="chip-btn${(st.choices[g.key] || 0) === i ? " active" : ""}" data-key="${g.key}" data-i="${i}">${o.label}</button>`).join("") +
-      "</div>").join("") +
-      `<label class="builder-extra"><span>${T.bExtra}</span><textarea rows="2" placeholder="${step.user.extraPlaceholder || ""}"></textarea></label>`;
+    const st = stateFor(step), su = step.user;
+    const row = (g) => `<div class="choice-row"><span class="choice-label">${g.label}</span>` + g.options.map((o, i) =>
+      `<button type="button" class="chip-btn${(st.choices[g.key] || 0) === i ? " active" : ""}" data-key="${g.key}" data-i="${i}">${o.label}</button>`).join("") + "</div>";
+    const extraField = `<label class="builder-extra"><span>${T.bExtra}</span><textarea rows="2" placeholder="${su.extraPlaceholder || ""}"></textarea></label>`;
+    if (su.parts) {
+      u.builder.innerHTML = `<div class="builder-title">${T.bTitle}</div><p class="parts-hint">${T.bPartsHint}</p>` +
+        su.parts.map((pt) => `<div class="part-card${st.off[pt.key] ? " off" : ""}" data-part="${pt.key}">` +
+          `<label class="part-head"><input type="checkbox"${st.off[pt.key] ? "" : " checked"}> ${pt.label}</label>` +
+          pt.choices.map(row).join("") + "</div>").join("") + extraField +
+        `<details class="split"><summary>${T.splitSummary}</summary><p>${T.splitHint}</p>` +
+        `<button class="secondary-btn" type="button" data-only="snow,tempo">${T.split1}</button> ` +
+        `<button class="secondary-btn" type="button" data-only="deco,combo">${T.split2}</button> <span class="status"></span></details>`;
+    } else {
+      u.builder.innerHTML = `<div class="builder-title">${T.bTitle}</div>` + su.choices.map(row).join("") + extraField;
+    }
     const ta = u.builder.querySelector("textarea");
     ta.value = st.extra;
+    const doneItems = () => (su.parts ? activeParts(step).flatMap((pt) => pt.done) : su.done);
     const refresh = () => {
       u.pre.textContent = buildUserPrompt(step);
-      u.info.innerHTML = '<ul class="done-list">' + step.user.done.map((d) =>
-        `<li><label><input type="checkbox"> ${fillTemplate(d, step)}</label></li>`).join("") + "</ul>";
+      u.info.innerHTML = '<ul class="done-list">' + doneItems().map((d) =>
+        `<li><label><input type="checkbox"> ${fillTemplate(d, step)}</label></li>`).join("") + "</ul>" +
+        (step.trainerNote ? `<p class="trainer-only trainer-note"><b>${T.trainerNoteLabel}</b> ${step.trainerNote}</p>` : "");
     };
     u.builder.querySelectorAll(".chip-btn").forEach((b) => b.addEventListener("click", () => {
       st.choices[b.dataset.key] = Number(b.dataset.i);
       u.builder.querySelectorAll(`.chip-btn[data-key="${b.dataset.key}"]`).forEach((x) => x.classList.toggle("active", x === b));
       refresh();
     }));
+    u.builder.querySelectorAll(".part-head input").forEach((cb) => cb.addEventListener("change", () => {
+      const card = cb.closest(".part-card");
+      if (!cb.checked && activeParts(step).length === 1) { cb.checked = true; return; }   // mindestens ein Teil
+      st.off[card.dataset.part] = !cb.checked;
+      card.classList.toggle("off", !cb.checked);
+      refresh();
+    }));
+    u.builder.querySelectorAll("[data-only]").forEach((b) => b.addEventListener("click", async () => {
+      const only = b.dataset.only.split(",");
+      const status = u.builder.querySelector(".split .status");
+      status.textContent = (await copyToClipboard(buildPartsPrompt(step, only))) ? T.copied : T.copyFailed;
+      st.only = only;
+      setCtx(part);
+    }));
     ta.addEventListener("input", () => { st.extra = ta.value; refresh(); });
     refresh();
   }
   window.__renderUser = renderUser;
+  $("copyBtnTeil2").addEventListener("click", () => {
+    const step = promptsTeil2.find((p) => p.id === currentStepTeil2Id);
+    if (step && step.user) stateFor(step).only = null;
+  });
   decorate(1);
   if (currentStepTeil2Id) decorate(2);
 

@@ -25,7 +25,7 @@ Am Ende hat jedes Team sein eigenes Skirennen – mit eigener Strecke, eigener S
 - **Bibliotheken, Jugendarbeit und Familienanlässe:** mit einem Laptop oder Tablet pro Team und einer erwachsenen Person, die den Chat bedient
 - **Zu Hause:** Eltern und Kinder zusammen – alles läuft im Browser, und eine gespeicherte Version lässt sich später weiterbauen
 
-Der Ablauf lässt sich anpassen: Teil 1 allein dauert etwa eine Stunde, Teil 2 und 3 lassen sich beliebig verlängern.
+Es gibt zwei Längen: **Kurz** (ca. 1½–2 Stunden) und **Ausführlich** (ca. 3 Stunden). Teil 2 und 3 lassen sich beliebig verlängern.
 
 ## Wie die Prompts funktionieren
 
@@ -52,7 +52,29 @@ Entstanden ist der Workshop für den Zukunftstag. Die erste Fassung (2025) arbei
 - **Fehler gehören dazu:** Wenn etwas kaputtgeht, gibt es einen Reparatur-Prompt – und man lernt, wie die KI Fehler macht.
 - **Teamarbeit:** Ideen erklären, gemeinsam entscheiden, sich gegenseitig die Spiele zeigen.
 
-## Ablaufvorschlag (ca. 3 Stunden)
+## Kurz oder ausführlich?
+
+Auf der Startseite wählt man die Länge. Für Trainer:innen gibt es direkte Links: [Kurz](https://rlen-source.github.io/skirennen/?kurz) · [Ausführlich](https://rlen-source.github.io/skirennen/?lang). Die Wahl lässt sich unten im Launcher jederzeit ändern, der Fortschritt bleibt erhalten.
+
+| | Kurz | Ausführlich |
+|---|---|---|
+| **Teil 1** | 4 Schritte: Spielen, Kamera, Lenkung, eigene Strecke | 8 Schritte, Piste und Wald als Bonus |
+| **Teil 2** | „Spiel aufpeppen“ (Schneefall, Deko, Tempo und Kombo-Serie in einem Prompt), dann Gegner, Farben, Figur | 7 Ideen einzeln |
+| **Teil 3** | Freie Idee als Bonus | Freie Idee |
+
+Bei „Spiel aufpeppen“ haken die Teilnehmer:innen an, was die KI machen soll, und schicken alles in einem Prompt. Danach fahren sie und haken jeden Punkt einzeln ab: Welcher Satz hat was bewirkt? Klemmt es, lässt sich der Schritt in zwei Runden aufteilen.
+
+### Ablauf kurz (ca. 1½–2 Stunden)
+
+| Zeit | Was passiert |
+|---|---|
+| 10 Min. | Begrüssung, Demo zeigen, Teams bilden |
+| 10 Min. | Basis-Spiel ausprobieren, Datei im Chat hochladen |
+| 35 Min. | **Teil 1:** Kamera, Lenkung, eigene Strecke |
+| 30 Min. | **Teil 2:** Spiel aufpeppen, dann Gegner, Farben oder Figur |
+| 10 Min. | Spiele gegenseitig ausprobieren, Bestzeiten vergleichen |
+
+### Ablauf ausführlich (ca. 3 Stunden)
 
 | Zeit | Was passiert |
 |---|---|
@@ -101,7 +123,8 @@ Die [Demo-Version](https://rlen-source.github.io/skirennen/skirennen-v3.html) ze
 Gut zu wissen:
 
 - Ein Schritt in Teil 1 zählt als erledigt, wenn im Live Editor „✓ Klappt“ gedrückt wird – nicht schon beim Kopieren.
-- Jede Antwort der KI enthält das ganze Spiel (rund 36 000 Zeichen). Das ist Absicht: So gibt es nie halbe Dateien. In Gratis-Versionen der Chats werden lange Antworten aber manchmal abgeschnitten – dafür gibt es „↻ Weiter“.
+- Jede Antwort der KI enthält das ganze Spiel (rund 36 000 Zeichen). Das ist Absicht: So gibt es nie halbe Dateien. In Gratis-Versionen der Chats werden lange Antworten aber manchmal abgeschnitten – dafür gibt es „↻ Weiter“. Am besten ein Chat-Konto ohne knappe Längenbegrenzung nehmen.
+- Wird der Chat sehr lang, auf halbem Weg „💾 Meine Version herunterladen“ und in einem neuen Chat weitermachen.
 - Die Prompts lassen sich im Code des Launchers in den Listen `promptsTeil1` und `promptsTeil2` anpassen (Feld `user` für den eigenen Satz, Feld `prompt` für den genauen Prompt).
 
 ## iPad und Tablet
@@ -176,7 +199,7 @@ Anywhere a first, positive experience of coding with AI is wanted, for example:
 - **Libraries, youth work and family events:** with one laptop or tablet per team and an adult who handles the chat
 - **At home:** parents and kids together – everything runs in the browser, and a saved version can be continued later
 
-The plan is flexible: Part 1 alone takes about an hour, and Parts 2 and 3 can be extended as long as you like.
+There are two lengths: **short** (about 1½–2 hours) and **extended** (about 3 hours). Parts 2 and 3 can be extended as long as you like.
 
 ### How the prompts work
 
@@ -203,7 +226,29 @@ The workshop was created for Future Day. The first version (2025) used ready-mad
 - **Mistakes are part of it:** when something breaks there is a repair prompt – and you learn how AI makes mistakes.
 - **Teamwork:** explain ideas, decide together, show each other the games.
 
-### Suggested plan (about 3 hours)
+### Short or extended?
+
+Choose the length on the start page. Trainers can use direct links: [short](https://rlen-source.github.io/skirennen/en/?short) · [extended](https://rlen-source.github.io/skirennen/en/?long). The choice can be changed at any time at the bottom of the launcher; progress is kept.
+
+| | Short | Extended |
+|---|---|---|
+| **Part 1** | 4 steps: play, camera, steering, own course | 8 steps, piste and forest as bonus steps |
+| **Part 2** | "Spice up the game" (snowfall, decoration, speed and combo streak in one prompt), then enemy, colours, figure | 7 ideas one by one |
+| **Part 3** | Free idea as a bonus | Free idea |
+
+In "Spice up the game" participants tick what the AI should do and send everything in one prompt. Then they ski and tick off each point: which sentence did what? If it gets stuck, the step can be split into two rounds.
+
+#### Short plan (about 1½–2 hours)
+
+| Time | What happens |
+|---|---|
+| 10 min | Welcome, show the demo, form teams |
+| 10 min | Try the base game, upload the file in the chat |
+| 35 min | **Part 1:** camera, steering, own course |
+| 30 min | **Part 2:** spice up the game, then enemy, colours or figure |
+| 10 min | Try each other's games, compare best times |
+
+#### Extended plan (about 3 hours)
 
 | Time | What happens |
 |---|---|
@@ -248,7 +293,8 @@ The [demo version](https://rlen-source.github.io/skirennen/ski-race-v3.html) sho
 Good to know:
 
 - A Part 1 step counts as done when "✓ Works" is pressed in the Live Editor – not when the prompt is copied.
-- Every AI answer contains the whole game (about 36,000 characters). That is on purpose: there are never half files. Free chat tiers sometimes cut long answers off – that's what "↻ Continue" is for.
+- Every AI answer contains the whole game (about 36,000 characters). That is on purpose: there are never half files. Free chat tiers sometimes cut long answers off – that's what "↻ Continue" is for. Ideally use a chat account without tight length limits.
+- If the chat gets very long, press "💾 Download my version" halfway and continue in a new chat.
 - The prompts can be changed in the launcher code, in the lists `promptsTeil1` and `promptsTeil2` (field `user` for your own sentence, field `prompt` for the exact prompt).
 
 ### iPad and tablet
