@@ -134,6 +134,16 @@ Extras sind kleine Bausteine, die sich ins Spiel einklinken: Wenn ein Extra eine
 | `trainer.html`, `trainer-de.pdf`, `trainer-en.pdf` | Infoblatt mit QR-Code |
 | `docs/` | Bilder für diese Seite |
 
+## Lizenz
+
+© 2026 Reto Lenz. Der Workshop (Texte, Prompts, Didaktik, Spiele und Launcher) steht unter der Lizenz [Creative Commons BY-NC 4.0](https://creativecommons.org/licenses/by-nc/4.0/):
+
+- **Erlaubt:** nutzen, kopieren, weitergeben und anpassen – zum Beispiel in der Schule, im Verein oder zu Hause.
+- **Bedingung:** Namensnennung „Reto Lenz“ mit Link zu diesem Repository und zur Lizenz.
+- **Nicht erlaubt ohne Rückfrage:** kommerzielle Nutzung, zum Beispiel in kostenpflichtigen Kursen.
+
+Fremde Bausteine behalten ihre eigenen Lizenzen: [p5.js](https://p5js.org) (LGPL) und die Schrift [Nunito](https://fonts.google.com/specimen/Nunito) (SIL Open Font License).
+
 ---
 
 ## English
@@ -265,3 +275,13 @@ Extras are small building blocks that plug into the game: if an extra has an err
 | `index.html`, `skirennen-v2.html`, `skirennen-v3.html` | The same in German |
 | `trainer.html`, `trainer-en.pdf`, `trainer-de.pdf` | Info sheet with QR code |
 | `docs/` | Pictures for this page |
+
+### Licence
+
+© 2026 Reto Lenz. The workshop (texts, prompts, teaching notes, games and launcher) is licensed under [Creative Commons BY-NC 4.0](https://creativecommons.org/licenses/by-nc/4.0/):
+
+- **Allowed:** use, copy, share and adapt – for example at school, in a club or at home.
+- **Condition:** credit "Reto Lenz" with a link to this repository and to the licence.
+- **Not allowed without asking:** commercial use, for example in paid courses.
+
+Third-party parts keep their own licences: [p5.js](https://p5js.org) (LGPL) and the font [Nunito](https://fonts.google.com/specimen/Nunito) (SIL Open Font License).
