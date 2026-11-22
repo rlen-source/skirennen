@@ -11,6 +11,8 @@ This work is licensed under **Creative Commons Attribution-NonCommercial 4.0 Int
 
 **Namensnennung / Attribution:** „KI-Spielwerkstatt: Skirennen“ von Reto Lenz, https://github.com/rlen-source/skirennen, CC BY-NC 4.0
 
+**Kommerzielle Nutzung / Commercial use:** nur nach Rückfrage / only with permission – https://www.linkedin.com/in/reto-lenz/
+
 Fremde Bestandteile / Third-party parts:
 - p5.js – GNU LGPL 2.1 – https://p5js.org
 - Nunito font – SIL Open Font License 1.1 – https://fonts.google.com/specimen/Nunito
