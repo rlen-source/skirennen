@@ -59,7 +59,7 @@ Auf der Startseite wählt man die Länge. Für Trainer:innen gibt es direkte Lin
 | | Kurz | Ausführlich |
 |---|---|---|
 | **Teil 1** | 4 Schritte: Spielen, Kamera, Lenkung, eigene Strecke | 8 Schritte, Piste und Wald als Bonus |
-| **Teil 2** | „Spiel aufpeppen“ (Schneefall, Deko, Tempo und Kombo-Serie in einem Prompt), dann Gegner, Farben, Figur | 7 Ideen einzeln |
+| **Teil 2** | Extras einschalten, „Spiel aufpeppen“ (Deko, Tempo und Kombo-Serie in einem Prompt), dann Gegner, Farben, Figur | Extras einschalten, dann 6 Ideen einzeln |
 | **Teil 3** | Freie Idee als Bonus | Freie Idee |
 
 Bei „Spiel aufpeppen“ haken die Teilnehmer:innen an, was die KI machen soll, und schicken alles in einem Prompt. Danach fahren sie und haken jeden Punkt einzeln ab: Welcher Satz hat was bewirkt? Klemmt es, lässt sich der Schritt in zwei Runden aufteilen.
@@ -71,7 +71,7 @@ Bei „Spiel aufpeppen“ haken die Teilnehmer:innen an, was die KI machen soll,
 | 10 Min. | Begrüssung, Demo zeigen, Teams bilden |
 | 10 Min. | Basis-Spiel ausprobieren, Datei im Chat hochladen |
 | 35 Min. | **Teil 1:** Kamera, Lenkung, eigene Strecke |
-| 30 Min. | **Teil 2:** Spiel aufpeppen, dann Gegner, Farben oder Figur |
+| 30 Min. | **Teil 2:** Extras einschalten, Spiel aufpeppen, dann Gegner, Farben oder Figur |
 | 10 Min. | Spiele gegenseitig ausprobieren, Bestzeiten vergleichen |
 
 ### Ablauf ausführlich (ca. 3 Stunden)
@@ -82,7 +82,7 @@ Bei „Spiel aufpeppen“ haken die Teilnehmer:innen an, was die KI machen soll,
 | 15 Min. | Basis-Spiel ausprobieren, Bestzeit merken, Datei im Chat hochladen |
 | 70 Min. | **Teil 1:** Kamera, Lenkung, Regeln, eigene Strecke – Piste und Wald als Bonus |
 | 15 Min. | Pause |
-| 50 Min. | **Teil 2 und 3:** Schneefall, Deko, Gegner, Spielfigur, Farben – und eine ganz freie Idee |
+| 50 Min. | **Teil 2 und 3:** Extras einschalten (Publikum, Sterne, Adler …), Deko, Gegner, Spielfigur, Farben – und eine ganz freie Idee |
 | 15 Min. | Spiele gegenseitig ausprobieren, Bestzeiten vergleichen, kurze Runde: Was war überraschend? |
 
 ## So arbeiten die Teilnehmer:innen
@@ -93,7 +93,7 @@ Alles passiert auf einer Seite, dem **Launcher**. Er läuft am Laptop und auf de
 2. **Datei in den Chat:** im Live Editor „Basis-Spiel herunterladen“ und die Datei in einem neuen Chat hochladen.
 3. **Schritt wählen und formulieren:** auswählen, was man will, und eigene Wünsche dazuschreiben. Daraus entsteht der eigene Satz.
 4. **Prompt kopieren, Antwort testen:** im Chat einfügen, den Code aus der Antwort im Live Editor einfügen und „▶ Spiel anzeigen“. „Was hat sich geändert?“ und die Checkliste zeigen, ob es geklappt hat. Dann „✓ Klappt – nächster Schritt“.
-5. **Teil 2 und 3:** eigene Ideen – vom Schneefall über einen Yeti, der einen jagt, bis zur ganz freien Idee.
+5. **Teil 2 und 3:** zuerst vorbereitete Extras einschalten (Schneefall, Publikum, Sterne, Adler, Feuerwerk), dann eigene Ideen – von der Deko über einen Yeti, der einen jagt, bis zur ganz freien Idee.
 
 [![Ein Schritt in Teil 1: Auswahl, eigener Satz, Prompt kopieren](docs/launcher-step.png)](https://rlen-source.github.io/skirennen/)
 
@@ -123,7 +123,7 @@ Die [Demo-Version](https://rlen-source.github.io/skirennen/skirennen-v3.html) ze
 Gut zu wissen:
 
 - Ein Schritt in Teil 1 zählt als erledigt, wenn im Live Editor „✓ Klappt“ gedrückt wird – nicht schon beim Kopieren.
-- Jede Antwort der KI enthält das ganze Spiel (rund 36 000 Zeichen). Das ist Absicht: So gibt es nie halbe Dateien. In Gratis-Versionen der Chats werden lange Antworten aber manchmal abgeschnitten – dafür gibt es „↻ Weiter“. Am besten ein Chat-Konto ohne knappe Längenbegrenzung nehmen.
+- Jede Antwort der KI enthält das ganze Spiel (rund 46 000 Zeichen). Das ist Absicht: So gibt es nie halbe Dateien. In Gratis-Versionen der Chats werden lange Antworten aber manchmal abgeschnitten – dafür gibt es „↻ Weiter“. Am besten ein Chat-Konto ohne knappe Längenbegrenzung nehmen.
 - Wird der Chat sehr lang, auf halbem Weg „💾 Meine Version herunterladen“ und in einem neuen Chat weitermachen.
 - Die Prompts lassen sich im Code des Launchers in den Listen `promptsTeil1` und `promptsTeil2` anpassen (Feld `user` für den eigenen Satz, Feld `prompt` für den genauen Prompt).
 
@@ -142,7 +142,7 @@ Das Spiel ist eine einzige HTML-Datei mit [p5.js](https://p5js.org). Es hat drei
 2. **Hier darfst du ändern** – Farben (`THEME`), Spielfigur (`drawPlayer`), Extras (`EXTRAS`) und Ereignisse (`onGatePassed`, `onCrash`, …)
 3. **Spiel-Motor – nicht ändern** – Physik, Strecke, Kollisionen, Anzeige
 
-Extras sind kleine Bausteine, die sich ins Spiel einklinken: Wenn ein Extra einen Fehler hat, schaltet der Spiel-Motor nur dieses Extra aus, und das Spiel läuft weiter.
+Extras sind kleine Bausteine, die sich ins Spiel einklinken: Wenn ein Extra einen Fehler hat, schaltet der Spiel-Motor nur dieses Extra aus, und das Spiel läuft weiter. Fünf Extras sind im Basis-Spiel schon vorbereitet, aber ausgeschaltet: Schneefall, Publikum, Sterne, Adler und Feuerwerk. Eine einzige Zeile (`EXTRAS.push(...)`) schaltet sie ein – das ist der Aufwärm-Schritt in Teil 2.
 
 **Getestet:** Alle Prompts wurden in simulierten Chats mit zwei KI-Modellen ausprobiert, mit verschiedenen Auswahl-Kombinationen und freien Zusätzen. Die KI hat jedes Mal die passende Stelle selbst gefunden, in die gewünschte Richtung geändert und den Spiel-Motor nicht angefasst; alle entstandenen Spiele laufen fehlerfrei.
 
@@ -233,7 +233,7 @@ Choose the length on the start page. Trainers can use direct links: [short](http
 | | Short | Extended |
 |---|---|---|
 | **Part 1** | 4 steps: play, camera, steering, own course | 8 steps, piste and forest as bonus steps |
-| **Part 2** | "Spice up the game" (snowfall, decoration, speed and combo streak in one prompt), then enemy, colours, figure | 7 ideas one by one |
+| **Part 2** | Switch on extras, "Spice up the game" (decoration, speed and combo streak in one prompt), then enemy, colours, figure | Switch on extras, then 6 ideas one by one |
 | **Part 3** | Free idea as a bonus | Free idea |
 
 In "Spice up the game" participants tick what the AI should do and send everything in one prompt. Then they ski and tick off each point: which sentence did what? If it gets stuck, the step can be split into two rounds.
@@ -245,7 +245,7 @@ In "Spice up the game" participants tick what the AI should do and send everythi
 | 10 min | Welcome, show the demo, form teams |
 | 10 min | Try the base game, upload the file in the chat |
 | 35 min | **Part 1:** camera, steering, own course |
-| 30 min | **Part 2:** spice up the game, then enemy, colours or figure |
+| 30 min | **Part 2:** switch on extras, spice up the game, then enemy, colours or figure |
 | 10 min | Try each other's games, compare best times |
 
 #### Extended plan (about 3 hours)
@@ -256,7 +256,7 @@ In "Spice up the game" participants tick what the AI should do and send everythi
 | 15 min | Try the base game, remember the best time, upload the file in the chat |
 | 70 min | **Part 1:** camera, steering, rules, own course – piste and forest as bonus steps |
 | 15 min | Break |
-| 50 min | **Parts 2 and 3:** snowfall, decoration, a chaser, player figure, colours – and a completely free idea |
+| 50 min | **Parts 2 and 3:** switch on extras (crowd, stars, eagle …), decoration, a chaser, player figure, colours – and a completely free idea |
 | 15 min | Try each other's games, compare best times, short round: what was surprising? |
 
 ### How participants work
@@ -267,7 +267,7 @@ Everything happens on one page, the **launcher**. It runs on laptops and iPads, 
 2. **File into the chat:** in the Live Editor press "Download base game" and upload the file in a new chat.
 3. **Pick a step and phrase it:** choose what you want and add your own wishes. That becomes your own sentence.
 4. **Copy the prompt, test the answer:** paste it in the chat, paste the code from the answer into the Live Editor and press "▶ Show game". "What has changed?" and the checklist show whether it worked. Then "✓ Works – next step".
-5. **Parts 2 and 3:** your own ideas – from snowfall to a yeti chasing you to a completely free idea.
+5. **Parts 2 and 3:** first switch on prepared extras (snowfall, crowd, stars, eagle, fireworks), then your own ideas – from decoration to a yeti chasing you to a completely free idea.
 
 #### If something goes wrong
 
@@ -293,7 +293,7 @@ The [demo version](https://rlen-source.github.io/skirennen/ski-race-v3.html) sho
 Good to know:
 
 - A Part 1 step counts as done when "✓ Works" is pressed in the Live Editor – not when the prompt is copied.
-- Every AI answer contains the whole game (about 36,000 characters). That is on purpose: there are never half files. Free chat tiers sometimes cut long answers off – that's what "↻ Continue" is for. Ideally use a chat account without tight length limits.
+- Every AI answer contains the whole game (about 46,000 characters). That is on purpose: there are never half files. Free chat tiers sometimes cut long answers off – that's what "↻ Continue" is for. Ideally use a chat account without tight length limits.
 - If the chat gets very long, press "💾 Download my version" halfway and continue in a new chat.
 - The prompts can be changed in the launcher code, in the lists `promptsTeil1` and `promptsTeil2` (field `user` for your own sentence, field `prompt` for the exact prompt).
 
@@ -312,7 +312,7 @@ The game is a single HTML file using [p5.js](https://p5js.org). It has three are
 2. **You may change this** – colours (`THEME`), player figure (`drawPlayer`), extras (`EXTRAS`) and events (`onGatePassed`, `onCrash`, …)
 3. **Game engine – do not change** – physics, course, collisions, display
 
-Extras are small building blocks that plug into the game: if an extra has an error, the engine switches off only that extra and the game keeps running.
+Extras are small building blocks that plug into the game: if an extra has an error, the engine switches off only that extra and the game keeps running. Five extras are already prepared in the base game but switched off: snowfall, crowd, stars, eagle and fireworks. One single line (`EXTRAS.push(...)`) switches each on – that is the warm-up step in Part 2.
 
 **Tested:** all prompts were tried in simulated chats with two AI models, with different choice combinations and free additions. Each time the AI found the right place itself, changed it in the wanted direction and left the game engine untouched; all resulting games run without errors.
 

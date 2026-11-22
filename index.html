@@ -736,7 +736,8 @@ Regeln für dich:
 - welt.player hat x und wy. welt.scrollY = oberer Bildrand in der Welt. welt.speed = Tempo in Pixel pro Sekunde.
 - welt.trackBounds(wy) gibt {left, right} der Piste. welt.rnd() gibt eine Zufallszahl 0–1.
 - dt ist in Sekunden: Bewegung immer mit "* dt" rechnen.
-- hits() gibt true zurück, wenn der Spieler getroffen wird – den Sturz macht der Spiel-Motor.`;
+- hits() gibt true zurück, wenn der Spieler getroffen wird – den Sturz macht der Spiel-Motor.
+- Im Bereich 2 gibt es schon die Hilfen aufBildschirm(y) und nachfuellen(ex, welt, abstand, neu). Du darfst sie benutzen. Lege keine zweite Funktion, Variable oder Konstante mit einem Namen an, den es schon gibt.`;
 
   // Prompt für abgeschnittene Antworten (Teil 1 und Teil 2)
   const WEITER_PROMPT = `Deine letzte Antwort ist abgeschnitten – die HTML-Datei hört mittendrin auf.
@@ -1006,29 +1007,91 @@ Keine neuen Features einbauen, nur reparieren. Schreib in 1–2 Sätzen, was kap
 
   const promptsTeil2 = [
     {
+      id: "extras",
+      number: "0",
+      short: true,
+      title: "Aufwärmen: Extras einschalten",
+      subtitle: "Schneefall, Publikum, Sterne, Adler und Feuerwerk sind schon vorbereitet.",
+      tag: "Extras / Aufwärmen",
+      info: "Erstes Erfolgserlebnis: vorbereitete Extras einschalten und ein wenig anpassen.",
+      trainerNote: "Die Extras sind schon fertig programmiert und nur ausgeschaltet. Gut zum Zeigen: Eine einzige Zeile (EXTRAS.push) schaltet ein ganzes Extra ein.",
+      type: "template",
+      user: {
+        parts: [
+          {
+            key: "snow", label: "❄️ Schneefall",
+            sentence: "Es soll {menge} schneien, die Flocken sind {farbe}.",
+            choices: [
+              { key: "menge", label: "Wie viel?", options: [{ label: "ein bisschen", text: "ein bisschen" }, { label: "stark", text: "richtig stark" }] },
+              { key: "farbe", label: "Farbe?", options: [{ label: "weiss", text: "weiss" }, { label: "hellblau", text: "hellblau" }, { label: "bunt", text: "bunt" }] }
+            ],
+            done: ["Es schneit {menge}, die Flocken sind {farbe}."],
+            frame: "Schalte das Extra SCHNEEFALL ein (die // vor EXTRAS.push(SCHNEEFALL); entfernen) und passe Anzahl und Farbe der Flocken an.",
+            expect: { extraName: "SCHNEEFALL" }
+          },
+          {
+            key: "crowd", label: "🙌 Publikum",
+            sentence: "Am Pistenrand sollen Zuschauer stehen und bei jedem Tor jubeln. Es sind {leute}.",
+            choices: [
+              { key: "leute", label: "Wie viele?", options: [{ label: "ab und zu", text: "ab und zu ein paar" }, { label: "viele", text: "viele" }] }
+            ],
+            done: ["Am Pistenrand stehen {leute} Zuschauer und jubeln, wenn ich durch ein Tor fahre."],
+            frame: "Schalte das Extra PUBLIKUM ein (die // vor EXTRAS.push(PUBLIKUM); entfernen). Wie oft eine Gruppe kommt, steht als Abstand in nachfuellen(...) im Extra.",
+            expect: { extraName: "PUBLIKUM" }
+          },
+          {
+            key: "stars", label: "⭐ Sterne",
+            sentence: "Auf der Piste sollen Sterne zum Sammeln liegen, {sternzahl}.",
+            choices: [
+              { key: "sternzahl", label: "Wie viele?", options: [{ label: "einer pro Tor", text: "ungefähr einer pro Tor" }, { label: "doppelt so viele", text: "doppelt so viele wie Tore" }] }
+            ],
+            done: ["Auf der Piste liegen Sterne, oben rechts zählt ein Zähler mit."],
+            frame: "Schalte das Extra STERNE ein (die // vor EXTRAS.push(STERNE); entfernen). Der Abstand der Sterne steht im Extra (CONFIG.GATE_SPACING); CONFIG selbst bleibt gleich.",
+            expect: { extraName: "STERNE" }
+          },
+          {
+            key: "eagle", label: "🦅 Adler",
+            sentence: "Ab und zu soll ein Adler über die Piste fliegen, {adler}.",
+            choices: [
+              { key: "adler", label: "Wie oft?", options: [{ label: "selten", text: "eher selten" }, { label: "oft", text: "ziemlich oft" }] }
+            ],
+            done: ["Ab und zu fliegt ein Adler über die Piste."],
+            frame: "Schalte das Extra ADLER ein (die // vor EXTRAS.push(ADLER); entfernen). Wie oft er kommt, steht im timer des Extras.",
+            expect: { extraName: "ADLER" }
+          },
+          {
+            key: "fire", label: "🎆 Feuerwerk",
+            sentence: "Wenn ich im Ziel bin, soll ein Feuerwerk losgehen, {feuer}.",
+            choices: [
+              { key: "feuer", label: "Farben?", options: [{ label: "bunt", text: "bunt" }, { label: "gold", text: "in Gold und Silber" }] }
+            ],
+            done: ["Im Ziel geht ein Feuerwerk los."],
+            frame: "Schalte das Extra FEUERWERK ein (die // vor EXTRAS.push(FEUERWERK); entfernen). onFinish startet es schon. Die Farben stehen in der Liste bei col.",
+            expect: { extraName: "FEUERWERK" }
+          }
+        ],
+        extraPlaceholder: "z. B. „Die Sterne sollen grösser sein.“"
+      },
+      prompt: `${V2_RULES}
+
+Aufgabe: Extras einschalten
+- Im Bereich 2 sind diese Extras schon fertig, aber ausgeschaltet: SCHNEEFALL, PUBLIKUM, STERNE, ADLER und FEUERWERK.
+- Schalte alle fünf ein, indem du jeweils die // vor EXTRAS.push(...); entfernst.
+- Sonst nichts ändern.`
+    },
+    {
       id: "aufpeppen",
       number: "A",
       short: true,
       longHidden: true,   // nur in der Kurz-Version
       title: "Spiel aufpeppen",
-      subtitle: "Schneefall, Deko, Tempo und Kombo-Serie – vier Wünsche in einem Prompt.",
+      subtitle: "Deko, Tempo und Kombo-Serie – drei Wünsche in einem Prompt.",
       tag: "Mehrere Wünsche auf einmal",
       info: "Hakt an, was ihr wollt. Die KI macht alles in einer Antwort. Danach fahren und jeden Punkt einzeln abhaken.",
       trainerNote: "Hier üben die Teilnehmer:innen, mehrere Wünsche in einem Prompt zu bündeln. Nach dem Testen nachfragen: Welcher Satz hat was bewirkt? Klemmt es, „In zwei Runden aufteilen“ nehmen.",
       type: "template",
       user: {
         parts: [
-          {
-            key: "snow", label: "❄️ Schneefall",
-            sentence: "Es soll {menge} schneien. Die Flocken sollen {farbe} sein.",
-            choices: [
-              { key: "menge", label: "Wie viel?", options: [{ label: "ein bisschen", text: "ein bisschen" }, { label: "stark", text: "richtig stark" }] },
-              { key: "farbe", label: "Farbe?", options: [{ label: "weiss", text: "weiss" }, { label: "hellblau", text: "hellblau" }, { label: "bunt", text: "bunt" }] }
-            ],
-            done: ["Es schneit {menge}, die Flocken sind {farbe}."],
-            frame: "Im Bereich 2 gibt es schon das Extra SCHNEEFALL. Schalte es ein (die // vor EXTRAS.push(SCHNEEFALL); entfernen) und passe Anzahl, Farbe und Grösse der Flocken an.",
-            expect: { extraName: "SCHNEEFALL" }
-          },
           {
             key: "deco", label: "🏠 Deko", extraHelp: true,
             sentence: "Neben der Piste im Tiefschnee sollen ab und zu {was} stehen. Wenn man sie berührt, {beruehrt}. Sie kommen {haeufig} vor.",
@@ -1060,62 +1123,34 @@ Keine neuen Features einbauen, nur reparieren. Schreib in 1–2 Sätzen, was kap
               { key: "meldung", label: "Meldung?", options: [{ label: "alle 5 Tore", text: "alle 5 Tore soll eine Meldung „🔥 5er-Serie!“ aufblitzen." }, { label: "keine", text: "" }] }
             ],
             done: ["Ab 2 Toren in Folge erscheint die Kombo-Anzeige, nach einem Fehler beginnt sie von vorne."],
-            frame: "Nutze dafür die Ereignisse onGatePassed, onGateMissed und onCrash im Bereich 2 (ihre Namen bleiben gleich) und eine Variable für die Serie. Für die Anzeige baue ein kleines Extra mit EXTRAS.push(...), das oben rechts unter dem Lautsprecher-Symbol zeichnet, aber erst ab 2 Toren in Folge. Meldungen gehen mit welt.popup(text, x, y, farbe).",
+            frame: "Nutze dafür die Ereignisse onGatePassed, onGateMissed und onCrash im Bereich 2 (ihre Namen bleiben gleich) und eine Variable für die Serie. Was schon in onGatePassed steht, bleibt drin. Für die Anzeige baue ein kleines Extra mit EXTRAS.push(...), das oben rechts zeichnet, unterhalb des Sterne-Zählers (ab y = 100), aber erst ab 2 Toren in Folge. Meldungen gehen mit welt.popup(text, x, y, farbe).",
             expect: { extra: true, funcs: ["onGatePassed"] }
           }
         ],
-        extraPlaceholder: "z. B. „Die Iglus sollen ein kleines Fenster haben.“"
+        extraPlaceholder: "z. B. „Die Iglus sollen ein kleines Fenster haben.“",
+        split: [["deco"], ["tempo", "combo"]]   // „In zwei Runden aufteilen“
       },
       prompt: `${V2_RULES}
 
 ${V2_EXTRA_HELP}
 
-Aufgabe: Spiel aufpeppen – mach alle vier Teile in einer Antwort.
+Aufgabe: Spiel aufpeppen – mach alle drei Teile in einer Antwort.
 
-1. Schneefall: Im Bereich 2 gibt es schon das Extra SCHNEEFALL. Schalte es ein, indem du die // vor EXTRAS.push(SCHNEEFALL); entfernst. Mach 180 Flocken statt 90, hellblau und unterschiedlich gross (2 bis 5 Pixel).
-
-2. Deko: Lege im Bereich 2 ein neues Extra DEKO an und schalte es mit EXTRAS.push(DEKO); ein.
+1. Deko: Lege im Bereich 2 ein neues Extra DEKO an und schalte es mit EXTRAS.push(DEKO); ein.
 - DEKO hat eine Liste items. spawn(welt) leert die Liste und füllt sie gleich bis welt.scrollY + CONFIG.H + 200; update(dt, welt) füllt sie weiter, ungefähr alle 260 Pixel (wy) ein neues Objekt.
 - Jedes Objekt liegt NEBEN der Piste: links von welt.trackBounds(wy).left - 40 oder rechts von welt.trackBounds(wy).right + 40, aber innerhalb von 0 bis CONFIG.W.
 - Art zufällig mit welt.rnd(): Hütte, Stein oder Bergziege, mit einfachen p5-Formen gezeichnet.
 - Objekte mit wy < welt.scrollY - 100 entfernen. KEINE hits()-Funktion.
 
-3. Tempo – ändere in CONFIG nur diese Zahlen: SPEED_START von 230 auf 300, SPEED_MAX von 430 auf 520, GATE_WIDTH von 150 auf 120, STEER_MAX von 480 auf 560.
+2. Tempo – ändere in CONFIG nur diese Zahlen: SPEED_START von 230 auf 300, SPEED_MAX von 430 auf 520, GATE_WIDTH von 150 auf 120, STEER_MAX von 480 auf 560.
 
-4. Kombo-Serie:
+3. Kombo-Serie:
 - Lege im Bereich 2 eine Variable kombo = 0 an.
-- In onGatePassed(gate): kombo um 1 erhöhen. Bei 5, 10, 15 … welt.popup("🔥 " + kombo + "er-Serie!", welt.player.x, 120, [255, 140, 0]).
+- In onGatePassed(gate): kombo um 1 erhöhen (was dort schon steht, bleibt). Bei 5, 10, 15 … welt.popup("🔥 " + kombo + "er-Serie!", welt.player.x, 120, [255, 140, 0]).
 - In onGateMissed(gate) und onCrash(kind): kombo = 0.
-- Lege ein kleines Extra KOMBO_ANZEIGE an (EXTRAS.push(KOMBO_ANZEIGE);), das oben rechts (unter dem Lautsprecher-Symbol) "🔥 " + kombo anzeigt, aber nur wenn kombo mindestens 2 ist.
+- Lege ein kleines Extra KOMBO_ANZEIGE an (EXTRAS.push(KOMBO_ANZEIGE);), das oben rechts unterhalb des Sterne-Zählers (ab y = 100) "🔥 " + kombo anzeigt, aber nur wenn kombo mindestens 2 ist.
 
-Schreib in deinen 1–2 Sätzen kurz, was du für 1, 2, 3 und 4 gemacht hast.`
-    },
-    {
-      id: "schnee",
-      number: "0",
-      title: "Aufwärmen: Schneefall",
-      subtitle: "Das vorbereitete Extra einschalten und anpassen.",
-      tag: "Extra / Aufwärmen",
-      info: "Erstes Erfolgserlebnis: ein vorhandenes Extra einschalten und anpassen.",
-      type: "template",
-      user: {
-        sentence: "Es soll {menge} schneien. Die Flocken sollen {farbe} sein.",
-        choices: [
-          { key: "menge", label: "Wie viel?", options: [{ label: "ein bisschen", text: "ein bisschen" }, { label: "stark", text: "richtig stark" }] },
-          { key: "farbe", label: "Farbe?", options: [{ label: "weiss", text: "weiss" }, { label: "hellblau", text: "hellblau" }, { label: "bunt", text: "bunt" }] }
-        ],
-        extraPlaceholder: "z. B. „Die Flocken sollen unterschiedlich gross sein.“",
-        done: ["Es schneit {menge}.", "Die Flocken sind {farbe}."],
-        frame: "Im Bereich 2 gibt es schon das Extra SCHNEEFALL. Schalte es ein (die // vor EXTRAS.push(SCHNEEFALL); entfernen) und passe Anzahl, Farbe und Grösse der Flocken an. Sonst nichts ändern.",
-        expect: { extra: true }
-      },
-      prompt: `${V2_RULES}
-
-Aufgabe: Schneefall einschalten
-- Im Bereich 2 gibt es schon das Extra SCHNEEFALL. Schalte es ein, indem du die // vor EXTRAS.push(SCHNEEFALL); entfernst.
-- Mach doppelt so viele Flocken (180 statt 90).
-- Die Flocken sollen hellblau sein und unterschiedlich gross (2 bis 5 Pixel).
-- Sonst nichts ändern.`
+Schreib in deinen 1–2 Sätzen kurz, was du für 1, 2 und 3 gemacht hast.`
     },
     {
       id: "deko",
@@ -1241,16 +1276,16 @@ Aufgabe: Neues Extra „Bär“
         ],
         extraPlaceholder: "z. B. „Ab 10 Toren soll die Anzeige golden werden.“",
         done: ["Ab 2 Toren in Folge erscheint die Anzeige.", "Nach einem verpassten Tor oder Sturz beginnt sie von vorne."],
-        frame: "Nutze dafür die Ereignisse onGatePassed, onGateMissed und onCrash im Bereich 2 (ihre Namen bleiben gleich) und eine Variable für die Serie. Für die Anzeige baue ein kleines Extra mit EXTRAS.push(...), das oben rechts unter dem Lautsprecher-Symbol zeichnet, aber erst ab 2 Toren in Folge. Meldungen gehen mit welt.popup(text, x, y, farbe). CONFIG bleibt gleich.",
+        frame: "Nutze dafür die Ereignisse onGatePassed, onGateMissed und onCrash im Bereich 2 (ihre Namen bleiben gleich) und eine Variable für die Serie. Was schon in onGatePassed steht, bleibt drin. Für die Anzeige baue ein kleines Extra mit EXTRAS.push(...), das oben rechts zeichnet, unterhalb des Sterne-Zählers (ab y = 100), aber erst ab 2 Toren in Folge. Meldungen gehen mit welt.popup(text, x, y, farbe). CONFIG bleibt gleich.",
         expect: { extra: true, funcs: ["onGatePassed"] }
       },
       prompt: `${V2_RULES}
 
 Aufgabe: Kombo-Serie
 - Lege im Bereich 2 eine Variable kombo = 0 an.
-- In onGatePassed(gate): kombo um 1 erhöhen. Bei 5, 10, 15 … zeige mit welt.popup("🔥 " + kombo + "er-Serie!", welt.player.x, 120, [255, 140, 0]) eine Meldung.
+- In onGatePassed(gate): kombo um 1 erhöhen (was dort schon steht, bleibt). Bei 5, 10, 15 … zeige mit welt.popup("🔥 " + kombo + "er-Serie!", welt.player.x, 120, [255, 140, 0]) eine Meldung.
 - In onGateMissed(gate) und onCrash(kind): kombo wieder auf 0 setzen.
-- Lege ein kleines Extra KOMBO_ANZEIGE an (EXTRAS.push(KOMBO_ANZEIGE);), das oben rechts (unter dem Lautsprecher-Symbol) "🔥 " + kombo anzeigt, aber nur wenn kombo mindestens 2 ist.
+- Lege ein kleines Extra KOMBO_ANZEIGE an (EXTRAS.push(KOMBO_ANZEIGE);), das oben rechts unterhalb des Sterne-Zählers (ab y = 100) "🔥 " + kombo anzeigt, aber nur wenn kombo mindestens 2 ist.
 - Die Funktionen onGatePassed, onGateMissed und onCrash behalten genau ihre Namen.`
     },
     {
@@ -1931,12 +1966,20 @@ function drawPlayer(p) {
   stroke(90); strokeWeight(1.5);
   line(-s * 0.55, -s * 0.05, -s * 0.85, -s * 0.85);
   line( s * 0.55, -s * 0.05,  s * 0.85, -s * 0.85);
+  // Schal – weht gegen die Lenkrichtung
+  const w = -p.lean, flattern = Math.sin(frameCount * 0.4) * s * 0.08;
+  stroke(255, 200, 40); strokeWeight(s * 0.18);
+  line(0, -s * 0.45, s * (0.35 + w * 0.5), -s * 0.2);
+  line(s * (0.35 + w * 0.5), -s * 0.2, s * (0.6 + w * 0.7), -s * 0.05 + flattern);
   // Jacke
   noStroke(); fill(230, 60, 60); ellipse(0, 0, s * 1.0, s * 1.2);
-  // Kopf + Mütze + Bommel
+  fill(255, 255, 255, 120); rect(-s * 0.06, -s * 0.5, s * 0.12, s * 0.9, 2);
+  // Kopf, Skibrille, Mütze, Bommel
   fill(255, 220, 170); ellipse(0, -s * 0.75, s * 0.6, s * 0.6);
-  fill(40, 110, 230);  arc(0, -s * 0.82, s * 0.66, s * 0.6, PI, TWO_PI);
-  fill(255);           ellipse(0, -s * 1.12, s * 0.22, s * 0.22);
+  fill(40); rect(-s * 0.3, -s * 0.8, s * 0.6, s * 0.17, 3);
+  fill(255, 170, 40); rect(-s * 0.24, -s * 0.78, s * 0.48, s * 0.12, 3);
+  fill(40, 110, 230); arc(0, -s * 0.82, s * 0.66, s * 0.6, PI, TWO_PI);
+  fill(255);          ellipse(0, -s * 1.12, s * 0.22, s * 0.22);
 }
 
 // --- Extras: neue Dinge im Spiel ------------------------------------
@@ -1947,7 +1990,21 @@ function drawPlayer(p) {
 // Wenn ein Extra einen Fehler hat, wird nur dieses Extra ausgeschaltet.
 const EXTRAS = [];
 
-// Beispiel – zum Ausprobieren die // vor EXTRAS.push(...) entfernen:
+// Vorbereitete Extras – zum Einschalten die // vor EXTRAS.push(...) entfernen.
+
+// Hilfen für Extras
+function aufBildschirm(y) { return y &gt; -80 &amp;&amp; y &lt; CONFIG.H + 80; }
+// Füllt ex.items bis unter den Bildrand auf: alle "abstand" Pixel ein neues Ding von neu(wy)
+function nachfuellen(ex, welt, abstand, neu) {
+  while (ex.nextWY &lt; welt.scrollY + CONFIG.H + 200) {
+    const ding = neu(ex.nextWY);
+    if (ding) ex.items.push(ding);
+    ex.nextWY += abstand * (0.7 + welt.rnd() * 0.6);
+  }
+  ex.items = ex.items.filter((d) =&gt; d.wy &gt; welt.scrollY - 300);
+}
+
+// --- Schneefall -----------------------------------------------------
 const SCHNEEFALL = {
   name: "Schneefall",
   flakes: [],
@@ -1971,11 +2028,193 @@ const SCHNEEFALL = {
 };
 // EXTRAS.push(SCHNEEFALL);
 
+// --- Publikum: Zuschauer am Pistenrand, jubeln bei jedem Tor ----------
+const PUBLIKUM = {
+  name: "Publikum",
+  items: [], nextWY: 0, jubel: 0,
+  farben: [[230, 60, 60], [40, 110, 230], [40, 170, 90], [255, 190, 40], [160, 70, 200], [255, 120, 30]],
+  gruppe(welt, wy, seite, anzahl) {
+    const leute = [];
+    for (let i = 0; i &lt; anzahl; i++) {
+      leute.push({
+        dwy: Math.floor(i / 2) * 26 + (i % 2) * 13, reihe: i % 2,
+        jacke: this.farben[Math.floor(welt.rnd() * this.farben.length)],
+        muetze: this.farben[Math.floor(welt.rnd() * this.farben.length)],
+        fahne: welt.rnd() &lt; 0.25, phase: welt.rnd() * 6,
+      });
+    }
+    return { wy, seite, leute, laenge: Math.ceil(anzahl / 2) * 26 };
+  },
+  spawn(welt) { this.items = []; this.jubel = 0; this.nextWY = 900; this.update(0, welt); },
+  update(dt, welt) {
+    this.jubel = Math.max(0, this.jubel - dt);
+    nachfuellen(this, welt, 1100, (wy) =&gt; this.gruppe(welt, wy, welt.rnd() &lt; 0.5 ? "left" : "right", 4 + Math.floor(welt.rnd() * 4)));
+  },
+  draw(welt) {
+    const P = welt.player, zeit = millis() / 1000;
+    for (const g of this.items) {
+      const y0 = welt.toScreenY(g.wy);
+      if (y0 &gt; CONFIG.H + 60 || y0 + g.laenge &lt; -60) continue;
+      const aussen = g.seite === "left" ? -1 : 1;
+      // Absperrung (oranges Netz) entlang der Piste
+      stroke(255, 120, 30); strokeWeight(3); noFill();
+      beginShape();
+      for (let d = -10; d &lt;= g.laenge + 10; d += 10) vertex(welt.trackBounds(g.wy + d)[g.seite] + aussen * 12, y0 + d);
+      endShape();
+      noStroke();
+      for (const m of g.leute) {
+        const wy = g.wy + m.dwy, y = welt.toScreenY(wy);
+        if (!aufBildschirm(y)) continue;
+        const x = welt.trackBounds(wy)[g.seite] + aussen * (26 + m.reihe * 16);
+        const jubelt = Math.abs(P.wy - wy) &lt; 220 || this.jubel &gt; 0 || welt.state === "finish";
+        const hopp = jubelt ? Math.abs(Math.sin(zeit * 9 + m.phase)) * 5 : 0;
+        push(); translate(x, y - hopp);
+        fill(...m.jacke); ellipse(0, 0, 13, 15);
+        fill(255, 220, 170); circle(0, -10, 9);
+        fill(...m.muetze); arc(0, -11, 10, 9, PI, TWO_PI);
+        stroke(...m.jacke); strokeWeight(3);
+        if (jubelt) { line(-5, -3, -8, -15); line(5, -3, 8, -15); }
+        else        { line(-5, -2, -7, 5);   line(5, -2, 7, 5); }
+        if (m.fahne) {
+          stroke(80); strokeWeight(1.5); line(8, -15, 8, -32);
+          noStroke(); fill(220, 30, 30); rect(8, -32, 14, 10);
+          fill(255); rect(13, -30, 4, 6); rect(12, -28, 6, 2);
+        }
+        noStroke(); pop();
+      }
+    }
+  },
+};
+// EXTRAS.push(PUBLIKUM);
+
+// --- Sterne sammeln: auf der Piste, mit Zähler oben rechts ------------
+let sterne = 0;
+const STERNE = {
+  name: "Sterne",
+  items: [], nextWY: 0,
+  spawn(welt) { this.items = []; sterne = 0; this.nextWY = CONFIG.FIRST_GATE_Y + CONFIG.GATE_SPACING / 2; this.update(0, welt); },
+  update(dt, welt) {
+    while (this.nextWY &lt; welt.scrollY + CONFIG.H + 200) {
+      const c = welt.trackCenter(this.nextWY);
+      this.items.push({ x: c + (welt.rnd() - 0.5) * CONFIG.TRACK_HALF * 1.1, wy: this.nextWY, weg: false });
+      this.nextWY += CONFIG.GATE_SPACING;
+    }
+    const P = welt.player;
+    for (const st of this.items) {
+      if (!st.weg &amp;&amp; P.fallTimer &lt;= 0 &amp;&amp; dist(P.x, P.wy, st.x, st.wy) &lt; 24) {
+        st.weg = true; sterne++;
+        welt.addScore(5);
+        welt.popup("⭐", st.x, welt.toScreenY(st.wy) - 20, [255, 170, 0]);
+      }
+    }
+    this.items = this.items.filter((st) =&gt; st.wy &gt; welt.scrollY - 60);
+  },
+  draw(welt) {
+    const zeit = millis() / 1000;
+    for (const st of this.items) {
+      const y = welt.toScreenY(st.wy);
+      if (st.weg || !aufBildschirm(y)) continue;
+      push(); translate(st.x, y); rotate(zeit * 1.5);
+      noStroke(); fill(255, 220, 60, 70); circle(0, 0, 30 + Math.sin(zeit * 6) * 4);
+      fill(255, 200, 0); stroke(200, 130, 0); strokeWeight(1.5);
+      beginShape();
+      for (let i = 0; i &lt; 10; i++) {
+        const r = i % 2 ? 5 : 12, a = -HALF_PI + i * PI / 5;
+        vertex(Math.cos(a) * r, Math.sin(a) * r);
+      }
+      endShape(CLOSE);
+      pop();
+    }
+    // Zähler oben rechts, unter dem Lautsprecher-Symbol
+    noStroke(); fill(15, 32, 52, 200); rect(CONFIG.W - 110, 54, 96, 34, 10);
+    fill(255); textAlign(LEFT, CENTER); textSize(17); text("⭐ " + sterne, CONFIG.W - 98, 71);
+  },
+};
+// EXTRAS.push(STERNE);
+
+// --- Adler: fliegt ab und zu über die Piste ----------------------------
+const ADLER = {
+  name: "Adler",
+  vogel: null, timer: 0,
+  spawn(welt) { this.vogel = null; this.timer = 5 + welt.rnd() * 5; },
+  update(dt, welt) {
+    if (!this.vogel) {
+      this.timer -= dt;
+      if (this.timer &lt;= 0) {
+        const vonLinks = welt.rnd() &lt; 0.5;
+        this.vogel = { x: vonLinks ? -40 : CONFIG.W + 40, y: 80 + welt.rnd() * 220, vx: vonLinks ? 170 : -170 };
+        this.timer = 14 + welt.rnd() * 10;
+      }
+      return;
+    }
+    this.vogel.x += this.vogel.vx * dt;
+    this.vogel.y += Math.sin(this.vogel.x * 0.02) * 20 * dt;
+    if (this.vogel.x &lt; -60 || this.vogel.x &gt; CONFIG.W + 60) this.vogel = null;
+  },
+  draw(welt) {
+    if (!this.vogel) return;
+    const v = this.vogel, flap = Math.sin(millis() / 90) * 9, dir = v.vx &gt; 0 ? 1 : -1;
+    noStroke(); fill(60, 80, 110, 35); ellipse(v.x - 30 * dir, v.y + 90, 40, 9);   // Schatten
+    push(); translate(v.x, v.y);
+    stroke(70, 45, 25); strokeWeight(4); noFill();
+    line(0, 0, -18, -6 - flap); line(-18, -6 - flap, -30, -2 - flap * 1.4);
+    line(0, 0, 18, -6 - flap);  line(18, -6 - flap, 30, -2 - flap * 1.4);
+    noStroke(); fill(80, 50, 25); ellipse(0, 0, 22 * dir, 9);
+    fill(250); circle(10 * dir, -2, 8);
+    fill(255, 190, 30); triangle(13 * dir, -3, 13 * dir, 0, 18 * dir, -1);
+    pop();
+  },
+};
+// EXTRAS.push(ADLER);
+
+// --- Feuerwerk im Ziel ------------------------------------------------
+// Läuft in draw(), weil update() nach dem Ziel nicht mehr aufgerufen wird.
+const FEUERWERK = {
+  name: "Feuerwerk",
+  aktiv: false, t: 0, naechste: 0, raketen: [], funken: [],
+  spawn(welt) { this.aktiv = false; this.raketen = []; this.funken = []; },
+  start() { this.aktiv = true; this.t = 0; this.naechste = 0; },
+  draw(welt) {
+    if (!this.aktiv) return;
+    const dt = Math.min(deltaTime / 1000, 0.05);
+    this.t += dt;
+    this.naechste -= dt;
+    if (this.t &lt; 6 &amp;&amp; this.naechste &lt;= 0) {
+      this.naechste = 0.35;
+      const x = Math.random() &lt; 0.5 ? 50 + Math.random() * 160 : CONFIG.W - 210 + Math.random() * 160;
+      this.raketen.push({ x, y: CONFIG.H + 10, vy: -430 - Math.random() * 120, knall: 90 + Math.random() * 220,
+                          col: random([[255, 80, 80], [255, 210, 60], [90, 200, 255], [150, 255, 120], [255, 120, 230]]) });
+    }
+    for (const r of this.raketen) {
+      r.y += r.vy * dt;
+      if (r.y &lt; r.knall &amp;&amp; !r.weg) {
+        r.weg = true;
+        for (let i = 0; i &lt; 40; i++) {
+          const a = Math.random() * TWO_PI, v = 60 + Math.random() * 160;
+          this.funken.push({ x: r.x, y: r.y, vx: Math.cos(a) * v, vy: Math.sin(a) * v, life: 1.2, col: r.col });
+        }
+      }
+    }
+    this.raketen = this.raketen.filter((r) =&gt; !r.weg);
+    for (const f of this.funken) { f.x += f.vx * dt; f.y += f.vy * dt; f.vy += 90 * dt; f.life -= dt; }
+    this.funken = this.funken.filter((f) =&gt; f.life &gt; 0);
+    noStroke();
+    for (const r of this.raketen) { fill(255, 240, 200); circle(r.x, r.y, 4); }
+    for (const f of this.funken) { fill(...f.col, 255 * Math.min(1, f.life)); circle(f.x, f.y, 4); }
+  },
+};
+// EXTRAS.push(FEUERWERK);
+
 // --- Ereignisse -----------------------------------------------------
-function onGatePassed(gate) {}
+function onGatePassed(gate) {
+  PUBLIKUM.jubel = 0.8;   // Publikum jubelt (wenn eingeschaltet)
+}
 function onGateMissed(gate) {}
 function onCrash(kind) {}
-function onFinish(result) {}
+function onFinish(result) {
+  FEUERWERK.start();      // Feuerwerk (wenn eingeschaltet)
+  if (EXTRAS.includes(STERNE)) welt.popup("⭐ " + sterne + " Sterne gesammelt!", CONFIG.W / 2, 570, [255, 170, 0]);
+}
 
 // =====================================================================
 // 3) SPIEL-MOTOR – NICHT ÄNDERN
@@ -4450,8 +4689,7 @@ window.__ski = {
     bPartsHint: "Hakt an, was die KI machen soll:",
     splitSummary: "Klappt es nicht auf einmal? In zwei Runden aufteilen",
     splitHint: "Zuerst Runde 1 schicken, Spiel prüfen, dann Runde 2 im selben Chat.",
-    split1: "📋 Runde 1: Schneefall + Tempo",
-    split2: "📋 Runde 2: Deko + Kombo",
+    splitRound: (n) => `Runde ${n}`,
   };
   // UI_TEXT_END
 
@@ -4906,9 +5144,10 @@ window.__ski = {
         su.parts.map((pt) => `<div class="part-card${st.off[pt.key] ? " off" : ""}" data-part="${pt.key}">` +
           `<label class="part-head"><input type="checkbox"${st.off[pt.key] ? "" : " checked"}> ${pt.label}</label>` +
           pt.choices.map(row).join("") + "</div>").join("") + extraField +
-        `<details class="split"><summary>${T.splitSummary}</summary><p>${T.splitHint}</p>` +
-        `<button class="secondary-btn" type="button" data-only="snow,tempo">${T.split1}</button> ` +
-        `<button class="secondary-btn" type="button" data-only="deco,combo">${T.split2}</button> <span class="status"></span></details>`;
+        (su.split ? `<details class="split"><summary>${T.splitSummary}</summary><p>${T.splitHint}</p>` +
+          su.split.map((keys, i) => `<button class="secondary-btn" type="button" data-only="${keys.join(",")}">📋 ${T.splitRound(i + 1)}: ` +
+            keys.map((k) => su.parts.find((pt) => pt.key === k).label.replace(/^\S+\s/, "")).join(" + ") + "</button> ").join("") +
+          `<span class="status"></span></details>` : "");
     } else {
       u.builder.innerHTML = `<div class="builder-title">${T.bTitle}</div>` + su.choices.map(row).join("") + extraField;
     }

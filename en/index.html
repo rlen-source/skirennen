@@ -736,7 +736,8 @@ Rules for you:
 - world.player has x and wy. world.scrollY = top edge of the screen in the world. world.speed = speed in pixels per second.
 - world.trackBounds(wy) gives {left, right} of the piste. world.rnd() gives a random number 0–1.
 - dt is in seconds: always calculate movement with "* dt".
-- hits() returns true when the player is hit – the game engine handles the crash.`;
+- hits() returns true when the player is hit – the game engine handles the crash.
+- Area 2 already has the helpers onScreen(y) and refill(ex, world, spacing, make). You may use them. Do not create a second function, variable or constant with a name that already exists.`;
 
   // Prompt for answers that were cut off (Part 1 and Part 2)
   const WEITER_PROMPT = `Your last answer was cut off – the HTML file stops in the middle.
@@ -1006,29 +1007,91 @@ Do not add new features, only repair. Write in 1–2 sentences what was broken.`
 
   const promptsTeil2 = [
     {
+      id: "extras",
+      number: "0",
+      short: true,
+      title: "Warm-up: switch on extras",
+      subtitle: "Snowfall, crowd, stars, eagle and fireworks are already prepared.",
+      tag: "Extras / warm-up",
+      info: "A first success: switch on prepared extras and adjust them a little.",
+      trainerNote: "The extras are already fully programmed and only switched off. Good to show: one single line (EXTRAS.push) switches on a whole extra.",
+      type: "template",
+      user: {
+        parts: [
+          {
+            key: "snow", label: "❄️ Snowfall",
+            sentence: "It should snow {amount}, the flakes are {colour}.",
+            choices: [
+              { key: "amount", label: "How much?", options: [{ label: "a little", text: "a little" }, { label: "heavily", text: "really heavily" }] },
+              { key: "colour", label: "Colour?", options: [{ label: "white", text: "white" }, { label: "light blue", text: "light blue" }, { label: "colourful", text: "colourful" }] }
+            ],
+            done: ["It snows {amount}, the flakes are {colour}."],
+            frame: "Switch on the extra SNOWFALL (remove the // in front of EXTRAS.push(SNOWFALL);) and adjust the number and colour of the flakes.",
+            expect: { extraName: "SNOWFALL" }
+          },
+          {
+            key: "crowd", label: "🙌 Crowd",
+            sentence: "There should be spectators along the piste, cheering at every gate. There are {people}.",
+            choices: [
+              { key: "people", label: "How many?", options: [{ label: "now and then", text: "a few now and then" }, { label: "lots", text: "lots of them" }] }
+            ],
+            done: ["There are {people} spectators along the piste, cheering when I pass a gate."],
+            frame: "Switch on the extra CROWD (remove the // in front of EXTRAS.push(CROWD);). How often a group comes is the spacing in refill(...) inside the extra.",
+            expect: { extraName: "CROWD" }
+          },
+          {
+            key: "stars", label: "⭐ Stars",
+            sentence: "There should be stars to collect on the piste, {starcount}.",
+            choices: [
+              { key: "starcount", label: "How many?", options: [{ label: "one per gate", text: "about one per gate" }, { label: "twice as many", text: "twice as many as gates" }] }
+            ],
+            done: ["There are stars on the piste, and a counter at the top right counts them."],
+            frame: "Switch on the extra STARS (remove the // in front of EXTRAS.push(STARS);). The spacing of the stars is inside the extra (CONFIG.GATE_SPACING); CONFIG itself stays the same.",
+            expect: { extraName: "STARS" }
+          },
+          {
+            key: "eagle", label: "🦅 Eagle",
+            sentence: "Now and then an eagle should fly over the piste, {eagle}.",
+            choices: [
+              { key: "eagle", label: "How often?", options: [{ label: "rarely", text: "rather rarely" }, { label: "often", text: "quite often" }] }
+            ],
+            done: ["Now and then an eagle flies over the piste."],
+            frame: "Switch on the extra EAGLE (remove the // in front of EXTRAS.push(EAGLE);). How often it comes is in the timer of the extra.",
+            expect: { extraName: "EAGLE" }
+          },
+          {
+            key: "fire", label: "🎆 Fireworks",
+            sentence: "When I reach the finish, fireworks should go off, {fire}.",
+            choices: [
+              { key: "fire", label: "Colours?", options: [{ label: "colourful", text: "in many colours" }, { label: "gold", text: "in gold and silver" }] }
+            ],
+            done: ["Fireworks go off at the finish."],
+            frame: "Switch on the extra FIREWORKS (remove the // in front of EXTRAS.push(FIREWORKS);). onFinish already starts it. The colours are in the list at col.",
+            expect: { extraName: "FIREWORKS" }
+          }
+        ],
+        extraPlaceholder: "e.g. “The stars should be bigger.”"
+      },
+      prompt: `${V2_RULES}
+
+Task: switch on extras
+- Area 2 already has these extras, finished but switched off: SNOWFALL, CROWD, STARS, EAGLE and FIREWORKS.
+- Switch on all five by removing the // in front of each EXTRAS.push(...);
+- Change nothing else.`
+    },
+    {
       id: "aufpeppen",
       number: "A",
       short: true,
       longHidden: true,   // short version only
       title: "Spice up the game",
-      subtitle: "Snowfall, decoration, speed and combo streak – four wishes in one prompt.",
+      subtitle: "Decoration, speed and combo streak – three wishes in one prompt.",
       tag: "Several wishes at once",
       info: "Tick what you want. The AI does everything in one answer. Then ski and tick off each point one by one.",
       trainerNote: "Here participants practise bundling several wishes in one prompt. After testing, ask: which sentence did what? If it gets stuck, use “Split into two rounds”.",
       type: "template",
       user: {
         parts: [
-          {
-            key: "snow", label: "❄️ Snowfall",
-            sentence: "It should snow {amount}. The flakes should be {colour}.",
-            choices: [
-              { key: "amount", label: "How much?", options: [{ label: "a little", text: "a little" }, { label: "heavily", text: "really heavily" }] },
-              { key: "colour", label: "Colour?", options: [{ label: "white", text: "white" }, { label: "light blue", text: "light blue" }, { label: "colourful", text: "colourful" }] }
-            ],
-            done: ["It snows {amount}, the flakes are {colour}."],
-            frame: "Area 2 already has the extra SNOWFALL. Switch it on (remove the // in front of EXTRAS.push(SNOWFALL);) and adjust the number, colour and size of the flakes.",
-            expect: { extraName: "SNOWFALL" }
-          },
           {
             key: "deco", label: "🏠 Decoration", extraHelp: true,
             sentence: "Now and then there should be {what} in the deep snow next to the piste. If you touch them, {touch}. They should appear {often}.",
@@ -1060,62 +1123,34 @@ Do not add new features, only repair. Write in 1–2 sentences what was broken.`
               { key: "message", label: "Message?", options: [{ label: "every 5 gates", text: "Every 5 gates a message “🔥 5 in a row!” should flash." }, { label: "none", text: "" }] }
             ],
             done: ["The combo display appears after 2 gates in a row and starts again after a mistake."],
-            frame: "Use the events onGatePassed, onGateMissed and onCrash in area 2 for this (their names stay the same) and a variable for the streak. For the display, build a small extra with EXTRAS.push(...) that draws at the top right below the speaker symbol, but only from 2 gates in a row. Messages work with world.popup(text, x, y, colour).",
+            frame: "Use the events onGatePassed, onGateMissed and onCrash in area 2 for this (their names stay the same) and a variable for the streak. Whatever is already in onGatePassed stays in. For the display, build a small extra with EXTRAS.push(...) that draws at the top right, below the star counter (from y = 100), but only from 2 gates in a row. Messages work with world.popup(text, x, y, colour).",
             expect: { extra: true, funcs: ["onGatePassed"] }
           }
         ],
-        extraPlaceholder: "e.g. “The igloos should have a small window.”"
+        extraPlaceholder: "e.g. “The igloos should have a small window.”",
+        split: [["deco"], ["tempo", "combo"]]   // "Split into two rounds"
       },
       prompt: `${V2_RULES}
 
 ${V2_EXTRA_HELP}
 
-Task: spice up the game – do all four parts in one answer.
+Task: spice up the game – do all three parts in one answer.
 
-1. Snowfall: area 2 already has the extra SNOWFALL. Switch it on by removing the // in front of EXTRAS.push(SNOWFALL);. Make 180 flakes instead of 90, light blue and of different sizes (2 to 5 pixels).
-
-2. Decoration: create a new extra DECO in area 2 and switch it on with EXTRAS.push(DECO);
+1. Decoration: create a new extra DECO in area 2 and switch it on with EXTRAS.push(DECO);
 - DECO has a list items. spawn(world) empties the list and fills it right away up to world.scrollY + CONFIG.H + 200; update(dt, world) keeps filling it, a new object about every 260 pixels (wy).
 - Every object is NEXT TO the piste: left of world.trackBounds(wy).left - 40 or right of world.trackBounds(wy).right + 40, but inside 0 to CONFIG.W.
 - Random kind with world.rnd(): hut, rock or mountain goat, drawn with simple p5 shapes.
 - Remove objects with wy < world.scrollY - 100. NO hits() function.
 
-3. Speed – change only these numbers in CONFIG: SPEED_START from 230 to 300, SPEED_MAX from 430 to 520, GATE_WIDTH from 150 to 120, STEER_MAX from 480 to 560.
+2. Speed – change only these numbers in CONFIG: SPEED_START from 230 to 300, SPEED_MAX from 430 to 520, GATE_WIDTH from 150 to 120, STEER_MAX from 480 to 560.
 
-4. Combo streak:
+3. Combo streak:
 - Create a variable combo = 0 in area 2.
-- In onGatePassed(gate): increase combo by 1. At 5, 10, 15 … world.popup("🔥 " + combo + " in a row!", world.player.x, 120, [255, 140, 0]).
+- In onGatePassed(gate): increase combo by 1 (whatever is already there stays). At 5, 10, 15 … world.popup("🔥 " + combo + " in a row!", world.player.x, 120, [255, 140, 0]).
 - In onGateMissed(gate) and onCrash(kind): combo = 0.
-- Create a small extra COMBO_DISPLAY (EXTRAS.push(COMBO_DISPLAY);) that shows "🔥 " + combo at the top right (below the speaker symbol), but only when combo is at least 2.
+- Create a small extra COMBO_DISPLAY (EXTRAS.push(COMBO_DISPLAY);) that shows "🔥 " + combo at the top right below the star counter (from y = 100), but only when combo is at least 2.
 
-In your 1–2 sentences, say briefly what you did for 1, 2, 3 and 4.`
-    },
-    {
-      id: "schnee",
-      number: "0",
-      title: "Warm-up: snowfall",
-      subtitle: "Switch on the prepared extra and adjust it.",
-      tag: "Extra / warm-up",
-      info: "A first success: switch on an existing extra and adjust it.",
-      type: "template",
-      user: {
-        sentence: "It should snow {amount}. The flakes should be {colour}.",
-        choices: [
-          { key: "amount", label: "How much?", options: [{ label: "a little", text: "a little" }, { label: "heavily", text: "really heavily" }] },
-          { key: "colour", label: "Colour?", options: [{ label: "white", text: "white" }, { label: "light blue", text: "light blue" }, { label: "colourful", text: "colourful" }] }
-        ],
-        extraPlaceholder: "e.g. “The flakes should have different sizes.”",
-        done: ["It snows {amount}.", "The flakes are {colour}."],
-        frame: "Area 2 already has the extra SNOWFALL. Switch it on (remove the // in front of EXTRAS.push(SNOWFALL);) and adjust the number, colour and size of the flakes. Change nothing else.",
-        expect: { extra: true }
-      },
-      prompt: `${V2_RULES}
-
-Task: switch on snowfall
-- Area 2 already has the extra SNOWFALL. Switch it on by removing the // in front of EXTRAS.push(SNOWFALL);
-- Make twice as many flakes (180 instead of 90).
-- The flakes should be light blue and of different sizes (2 to 5 pixels).
-- Change nothing else.`
+In your 1–2 sentences, say briefly what you did for 1, 2 and 3.`
     },
     {
       id: "deko",
@@ -1241,16 +1276,16 @@ Task: new extra "Bear"
         ],
         extraPlaceholder: "e.g. “From 10 gates on, the display should turn gold.”",
         done: ["The display appears after 2 gates in a row.", "After a missed gate or a crash it starts again."],
-        frame: "Use the events onGatePassed, onGateMissed and onCrash in area 2 for this (their names stay the same) and a variable for the streak. For the display, build a small extra with EXTRAS.push(...) that draws at the top right below the speaker symbol, but only from 2 gates in a row. Messages work with world.popup(text, x, y, colour). CONFIG stays the same.",
+        frame: "Use the events onGatePassed, onGateMissed and onCrash in area 2 for this (their names stay the same) and a variable for the streak. Whatever is already in onGatePassed stays in. For the display, build a small extra with EXTRAS.push(...) that draws at the top right, below the star counter (from y = 100), but only from 2 gates in a row. Messages work with world.popup(text, x, y, colour). CONFIG stays the same.",
         expect: { extra: true, funcs: ["onGatePassed"] }
       },
       prompt: `${V2_RULES}
 
 Task: combo streak
 - Create a variable combo = 0 in area 2.
-- In onGatePassed(gate): increase combo by 1. At 5, 10, 15 … show a message with world.popup("🔥 " + combo + " in a row!", world.player.x, 120, [255, 140, 0]).
+- In onGatePassed(gate): increase combo by 1 (whatever is already there stays). At 5, 10, 15 … show a message with world.popup("🔥 " + combo + " in a row!", world.player.x, 120, [255, 140, 0]).
 - In onGateMissed(gate) and onCrash(kind): set combo back to 0.
-- Create a small extra COMBO_DISPLAY (EXTRAS.push(COMBO_DISPLAY);) that shows "🔥 " + combo at the top right (below the speaker symbol), but only when combo is at least 2.
+- Create a small extra COMBO_DISPLAY (EXTRAS.push(COMBO_DISPLAY);) that shows "🔥 " + combo at the top right below the star counter (from y = 100), but only when combo is at least 2.
 - The functions onGatePassed, onGateMissed and onCrash keep exactly their names.`
     },
     {
@@ -1923,7 +1958,7 @@ function drawPlayer(p) {
   translate(p.x, p.y);
   rotate(p.fallen ? (p.lean &gt;= 0 ? 1.4 : -1.4) : p.lean * 0.35);
   const s = p.s;
-  // Ski
+  // Skis
   stroke(30); strokeWeight(3); strokeCap(ROUND);
   line(-s * 0.32, -s * 0.5, -s * 0.32, s * 0.95);
   line( s * 0.32, -s * 0.5,  s * 0.32, s * 0.95);
@@ -1931,12 +1966,20 @@ function drawPlayer(p) {
   stroke(90); strokeWeight(1.5);
   line(-s * 0.55, -s * 0.05, -s * 0.85, -s * 0.85);
   line( s * 0.55, -s * 0.05,  s * 0.85, -s * 0.85);
+  // Scarf – blows against the steering direction
+  const w = -p.lean, flutter = Math.sin(frameCount * 0.4) * s * 0.08;
+  stroke(255, 200, 40); strokeWeight(s * 0.18);
+  line(0, -s * 0.45, s * (0.35 + w * 0.5), -s * 0.2);
+  line(s * (0.35 + w * 0.5), -s * 0.2, s * (0.6 + w * 0.7), -s * 0.05 + flutter);
   // Jacket
   noStroke(); fill(230, 60, 60); ellipse(0, 0, s * 1.0, s * 1.2);
-  // Head + hat + bobble
+  fill(255, 255, 255, 120); rect(-s * 0.06, -s * 0.5, s * 0.12, s * 0.9, 2);
+  // Head, goggles, hat, bobble
   fill(255, 220, 170); ellipse(0, -s * 0.75, s * 0.6, s * 0.6);
-  fill(40, 110, 230);  arc(0, -s * 0.82, s * 0.66, s * 0.6, PI, TWO_PI);
-  fill(255);           ellipse(0, -s * 1.12, s * 0.22, s * 0.22);
+  fill(40); rect(-s * 0.3, -s * 0.8, s * 0.6, s * 0.17, 3);
+  fill(255, 170, 40); rect(-s * 0.24, -s * 0.78, s * 0.48, s * 0.12, 3);
+  fill(40, 110, 230); arc(0, -s * 0.82, s * 0.66, s * 0.6, PI, TWO_PI);
+  fill(255);          ellipse(0, -s * 1.12, s * 0.22, s * 0.22);
 }
 
 // --- Extras: new things in the game ---------------------------------
@@ -1947,7 +1990,21 @@ function drawPlayer(p) {
 // If an extra has an error, only that extra is switched off.
 const EXTRAS = [];
 
-// Example – to try it, remove the // in front of EXTRAS.push(...):
+// Prepared extras – to switch one on, remove the // in front of EXTRAS.push(...).
+
+// Helpers for extras
+function onScreen(y) { return y &gt; -80 &amp;&amp; y &lt; CONFIG.H + 80; }
+// Fills ex.items to below the screen: a new thing from make(wy) every "spacing" pixels
+function refill(ex, world, spacing, make) {
+  while (ex.nextWY &lt; world.scrollY + CONFIG.H + 200) {
+    const thing = make(ex.nextWY);
+    if (thing) ex.items.push(thing);
+    ex.nextWY += spacing * (0.7 + world.rnd() * 0.6);
+  }
+  ex.items = ex.items.filter((d) =&gt; d.wy &gt; world.scrollY - 300);
+}
+
+// --- Snowfall -------------------------------------------------------
 const SNOWFALL = {
   name: "Snowfall",
   flakes: [],
@@ -1971,11 +2028,193 @@ const SNOWFALL = {
 };
 // EXTRAS.push(SNOWFALL);
 
+// --- Crowd: spectators along the piste, cheering at every gate --------
+const CROWD = {
+  name: "Crowd",
+  items: [], nextWY: 0, cheer: 0,
+  colours: [[230, 60, 60], [40, 110, 230], [40, 170, 90], [255, 190, 40], [160, 70, 200], [255, 120, 30]],
+  group(world, wy, side, count) {
+    const people = [];
+    for (let i = 0; i &lt; count; i++) {
+      people.push({
+        dwy: Math.floor(i / 2) * 26 + (i % 2) * 13, row: i % 2,
+        jacket: this.colours[Math.floor(world.rnd() * this.colours.length)],
+        hat: this.colours[Math.floor(world.rnd() * this.colours.length)],
+        flag: world.rnd() &lt; 0.25, phase: world.rnd() * 6,
+      });
+    }
+    return { wy, side, people, length: Math.ceil(count / 2) * 26 };
+  },
+  spawn(world) { this.items = []; this.cheer = 0; this.nextWY = 900; this.update(0, world); },
+  update(dt, world) {
+    this.cheer = Math.max(0, this.cheer - dt);
+    refill(this, world, 1100, (wy) =&gt; this.group(world, wy, world.rnd() &lt; 0.5 ? "left" : "right", 4 + Math.floor(world.rnd() * 4)));
+  },
+  draw(world) {
+    const P = world.player, time = millis() / 1000;
+    for (const g of this.items) {
+      const y0 = world.toScreenY(g.wy);
+      if (y0 &gt; CONFIG.H + 60 || y0 + g.length &lt; -60) continue;
+      const out = g.side === "left" ? -1 : 1;
+      // Barrier (orange net) along the piste
+      stroke(255, 120, 30); strokeWeight(3); noFill();
+      beginShape();
+      for (let d = -10; d &lt;= g.length + 10; d += 10) vertex(world.trackBounds(g.wy + d)[g.side] + out * 12, y0 + d);
+      endShape();
+      noStroke();
+      for (const m of g.people) {
+        const wy = g.wy + m.dwy, y = world.toScreenY(wy);
+        if (!onScreen(y)) continue;
+        const x = world.trackBounds(wy)[g.side] + out * (26 + m.row * 16);
+        const cheering = Math.abs(P.wy - wy) &lt; 220 || this.cheer &gt; 0 || world.state === "finish";
+        const hop = cheering ? Math.abs(Math.sin(time * 9 + m.phase)) * 5 : 0;
+        push(); translate(x, y - hop);
+        fill(...m.jacket); ellipse(0, 0, 13, 15);
+        fill(255, 220, 170); circle(0, -10, 9);
+        fill(...m.hat); arc(0, -11, 10, 9, PI, TWO_PI);
+        stroke(...m.jacket); strokeWeight(3);
+        if (cheering) { line(-5, -3, -8, -15); line(5, -3, 8, -15); }
+        else          { line(-5, -2, -7, 5);   line(5, -2, 7, 5); }
+        if (m.flag) {
+          stroke(80); strokeWeight(1.5); line(8, -15, 8, -32);
+          noStroke(); fill(220, 30, 30); rect(8, -32, 14, 10);
+          fill(255); rect(13, -30, 4, 6); rect(12, -28, 6, 2);
+        }
+        noStroke(); pop();
+      }
+    }
+  },
+};
+// EXTRAS.push(CROWD);
+
+// --- Collect stars: on the piste, with a counter at the top right ----
+let stars = 0;
+const STARS = {
+  name: "Stars",
+  items: [], nextWY: 0,
+  spawn(world) { this.items = []; stars = 0; this.nextWY = CONFIG.FIRST_GATE_Y + CONFIG.GATE_SPACING / 2; this.update(0, world); },
+  update(dt, world) {
+    while (this.nextWY &lt; world.scrollY + CONFIG.H + 200) {
+      const c = world.trackCenter(this.nextWY);
+      this.items.push({ x: c + (world.rnd() - 0.5) * CONFIG.TRACK_HALF * 1.1, wy: this.nextWY, gone: false });
+      this.nextWY += CONFIG.GATE_SPACING;
+    }
+    const P = world.player;
+    for (const st of this.items) {
+      if (!st.gone &amp;&amp; P.fallTimer &lt;= 0 &amp;&amp; dist(P.x, P.wy, st.x, st.wy) &lt; 24) {
+        st.gone = true; stars++;
+        world.addScore(5);
+        world.popup("⭐", st.x, world.toScreenY(st.wy) - 20, [255, 170, 0]);
+      }
+    }
+    this.items = this.items.filter((st) =&gt; st.wy &gt; world.scrollY - 60);
+  },
+  draw(world) {
+    const time = millis() / 1000;
+    for (const st of this.items) {
+      const y = world.toScreenY(st.wy);
+      if (st.gone || !onScreen(y)) continue;
+      push(); translate(st.x, y); rotate(time * 1.5);
+      noStroke(); fill(255, 220, 60, 70); circle(0, 0, 30 + Math.sin(time * 6) * 4);
+      fill(255, 200, 0); stroke(200, 130, 0); strokeWeight(1.5);
+      beginShape();
+      for (let i = 0; i &lt; 10; i++) {
+        const r = i % 2 ? 5 : 12, a = -HALF_PI + i * PI / 5;
+        vertex(Math.cos(a) * r, Math.sin(a) * r);
+      }
+      endShape(CLOSE);
+      pop();
+    }
+    // Counter at the top right, below the speaker symbol
+    noStroke(); fill(15, 32, 52, 200); rect(CONFIG.W - 110, 54, 96, 34, 10);
+    fill(255); textAlign(LEFT, CENTER); textSize(17); text("⭐ " + stars, CONFIG.W - 98, 71);
+  },
+};
+// EXTRAS.push(STARS);
+
+// --- Eagle: flies over the piste now and then -------------------------
+const EAGLE = {
+  name: "Eagle",
+  bird: null, timer: 0,
+  spawn(world) { this.bird = null; this.timer = 5 + world.rnd() * 5; },
+  update(dt, world) {
+    if (!this.bird) {
+      this.timer -= dt;
+      if (this.timer &lt;= 0) {
+        const fromLeft = world.rnd() &lt; 0.5;
+        this.bird = { x: fromLeft ? -40 : CONFIG.W + 40, y: 80 + world.rnd() * 220, vx: fromLeft ? 170 : -170 };
+        this.timer = 14 + world.rnd() * 10;
+      }
+      return;
+    }
+    this.bird.x += this.bird.vx * dt;
+    this.bird.y += Math.sin(this.bird.x * 0.02) * 20 * dt;
+    if (this.bird.x &lt; -60 || this.bird.x &gt; CONFIG.W + 60) this.bird = null;
+  },
+  draw(world) {
+    if (!this.bird) return;
+    const v = this.bird, flap = Math.sin(millis() / 90) * 9, dir = v.vx &gt; 0 ? 1 : -1;
+    noStroke(); fill(60, 80, 110, 35); ellipse(v.x - 30 * dir, v.y + 90, 40, 9);   // shadow
+    push(); translate(v.x, v.y);
+    stroke(70, 45, 25); strokeWeight(4); noFill();
+    line(0, 0, -18, -6 - flap); line(-18, -6 - flap, -30, -2 - flap * 1.4);
+    line(0, 0, 18, -6 - flap);  line(18, -6 - flap, 30, -2 - flap * 1.4);
+    noStroke(); fill(80, 50, 25); ellipse(0, 0, 22 * dir, 9);
+    fill(250); circle(10 * dir, -2, 8);
+    fill(255, 190, 30); triangle(13 * dir, -3, 13 * dir, 0, 18 * dir, -1);
+    pop();
+  },
+};
+// EXTRAS.push(EAGLE);
+
+// --- Fireworks at the finish ------------------------------------------
+// Runs in draw(), because update() is no longer called after the finish.
+const FIREWORKS = {
+  name: "Fireworks",
+  active: false, t: 0, next: 0, rockets: [], sparks: [],
+  spawn(world) { this.active = false; this.rockets = []; this.sparks = []; },
+  start() { this.active = true; this.t = 0; this.next = 0; },
+  draw(world) {
+    if (!this.active) return;
+    const dt = Math.min(deltaTime / 1000, 0.05);
+    this.t += dt;
+    this.next -= dt;
+    if (this.t &lt; 6 &amp;&amp; this.next &lt;= 0) {
+      this.next = 0.35;
+      const x = Math.random() &lt; 0.5 ? 50 + Math.random() * 160 : CONFIG.W - 210 + Math.random() * 160;
+      this.rockets.push({ x, y: CONFIG.H + 10, vy: -430 - Math.random() * 120, bang: 90 + Math.random() * 220,
+                          col: random([[255, 80, 80], [255, 210, 60], [90, 200, 255], [150, 255, 120], [255, 120, 230]]) });
+    }
+    for (const r of this.rockets) {
+      r.y += r.vy * dt;
+      if (r.y &lt; r.bang &amp;&amp; !r.gone) {
+        r.gone = true;
+        for (let i = 0; i &lt; 40; i++) {
+          const a = Math.random() * TWO_PI, v = 60 + Math.random() * 160;
+          this.sparks.push({ x: r.x, y: r.y, vx: Math.cos(a) * v, vy: Math.sin(a) * v, life: 1.2, col: r.col });
+        }
+      }
+    }
+    this.rockets = this.rockets.filter((r) =&gt; !r.gone);
+    for (const f of this.sparks) { f.x += f.vx * dt; f.y += f.vy * dt; f.vy += 90 * dt; f.life -= dt; }
+    this.sparks = this.sparks.filter((f) =&gt; f.life &gt; 0);
+    noStroke();
+    for (const r of this.rockets) { fill(255, 240, 200); circle(r.x, r.y, 4); }
+    for (const f of this.sparks) { fill(...f.col, 255 * Math.min(1, f.life)); circle(f.x, f.y, 4); }
+  },
+};
+// EXTRAS.push(FIREWORKS);
+
 // --- Events ---------------------------------------------------------
-function onGatePassed(gate) {}
+function onGatePassed(gate) {
+  CROWD.cheer = 0.8;   // the crowd cheers (if switched on)
+}
 function onGateMissed(gate) {}
 function onCrash(kind) {}
-function onFinish(result) {}
+function onFinish(result) {
+  FIREWORKS.start();   // fireworks (if switched on)
+  if (EXTRAS.includes(STARS)) world.popup("⭐ " + stars + " stars collected!", CONFIG.W / 2, 570, [255, 170, 0]);
+}
 
 // =====================================================================
 // 3) GAME ENGINE – DO NOT CHANGE
@@ -4450,8 +4689,7 @@ window.__ski = {
     bPartsHint: "Tick what the AI should do:",
     splitSummary: "Doesn't work all at once? Split into two rounds",
     splitHint: "Send round 1 first, check the game, then send round 2 in the same chat.",
-    split1: "📋 Round 1: snowfall + speed",
-    split2: "📋 Round 2: decoration + combo",
+    splitRound: (n) => `Round ${n}`,
   };
   // UI_TEXT_END
 
@@ -4906,9 +5144,10 @@ window.__ski = {
         su.parts.map((pt) => `<div class="part-card${st.off[pt.key] ? " off" : ""}" data-part="${pt.key}">` +
           `<label class="part-head"><input type="checkbox"${st.off[pt.key] ? "" : " checked"}> ${pt.label}</label>` +
           pt.choices.map(row).join("") + "</div>").join("") + extraField +
-        `<details class="split"><summary>${T.splitSummary}</summary><p>${T.splitHint}</p>` +
-        `<button class="secondary-btn" type="button" data-only="snow,tempo">${T.split1}</button> ` +
-        `<button class="secondary-btn" type="button" data-only="deco,combo">${T.split2}</button> <span class="status"></span></details>`;
+        (su.split ? `<details class="split"><summary>${T.splitSummary}</summary><p>${T.splitHint}</p>` +
+          su.split.map((keys, i) => `<button class="secondary-btn" type="button" data-only="${keys.join(",")}">📋 ${T.splitRound(i + 1)}: ` +
+            keys.map((k) => su.parts.find((pt) => pt.key === k).label.replace(/^\S+\s/, "")).join(" + ") + "</button> ").join("") +
+          `<span class="status"></span></details>` : "");
     } else {
       u.builder.innerHTML = `<div class="builder-title">${T.bTitle}</div>` + su.choices.map(row).join("") + extraField;
     }

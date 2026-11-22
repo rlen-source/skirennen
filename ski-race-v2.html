@@ -87,7 +87,7 @@ function drawPlayer(p) {
   translate(p.x, p.y);
   rotate(p.fallen ? (p.lean >= 0 ? 1.4 : -1.4) : p.lean * 0.35);
   const s = p.s;
-  // Ski
+  // Skis
   stroke(30); strokeWeight(3); strokeCap(ROUND);
   line(-s * 0.32, -s * 0.5, -s * 0.32, s * 0.95);
   line( s * 0.32, -s * 0.5,  s * 0.32, s * 0.95);
@@ -95,12 +95,20 @@ function drawPlayer(p) {
   stroke(90); strokeWeight(1.5);
   line(-s * 0.55, -s * 0.05, -s * 0.85, -s * 0.85);
   line( s * 0.55, -s * 0.05,  s * 0.85, -s * 0.85);
+  // Scarf – blows against the steering direction
+  const w = -p.lean, flutter = Math.sin(frameCount * 0.4) * s * 0.08;
+  stroke(255, 200, 40); strokeWeight(s * 0.18);
+  line(0, -s * 0.45, s * (0.35 + w * 0.5), -s * 0.2);
+  line(s * (0.35 + w * 0.5), -s * 0.2, s * (0.6 + w * 0.7), -s * 0.05 + flutter);
   // Jacket
   noStroke(); fill(230, 60, 60); ellipse(0, 0, s * 1.0, s * 1.2);
-  // Head + hat + bobble
+  fill(255, 255, 255, 120); rect(-s * 0.06, -s * 0.5, s * 0.12, s * 0.9, 2);
+  // Head, goggles, hat, bobble
   fill(255, 220, 170); ellipse(0, -s * 0.75, s * 0.6, s * 0.6);
-  fill(40, 110, 230);  arc(0, -s * 0.82, s * 0.66, s * 0.6, PI, TWO_PI);
-  fill(255);           ellipse(0, -s * 1.12, s * 0.22, s * 0.22);
+  fill(40); rect(-s * 0.3, -s * 0.8, s * 0.6, s * 0.17, 3);
+  fill(255, 170, 40); rect(-s * 0.24, -s * 0.78, s * 0.48, s * 0.12, 3);
+  fill(40, 110, 230); arc(0, -s * 0.82, s * 0.66, s * 0.6, PI, TWO_PI);
+  fill(255);          ellipse(0, -s * 1.12, s * 0.22, s * 0.22);
 }
 
 // --- Extras: new things in the game ---------------------------------
@@ -111,7 +119,21 @@ function drawPlayer(p) {
 // If an extra has an error, only that extra is switched off.
 const EXTRAS = [];
 
-// Example – to try it, remove the // in front of EXTRAS.push(...):
+// Prepared extras – to switch one on, remove the // in front of EXTRAS.push(...).
+
+// Helpers for extras
+function onScreen(y) { return y > -80 && y < CONFIG.H + 80; }
+// Fills ex.items to below the screen: a new thing from make(wy) every "spacing" pixels
+function refill(ex, world, spacing, make) {
+  while (ex.nextWY < world.scrollY + CONFIG.H + 200) {
+    const thing = make(ex.nextWY);
+    if (thing) ex.items.push(thing);
+    ex.nextWY += spacing * (0.7 + world.rnd() * 0.6);
+  }
+  ex.items = ex.items.filter((d) => d.wy > world.scrollY - 300);
+}
+
+// --- Snowfall -------------------------------------------------------
 const SNOWFALL = {
   name: "Snowfall",
   flakes: [],
@@ -135,11 +157,193 @@ const SNOWFALL = {
 };
 // EXTRAS.push(SNOWFALL);
 
+// --- Crowd: spectators along the piste, cheering at every gate --------
+const CROWD = {
+  name: "Crowd",
+  items: [], nextWY: 0, cheer: 0,
+  colours: [[230, 60, 60], [40, 110, 230], [40, 170, 90], [255, 190, 40], [160, 70, 200], [255, 120, 30]],
+  group(world, wy, side, count) {
+    const people = [];
+    for (let i = 0; i < count; i++) {
+      people.push({
+        dwy: Math.floor(i / 2) * 26 + (i % 2) * 13, row: i % 2,
+        jacket: this.colours[Math.floor(world.rnd() * this.colours.length)],
+        hat: this.colours[Math.floor(world.rnd() * this.colours.length)],
+        flag: world.rnd() < 0.25, phase: world.rnd() * 6,
+      });
+    }
+    return { wy, side, people, length: Math.ceil(count / 2) * 26 };
+  },
+  spawn(world) { this.items = []; this.cheer = 0; this.nextWY = 900; this.update(0, world); },
+  update(dt, world) {
+    this.cheer = Math.max(0, this.cheer - dt);
+    refill(this, world, 1100, (wy) => this.group(world, wy, world.rnd() < 0.5 ? "left" : "right", 4 + Math.floor(world.rnd() * 4)));
+  },
+  draw(world) {
+    const P = world.player, time = millis() / 1000;
+    for (const g of this.items) {
+      const y0 = world.toScreenY(g.wy);
+      if (y0 > CONFIG.H + 60 || y0 + g.length < -60) continue;
+      const out = g.side === "left" ? -1 : 1;
+      // Barrier (orange net) along the piste
+      stroke(255, 120, 30); strokeWeight(3); noFill();
+      beginShape();
+      for (let d = -10; d <= g.length + 10; d += 10) vertex(world.trackBounds(g.wy + d)[g.side] + out * 12, y0 + d);
+      endShape();
+      noStroke();
+      for (const m of g.people) {
+        const wy = g.wy + m.dwy, y = world.toScreenY(wy);
+        if (!onScreen(y)) continue;
+        const x = world.trackBounds(wy)[g.side] + out * (26 + m.row * 16);
+        const cheering = Math.abs(P.wy - wy) < 220 || this.cheer > 0 || world.state === "finish";
+        const hop = cheering ? Math.abs(Math.sin(time * 9 + m.phase)) * 5 : 0;
+        push(); translate(x, y - hop);
+        fill(...m.jacket); ellipse(0, 0, 13, 15);
+        fill(255, 220, 170); circle(0, -10, 9);
+        fill(...m.hat); arc(0, -11, 10, 9, PI, TWO_PI);
+        stroke(...m.jacket); strokeWeight(3);
+        if (cheering) { line(-5, -3, -8, -15); line(5, -3, 8, -15); }
+        else          { line(-5, -2, -7, 5);   line(5, -2, 7, 5); }
+        if (m.flag) {
+          stroke(80); strokeWeight(1.5); line(8, -15, 8, -32);
+          noStroke(); fill(220, 30, 30); rect(8, -32, 14, 10);
+          fill(255); rect(13, -30, 4, 6); rect(12, -28, 6, 2);
+        }
+        noStroke(); pop();
+      }
+    }
+  },
+};
+// EXTRAS.push(CROWD);
+
+// --- Collect stars: on the piste, with a counter at the top right ----
+let stars = 0;
+const STARS = {
+  name: "Stars",
+  items: [], nextWY: 0,
+  spawn(world) { this.items = []; stars = 0; this.nextWY = CONFIG.FIRST_GATE_Y + CONFIG.GATE_SPACING / 2; this.update(0, world); },
+  update(dt, world) {
+    while (this.nextWY < world.scrollY + CONFIG.H + 200) {
+      const c = world.trackCenter(this.nextWY);
+      this.items.push({ x: c + (world.rnd() - 0.5) * CONFIG.TRACK_HALF * 1.1, wy: this.nextWY, gone: false });
+      this.nextWY += CONFIG.GATE_SPACING;
+    }
+    const P = world.player;
+    for (const st of this.items) {
+      if (!st.gone && P.fallTimer <= 0 && dist(P.x, P.wy, st.x, st.wy) < 24) {
+        st.gone = true; stars++;
+        world.addScore(5);
+        world.popup("⭐", st.x, world.toScreenY(st.wy) - 20, [255, 170, 0]);
+      }
+    }
+    this.items = this.items.filter((st) => st.wy > world.scrollY - 60);
+  },
+  draw(world) {
+    const time = millis() / 1000;
+    for (const st of this.items) {
+      const y = world.toScreenY(st.wy);
+      if (st.gone || !onScreen(y)) continue;
+      push(); translate(st.x, y); rotate(time * 1.5);
+      noStroke(); fill(255, 220, 60, 70); circle(0, 0, 30 + Math.sin(time * 6) * 4);
+      fill(255, 200, 0); stroke(200, 130, 0); strokeWeight(1.5);
+      beginShape();
+      for (let i = 0; i < 10; i++) {
+        const r = i % 2 ? 5 : 12, a = -HALF_PI + i * PI / 5;
+        vertex(Math.cos(a) * r, Math.sin(a) * r);
+      }
+      endShape(CLOSE);
+      pop();
+    }
+    // Counter at the top right, below the speaker symbol
+    noStroke(); fill(15, 32, 52, 200); rect(CONFIG.W - 110, 54, 96, 34, 10);
+    fill(255); textAlign(LEFT, CENTER); textSize(17); text("⭐ " + stars, CONFIG.W - 98, 71);
+  },
+};
+// EXTRAS.push(STARS);
+
+// --- Eagle: flies over the piste now and then -------------------------
+const EAGLE = {
+  name: "Eagle",
+  bird: null, timer: 0,
+  spawn(world) { this.bird = null; this.timer = 5 + world.rnd() * 5; },
+  update(dt, world) {
+    if (!this.bird) {
+      this.timer -= dt;
+      if (this.timer <= 0) {
+        const fromLeft = world.rnd() < 0.5;
+        this.bird = { x: fromLeft ? -40 : CONFIG.W + 40, y: 80 + world.rnd() * 220, vx: fromLeft ? 170 : -170 };
+        this.timer = 14 + world.rnd() * 10;
+      }
+      return;
+    }
+    this.bird.x += this.bird.vx * dt;
+    this.bird.y += Math.sin(this.bird.x * 0.02) * 20 * dt;
+    if (this.bird.x < -60 || this.bird.x > CONFIG.W + 60) this.bird = null;
+  },
+  draw(world) {
+    if (!this.bird) return;
+    const v = this.bird, flap = Math.sin(millis() / 90) * 9, dir = v.vx > 0 ? 1 : -1;
+    noStroke(); fill(60, 80, 110, 35); ellipse(v.x - 30 * dir, v.y + 90, 40, 9);   // shadow
+    push(); translate(v.x, v.y);
+    stroke(70, 45, 25); strokeWeight(4); noFill();
+    line(0, 0, -18, -6 - flap); line(-18, -6 - flap, -30, -2 - flap * 1.4);
+    line(0, 0, 18, -6 - flap);  line(18, -6 - flap, 30, -2 - flap * 1.4);
+    noStroke(); fill(80, 50, 25); ellipse(0, 0, 22 * dir, 9);
+    fill(250); circle(10 * dir, -2, 8);
+    fill(255, 190, 30); triangle(13 * dir, -3, 13 * dir, 0, 18 * dir, -1);
+    pop();
+  },
+};
+// EXTRAS.push(EAGLE);
+
+// --- Fireworks at the finish ------------------------------------------
+// Runs in draw(), because update() is no longer called after the finish.
+const FIREWORKS = {
+  name: "Fireworks",
+  active: false, t: 0, next: 0, rockets: [], sparks: [],
+  spawn(world) { this.active = false; this.rockets = []; this.sparks = []; },
+  start() { this.active = true; this.t = 0; this.next = 0; },
+  draw(world) {
+    if (!this.active) return;
+    const dt = Math.min(deltaTime / 1000, 0.05);
+    this.t += dt;
+    this.next -= dt;
+    if (this.t < 6 && this.next <= 0) {
+      this.next = 0.35;
+      const x = Math.random() < 0.5 ? 50 + Math.random() * 160 : CONFIG.W - 210 + Math.random() * 160;
+      this.rockets.push({ x, y: CONFIG.H + 10, vy: -430 - Math.random() * 120, bang: 90 + Math.random() * 220,
+                          col: random([[255, 80, 80], [255, 210, 60], [90, 200, 255], [150, 255, 120], [255, 120, 230]]) });
+    }
+    for (const r of this.rockets) {
+      r.y += r.vy * dt;
+      if (r.y < r.bang && !r.gone) {
+        r.gone = true;
+        for (let i = 0; i < 40; i++) {
+          const a = Math.random() * TWO_PI, v = 60 + Math.random() * 160;
+          this.sparks.push({ x: r.x, y: r.y, vx: Math.cos(a) * v, vy: Math.sin(a) * v, life: 1.2, col: r.col });
+        }
+      }
+    }
+    this.rockets = this.rockets.filter((r) => !r.gone);
+    for (const f of this.sparks) { f.x += f.vx * dt; f.y += f.vy * dt; f.vy += 90 * dt; f.life -= dt; }
+    this.sparks = this.sparks.filter((f) => f.life > 0);
+    noStroke();
+    for (const r of this.rockets) { fill(255, 240, 200); circle(r.x, r.y, 4); }
+    for (const f of this.sparks) { fill(...f.col, 255 * Math.min(1, f.life)); circle(f.x, f.y, 4); }
+  },
+};
+// EXTRAS.push(FIREWORKS);
+
 // --- Events ---------------------------------------------------------
-function onGatePassed(gate) {}
+function onGatePassed(gate) {
+  CROWD.cheer = 0.8;   // the crowd cheers (if switched on)
+}
 function onGateMissed(gate) {}
 function onCrash(kind) {}
-function onFinish(result) {}
+function onFinish(result) {
+  FIREWORKS.start();   // fireworks (if switched on)
+  if (EXTRAS.includes(STARS)) world.popup("⭐ " + stars + " stars collected!", CONFIG.W / 2, 570, [255, 170, 0]);
+}
 
 // =====================================================================
 // 3) GAME ENGINE – DO NOT CHANGE

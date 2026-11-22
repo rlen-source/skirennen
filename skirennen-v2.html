@@ -95,12 +95,20 @@ function drawPlayer(p) {
   stroke(90); strokeWeight(1.5);
   line(-s * 0.55, -s * 0.05, -s * 0.85, -s * 0.85);
   line( s * 0.55, -s * 0.05,  s * 0.85, -s * 0.85);
+  // Schal – weht gegen die Lenkrichtung
+  const w = -p.lean, flattern = Math.sin(frameCount * 0.4) * s * 0.08;
+  stroke(255, 200, 40); strokeWeight(s * 0.18);
+  line(0, -s * 0.45, s * (0.35 + w * 0.5), -s * 0.2);
+  line(s * (0.35 + w * 0.5), -s * 0.2, s * (0.6 + w * 0.7), -s * 0.05 + flattern);
   // Jacke
   noStroke(); fill(230, 60, 60); ellipse(0, 0, s * 1.0, s * 1.2);
-  // Kopf + Mütze + Bommel
+  fill(255, 255, 255, 120); rect(-s * 0.06, -s * 0.5, s * 0.12, s * 0.9, 2);
+  // Kopf, Skibrille, Mütze, Bommel
   fill(255, 220, 170); ellipse(0, -s * 0.75, s * 0.6, s * 0.6);
-  fill(40, 110, 230);  arc(0, -s * 0.82, s * 0.66, s * 0.6, PI, TWO_PI);
-  fill(255);           ellipse(0, -s * 1.12, s * 0.22, s * 0.22);
+  fill(40); rect(-s * 0.3, -s * 0.8, s * 0.6, s * 0.17, 3);
+  fill(255, 170, 40); rect(-s * 0.24, -s * 0.78, s * 0.48, s * 0.12, 3);
+  fill(40, 110, 230); arc(0, -s * 0.82, s * 0.66, s * 0.6, PI, TWO_PI);
+  fill(255);          ellipse(0, -s * 1.12, s * 0.22, s * 0.22);
 }
 
 // --- Extras: neue Dinge im Spiel ------------------------------------
@@ -111,7 +119,21 @@ function drawPlayer(p) {
 // Wenn ein Extra einen Fehler hat, wird nur dieses Extra ausgeschaltet.
 const EXTRAS = [];
 
-// Beispiel – zum Ausprobieren die // vor EXTRAS.push(...) entfernen:
+// Vorbereitete Extras – zum Einschalten die // vor EXTRAS.push(...) entfernen.
+
+// Hilfen für Extras
+function aufBildschirm(y) { return y > -80 && y < CONFIG.H + 80; }
+// Füllt ex.items bis unter den Bildrand auf: alle "abstand" Pixel ein neues Ding von neu(wy)
+function nachfuellen(ex, welt, abstand, neu) {
+  while (ex.nextWY < welt.scrollY + CONFIG.H + 200) {
+    const ding = neu(ex.nextWY);
+    if (ding) ex.items.push(ding);
+    ex.nextWY += abstand * (0.7 + welt.rnd() * 0.6);
+  }
+  ex.items = ex.items.filter((d) => d.wy > welt.scrollY - 300);
+}
+
+// --- Schneefall -----------------------------------------------------
 const SCHNEEFALL = {
   name: "Schneefall",
   flakes: [],
@@ -135,11 +157,193 @@ const SCHNEEFALL = {
 };
 // EXTRAS.push(SCHNEEFALL);
 
+// --- Publikum: Zuschauer am Pistenrand, jubeln bei jedem Tor ----------
+const PUBLIKUM = {
+  name: "Publikum",
+  items: [], nextWY: 0, jubel: 0,
+  farben: [[230, 60, 60], [40, 110, 230], [40, 170, 90], [255, 190, 40], [160, 70, 200], [255, 120, 30]],
+  gruppe(welt, wy, seite, anzahl) {
+    const leute = [];
+    for (let i = 0; i < anzahl; i++) {
+      leute.push({
+        dwy: Math.floor(i / 2) * 26 + (i % 2) * 13, reihe: i % 2,
+        jacke: this.farben[Math.floor(welt.rnd() * this.farben.length)],
+        muetze: this.farben[Math.floor(welt.rnd() * this.farben.length)],
+        fahne: welt.rnd() < 0.25, phase: welt.rnd() * 6,
+      });
+    }
+    return { wy, seite, leute, laenge: Math.ceil(anzahl / 2) * 26 };
+  },
+  spawn(welt) { this.items = []; this.jubel = 0; this.nextWY = 900; this.update(0, welt); },
+  update(dt, welt) {
+    this.jubel = Math.max(0, this.jubel - dt);
+    nachfuellen(this, welt, 1100, (wy) => this.gruppe(welt, wy, welt.rnd() < 0.5 ? "left" : "right", 4 + Math.floor(welt.rnd() * 4)));
+  },
+  draw(welt) {
+    const P = welt.player, zeit = millis() / 1000;
+    for (const g of this.items) {
+      const y0 = welt.toScreenY(g.wy);
+      if (y0 > CONFIG.H + 60 || y0 + g.laenge < -60) continue;
+      const aussen = g.seite === "left" ? -1 : 1;
+      // Absperrung (oranges Netz) entlang der Piste
+      stroke(255, 120, 30); strokeWeight(3); noFill();
+      beginShape();
+      for (let d = -10; d <= g.laenge + 10; d += 10) vertex(welt.trackBounds(g.wy + d)[g.seite] + aussen * 12, y0 + d);
+      endShape();
+      noStroke();
+      for (const m of g.leute) {
+        const wy = g.wy + m.dwy, y = welt.toScreenY(wy);
+        if (!aufBildschirm(y)) continue;
+        const x = welt.trackBounds(wy)[g.seite] + aussen * (26 + m.reihe * 16);
+        const jubelt = Math.abs(P.wy - wy) < 220 || this.jubel > 0 || welt.state === "finish";
+        const hopp = jubelt ? Math.abs(Math.sin(zeit * 9 + m.phase)) * 5 : 0;
+        push(); translate(x, y - hopp);
+        fill(...m.jacke); ellipse(0, 0, 13, 15);
+        fill(255, 220, 170); circle(0, -10, 9);
+        fill(...m.muetze); arc(0, -11, 10, 9, PI, TWO_PI);
+        stroke(...m.jacke); strokeWeight(3);
+        if (jubelt) { line(-5, -3, -8, -15); line(5, -3, 8, -15); }
+        else        { line(-5, -2, -7, 5);   line(5, -2, 7, 5); }
+        if (m.fahne) {
+          stroke(80); strokeWeight(1.5); line(8, -15, 8, -32);
+          noStroke(); fill(220, 30, 30); rect(8, -32, 14, 10);
+          fill(255); rect(13, -30, 4, 6); rect(12, -28, 6, 2);
+        }
+        noStroke(); pop();
+      }
+    }
+  },
+};
+// EXTRAS.push(PUBLIKUM);
+
+// --- Sterne sammeln: auf der Piste, mit Zähler oben rechts ------------
+let sterne = 0;
+const STERNE = {
+  name: "Sterne",
+  items: [], nextWY: 0,
+  spawn(welt) { this.items = []; sterne = 0; this.nextWY = CONFIG.FIRST_GATE_Y + CONFIG.GATE_SPACING / 2; this.update(0, welt); },
+  update(dt, welt) {
+    while (this.nextWY < welt.scrollY + CONFIG.H + 200) {
+      const c = welt.trackCenter(this.nextWY);
+      this.items.push({ x: c + (welt.rnd() - 0.5) * CONFIG.TRACK_HALF * 1.1, wy: this.nextWY, weg: false });
+      this.nextWY += CONFIG.GATE_SPACING;
+    }
+    const P = welt.player;
+    for (const st of this.items) {
+      if (!st.weg && P.fallTimer <= 0 && dist(P.x, P.wy, st.x, st.wy) < 24) {
+        st.weg = true; sterne++;
+        welt.addScore(5);
+        welt.popup("⭐", st.x, welt.toScreenY(st.wy) - 20, [255, 170, 0]);
+      }
+    }
+    this.items = this.items.filter((st) => st.wy > welt.scrollY - 60);
+  },
+  draw(welt) {
+    const zeit = millis() / 1000;
+    for (const st of this.items) {
+      const y = welt.toScreenY(st.wy);
+      if (st.weg || !aufBildschirm(y)) continue;
+      push(); translate(st.x, y); rotate(zeit * 1.5);
+      noStroke(); fill(255, 220, 60, 70); circle(0, 0, 30 + Math.sin(zeit * 6) * 4);
+      fill(255, 200, 0); stroke(200, 130, 0); strokeWeight(1.5);
+      beginShape();
+      for (let i = 0; i < 10; i++) {
+        const r = i % 2 ? 5 : 12, a = -HALF_PI + i * PI / 5;
+        vertex(Math.cos(a) * r, Math.sin(a) * r);
+      }
+      endShape(CLOSE);
+      pop();
+    }
+    // Zähler oben rechts, unter dem Lautsprecher-Symbol
+    noStroke(); fill(15, 32, 52, 200); rect(CONFIG.W - 110, 54, 96, 34, 10);
+    fill(255); textAlign(LEFT, CENTER); textSize(17); text("⭐ " + sterne, CONFIG.W - 98, 71);
+  },
+};
+// EXTRAS.push(STERNE);
+
+// --- Adler: fliegt ab und zu über die Piste ----------------------------
+const ADLER = {
+  name: "Adler",
+  vogel: null, timer: 0,
+  spawn(welt) { this.vogel = null; this.timer = 5 + welt.rnd() * 5; },
+  update(dt, welt) {
+    if (!this.vogel) {
+      this.timer -= dt;
+      if (this.timer <= 0) {
+        const vonLinks = welt.rnd() < 0.5;
+        this.vogel = { x: vonLinks ? -40 : CONFIG.W + 40, y: 80 + welt.rnd() * 220, vx: vonLinks ? 170 : -170 };
+        this.timer = 14 + welt.rnd() * 10;
+      }
+      return;
+    }
+    this.vogel.x += this.vogel.vx * dt;
+    this.vogel.y += Math.sin(this.vogel.x * 0.02) * 20 * dt;
+    if (this.vogel.x < -60 || this.vogel.x > CONFIG.W + 60) this.vogel = null;
+  },
+  draw(welt) {
+    if (!this.vogel) return;
+    const v = this.vogel, flap = Math.sin(millis() / 90) * 9, dir = v.vx > 0 ? 1 : -1;
+    noStroke(); fill(60, 80, 110, 35); ellipse(v.x - 30 * dir, v.y + 90, 40, 9);   // Schatten
+    push(); translate(v.x, v.y);
+    stroke(70, 45, 25); strokeWeight(4); noFill();
+    line(0, 0, -18, -6 - flap); line(-18, -6 - flap, -30, -2 - flap * 1.4);
+    line(0, 0, 18, -6 - flap);  line(18, -6 - flap, 30, -2 - flap * 1.4);
+    noStroke(); fill(80, 50, 25); ellipse(0, 0, 22 * dir, 9);
+    fill(250); circle(10 * dir, -2, 8);
+    fill(255, 190, 30); triangle(13 * dir, -3, 13 * dir, 0, 18 * dir, -1);
+    pop();
+  },
+};
+// EXTRAS.push(ADLER);
+
+// --- Feuerwerk im Ziel ------------------------------------------------
+// Läuft in draw(), weil update() nach dem Ziel nicht mehr aufgerufen wird.
+const FEUERWERK = {
+  name: "Feuerwerk",
+  aktiv: false, t: 0, naechste: 0, raketen: [], funken: [],
+  spawn(welt) { this.aktiv = false; this.raketen = []; this.funken = []; },
+  start() { this.aktiv = true; this.t = 0; this.naechste = 0; },
+  draw(welt) {
+    if (!this.aktiv) return;
+    const dt = Math.min(deltaTime / 1000, 0.05);
+    this.t += dt;
+    this.naechste -= dt;
+    if (this.t < 6 && this.naechste <= 0) {
+      this.naechste = 0.35;
+      const x = Math.random() < 0.5 ? 50 + Math.random() * 160 : CONFIG.W - 210 + Math.random() * 160;
+      this.raketen.push({ x, y: CONFIG.H + 10, vy: -430 - Math.random() * 120, knall: 90 + Math.random() * 220,
+                          col: random([[255, 80, 80], [255, 210, 60], [90, 200, 255], [150, 255, 120], [255, 120, 230]]) });
+    }
+    for (const r of this.raketen) {
+      r.y += r.vy * dt;
+      if (r.y < r.knall && !r.weg) {
+        r.weg = true;
+        for (let i = 0; i < 40; i++) {
+          const a = Math.random() * TWO_PI, v = 60 + Math.random() * 160;
+          this.funken.push({ x: r.x, y: r.y, vx: Math.cos(a) * v, vy: Math.sin(a) * v, life: 1.2, col: r.col });
+        }
+      }
+    }
+    this.raketen = this.raketen.filter((r) => !r.weg);
+    for (const f of this.funken) { f.x += f.vx * dt; f.y += f.vy * dt; f.vy += 90 * dt; f.life -= dt; }
+    this.funken = this.funken.filter((f) => f.life > 0);
+    noStroke();
+    for (const r of this.raketen) { fill(255, 240, 200); circle(r.x, r.y, 4); }
+    for (const f of this.funken) { fill(...f.col, 255 * Math.min(1, f.life)); circle(f.x, f.y, 4); }
+  },
+};
+// EXTRAS.push(FEUERWERK);
+
 // --- Ereignisse -----------------------------------------------------
-function onGatePassed(gate) {}
+function onGatePassed(gate) {
+  PUBLIKUM.jubel = 0.8;   // Publikum jubelt (wenn eingeschaltet)
+}
 function onGateMissed(gate) {}
 function onCrash(kind) {}
-function onFinish(result) {}
+function onFinish(result) {
+  FEUERWERK.start();      // Feuerwerk (wenn eingeschaltet)
+  if (EXTRAS.includes(STERNE)) welt.popup("⭐ " + sterne + " Sterne gesammelt!", CONFIG.W / 2, 570, [255, 170, 0]);
+}
 
 // =====================================================================
 // 3) SPIEL-MOTOR – NICHT ÄNDERN
