@@ -238,6 +238,12 @@
     .game-alert { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; padding: 12px 14px; border-radius: var(--radius-sm);
                   background: #fef2f2; border: 2px solid #fca5a5; color: #7f1d1d; }
     .game-alert > div { flex: 1 1 280px; }
+    .change-box { padding: 12px 16px; border-radius: var(--radius-sm); background: var(--white); border: 2px solid var(--line); }
+    .change-box ul { margin: 6px 0 0; padding-left: 20px; }
+    .change-box li { margin: 2px 0; }
+    .change-box li.warn { color: #b91c1c; font-weight: 700; }
+    .change-box li.muted { color: var(--muted); list-style: none; margin-left: -20px; }
+    .change-box code { font-size: .9em; background: var(--snow); border: 1px solid var(--line); padding: 0 5px; border-radius: 6px; }
     .preview-frame-outer { padding: 12px; border-radius: var(--radius); background: var(--snow); border: 1px solid var(--line); }
     .preview-frame-note { font-size: .9rem; color: var(--muted); margin-bottom: 8px; }
     .preview-frame-wrapper { width: 100%; max-width: 900px; border-radius: 12px; overflow: hidden; background: #0f1d2b; }
@@ -627,6 +633,11 @@
         <div><strong id="gameAlertTitle"></strong> <span id="gameAlertText"></span></div>
         <button class="copy-btn" id="gameAlertCopyBtn" type="button">📋 Copy repair prompt</button>
         <span id="gameAlertMsg"></span>
+      </div>
+
+      <div id="changeBox" class="change-box" hidden>
+        <strong id="changeTitle">What has changed?</strong>
+        <ul id="changeList"></ul>
       </div>
 
       <div class="preview-frame-outer">
@@ -4090,6 +4101,19 @@ window.__ski = {
     taskLabel: "What you tell the AI",
     sepHelp1: "If something goes wrong",
     sepHelp2: "Help & your own ideas",
+    engineTitle: "⚠ The game engine was changed.",
+    engineText: "The AI touched area 3. That can break the game.",
+    chVsBase: "Compared with the base game:",
+    chVsPrev: "Compared with the previous version:",
+    chNone: "No changes.",
+    chConfig: (k, a, b) => `<code>${k}</code>: ${a} → ${b}`,
+    chConfigNew: (k, b) => `<code>${k}</code> new: ${b}`,
+    chExtraNew: (n) => `New extra: <code>${n}</code>`,
+    chExtraOff: (n) => `Extra switched off: <code>${n}</code>`,
+    chFunc: (n) => `<code>${n}</code> changed`,
+    chTheme: (n) => `${n} ${n === 1 ? "colour" : "colours"} changed in <code>THEME</code>`,
+    chOther: "Other changes in the area “You may change this”",
+    chEngine: "⚠ Game engine changed",
   };
   // UI_TEXT_END
 
@@ -4233,8 +4257,8 @@ window.__ski = {
   function showAlert(kind, detail) {
     if (alertKind === "error" && kind !== "error") return;   // echte Fehlermeldung hat Vorrang
     alertKind = kind; alertDetail = detail || "";
-    alertTitle.textContent = { error: T.errorTitle, broken: T.brokenTitle, notStarted: T.notStartedTitle, cut: T.cutTitle }[kind];
-    alertText.textContent = kind === "notStarted" ? T.notStartedText : kind === "cut" ? T.cutText : alertDetail;
+    alertTitle.textContent = { error: T.errorTitle, broken: T.brokenTitle, notStarted: T.notStartedTitle, cut: T.cutTitle, engine: T.engineTitle }[kind];
+    alertText.textContent = kind === "notStarted" ? T.notStartedText : kind === "cut" ? T.cutText : kind === "engine" ? T.engineText : alertDetail;
     alertBtn.textContent = kind === "cut" ? T.copyWeiter : T.copyRepair;
     alertMsg.textContent = "";
     alertBox.hidden = false;
@@ -4246,7 +4270,7 @@ window.__ski = {
   alertBtn.addEventListener("click", async () => {
     const check = promptsTeil1.find((p) => p.id === "check").prompt;
     const text = alertKind === "cut" ? WEITER_PROMPT
-      : check + (alertKind === "notStarted" ? "" : "\n\n" + T.repairLabel + " " + alertDetail);
+      : check + (alertKind === "notStarted" || alertKind === "engine" ? "" : "\n\n" + T.repairLabel + " " + alertDetail);
     alertMsg.textContent = (await copyToClipboard(text)) ? T.copied : T.copyFailed;
   });
   setInterval(() => {   // Extras, die der Spiel-Motor wegen eines Fehlers ausgeschaltet hat
@@ -4256,7 +4280,77 @@ window.__ski = {
     } catch (e) { /* kein Spiel geladen */ }
   }, 1500);
 
-  // --- 4) Spiel anzeigen: Versionen merken, Editor verkleinern, Prüfungen ---
+  // --- 4) Motor-Check und „Was hat sich geändert?“ --------------------------
+  // Teilt ein Spiel in CONFIG, Bereich 2 und Spiel-Motor (Marker deutsch oder englisch)
+  const MARKERS = [["// 2) HIER DARFST", "// 3) SPIEL-MOTOR"], ["// 2) YOU MAY CHANGE", "// 3) GAME ENGINE"]];
+  const norm = (t) => t.replace(/\r\n/g, "\n").split("\n").map((l) => l.replace(/\s+$/, "")).join("\n").trim();
+  function parts(code) {
+    for (const [a2, eng] of MARKERS) {
+      const i = code.indexOf(a2), j = code.indexOf(eng), c = code.indexOf("const CONFIG");
+      if (i > 0 && j > i && c >= 0 && c < i) {
+        return { lang: a2, config: code.slice(c, i), area2: code.slice(i, j), engine: norm(code.slice(j)) };
+      }
+    }
+    return null;
+  }
+  function configValues(text) {
+    const out = {};
+    for (const m of text.matchAll(/^\s*([A-Z_]+)\s*:\s*([^,\n]+?)\s*,?\s*(?:\/\/.*)?$/gm)) out[m[1]] = m[2].trim();
+    return out;
+  }
+  const activeExtras = (area2) => new Set(area2.split("\n").filter((l) => !/^\s*\/\//.test(l))
+    .flatMap((l) => [...l.matchAll(/EXTRAS\.push\(\s*(\w+)\s*\)/g)].map((m) => m[1])));
+  function funcBody(area2, name) {
+    const i = area2.indexOf("function " + name + "(");
+    if (i < 0) return null;
+    const j = area2.indexOf("\n}", i);
+    return norm(area2.slice(i, j < 0 ? undefined : j + 2));
+  }
+  function themeColours(area2) {
+    const m = area2.match(/const THEME = \{([\s\S]*?)\n\};/);
+    const out = {};
+    if (m) for (const x of m[1].matchAll(/(\w+)\s*:\s*\[([^\]]*)\]/g)) out[x[1]] = x[2].replace(/\s/g, "");
+    return out;
+  }
+  const esc = (t) => String(t).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  function describeChanges(before, after) {
+    const items = [];
+    if (norm(before.engine) !== norm(after.engine)) items.push({ cls: "warn", html: T.chEngine });
+    const cb = configValues(before.config), ca = configValues(after.config);
+    for (const k of Object.keys(ca)) {
+      if (!(k in cb)) items.push({ html: T.chConfigNew(k, esc(ca[k])) });
+      else if (cb[k] !== ca[k]) items.push({ html: T.chConfig(k, esc(cb[k]), esc(ca[k])) });
+    }
+    const eb = activeExtras(before.area2), ea = activeExtras(after.area2);
+    for (const n of ea) if (!eb.has(n)) items.push({ html: T.chExtraNew(n) });
+    for (const n of eb) if (!ea.has(n)) items.push({ html: T.chExtraOff(n) });
+    let explained = items.length > 0;
+    for (const n of ["drawPlayer", "onGatePassed", "onGateMissed", "onCrash", "onFinish"]) {
+      if (funcBody(before.area2, n) !== funcBody(after.area2, n)) { items.push({ html: T.chFunc(n) }); explained = true; }
+    }
+    const tb = themeColours(before.area2), ta = themeColours(after.area2);
+    const themeChanged = Object.keys(ta).filter((k) => tb[k] !== ta[k]).length;
+    if (themeChanged) { items.push({ html: T.chTheme(themeChanged) }); explained = true; }
+    if (!explained && norm(before.area2) !== norm(after.area2)) items.push({ html: T.chOther });
+    return items;
+  }
+  const changeBox = $("changeBox"), changeList = $("changeList");
+  function showChanges(code, previous) {
+    const after = parts(code), before = parts(previous || $("baseGameSrc").value);
+    if (!after || !before || after.lang !== before.lang) { changeBox.hidden = true; return; }
+    const items = describeChanges(before, after);
+    changeList.innerHTML = `<li class="muted">${previous ? T.chVsPrev : T.chVsBase}</li>` +
+      (items.length ? items.map((i) => `<li class="${i.cls || ""}">${i.html}</li>`).join("") : `<li>${T.chNone}</li>`);
+    changeBox.hidden = false;
+  }
+  function checkEngine(code) {
+    const p = parts(code), base = parts($("baseGameSrc").value);
+    if (/const CONFIG/.test(code) && !p) return showAlert("engine");          // Bereichs-Marker fehlen
+    if (p && base && p.lang === base.lang && p.engine !== base.engine) showAlert("engine");
+  }
+  $("demoBtn").addEventListener("click", () => { hideAlert(); changeBox.hidden = true; });
+
+  // --- 5) Spiel anzeigen: Versionen merken, Editor verkleinern, Prüfungen ---
   const versions = [], undoBtn = $("undoBtn");
   runBtn.addEventListener("click", () => {
     hideAlert();
@@ -4264,7 +4358,14 @@ window.__ski = {
     if (code.trim() && code !== versions[versions.length - 1]) versions.push(code);
     undoBtn.disabled = versions.length < 2;
     if (code.length > 500) editor.classList.add("compact");
-    if (code.trim() && !/<\/html>\s*(```)?\s*$/i.test(code.trim())) showAlert("cut");
+    const cut = code.trim() && !/<\/html>\s*(```)?\s*$/i.test(code.trim());
+    if (cut) showAlert("cut");
+    else if (code.trim()) {
+      checkEngine(code);
+      const i = versions.lastIndexOf(code);
+      showChanges(code, i > 0 ? versions[i - 1] : null);
+    }
+    if (!code.trim() || cut) changeBox.hidden = true;
     setTimeout(() => {
       try { if (code.trim() && !frame.contentWindow.__ski) showAlert("notStarted"); } catch (e) { /* egal */ }
     }, 3000);
@@ -4278,7 +4379,7 @@ window.__ski = {
   });
   editor.addEventListener("focus", () => editor.classList.remove("compact"));
 
-  // --- 5) Startseite und Trainer-Modus ------------------------------------
+  // --- 6) Startseite und Trainer-Modus ------------------------------------
   document.querySelectorAll("[data-go]").forEach((b) => b.addEventListener("click", () => {
     const go = b.dataset.go;
     if (go === "play") { showTab("editor"); $("loadBaseBtn").click(); }

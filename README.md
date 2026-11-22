@@ -3,7 +3,7 @@
 **Deutsch** · [English](#english)
 
 **Kinder bauen ein Ski-Spiel mit KI – ohne eine Zeile Code selbst zu tippen.**
-Ein fertiger Workshop, um Kindern von etwa 10 bis 14 Jahren das Programmieren mit KI näherzubringen – in der Schule, im Ferienkurs, im Coding-Club oder am Zukunftstag. Auf Deutsch und Englisch.
+Ein fertiger Workshop, um Kindern ab etwa 10 Jahren das Programmieren mit KI näherzubringen – in der Schule, im Ferienkurs, im Coding-Club oder am Zukunftstag. Auf Deutsch und Englisch.
 
 **[▶ Workshop öffnen](https://rlen-source.github.io/skirennen/)** · **[✨ Demo spielen](https://rlen-source.github.io/skirennen/skirennen-v3.html)** · **[📄 Infoblatt (PDF)](https://rlen-source.github.io/skirennen/trainer-de.pdf)** · **[🇬🇧 English version](https://rlen-source.github.io/skirennen/en/)**
 
@@ -135,7 +135,7 @@ Alle Prompts wurden in simulierten Chats getestet, auf Deutsch und Englisch: Die
 ## English
 
 **Kids build a ski game with AI – without typing a single line of code themselves.**
-A ready-to-use workshop that introduces kids aged about 10 to 14 to coding with AI – at school, in holiday courses, coding clubs or on Future Day ("Zukunftstag"). In German and English.
+A ready-to-use workshop that introduces kids from about 10 years to coding with AI – at school, in holiday courses, coding clubs or on Future Day ("Zukunftstag"). In German and English.
 
 **[▶ Open the workshop](https://rlen-source.github.io/skirennen/en/)** · **[✨ Play the demo](https://rlen-source.github.io/skirennen/ski-race-v3.html)** · **[📄 Info sheet (PDF)](https://rlen-source.github.io/skirennen/trainer-en.pdf)**
 
