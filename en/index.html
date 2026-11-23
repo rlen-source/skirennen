@@ -131,6 +131,15 @@
     .len-btn small { color: var(--muted); font-weight: 600; }
     .len-btn.active { border-color: var(--sky-700); background: var(--sky-100); }
     .trainer-note { margin: 8px 0 0; font-size: .92rem; color: var(--muted); }
+    .ai-rules { margin-top: 14px; padding: 12px 16px; border-radius: var(--radius-sm); background: var(--white); border: 2px solid var(--line); }
+    .ai-rules .ai-title { display: block; margin-bottom: 4px; }
+    .ai-rules ul { margin: 0; padding-left: 20px; }
+    .ai-rules li { margin: 4px 0; }
+    .howto { margin: 4px 0 10px; padding: 8px 12px; border-radius: var(--radius-sm); border: 1px dashed var(--line); }
+    .howto summary { cursor: pointer; font-weight: 800; color: var(--muted); }
+    .howto p { margin: 8px 0; }
+    .idea-row { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-bottom: 6px; }
+    .idea-row > span { width: 100%; font-weight: 800; color: var(--muted); }
     .rule { margin-top: 18px; padding: 12px 16px; border-radius: var(--radius-sm); background: var(--sky-100);
             font-weight: 700; color: var(--sky-900); }
     .demo-card { position: relative; border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow); background: var(--sky-100); }
@@ -702,7 +711,7 @@
 
   <footer>
     <span>No selecting needed – choose, copy, paste.</span>
-    <span><a href="../trainer.html#en">📄 Printable info sheet with QR code</a> · <button type="button" class="link-btn" id="lengthToggle">🧭 Version: extended</button> · <button type="button" class="link-btn" id="trainerToggle">👩‍🏫 Trainer mode: off</button></span>
+    <span><a href="../trainer.html#en">📄 Info sheet with QR code</a> · <a href="../begleitheft.html#en">📘 Guide for teachers and teams</a> · <button type="button" class="link-btn" id="lengthToggle">🧭 Version: extended</button> · <button type="button" class="link-btn" id="trainerToggle">👩‍🏫 Trainer mode: off</button></span>
     <span class="copyright">© 2026 Reto Lenz · <a href="https://creativecommons.org/licenses/by-nc/4.0/" target="_blank" rel="license noopener">CC BY-NC 4.0</a> – free to use and adapt with attribution, non-commercial</span>
   </footer>
 
@@ -782,6 +791,7 @@ Explain to me in at most 6 short sentences, so that someone with no programming 
     },
     {
       id: "step2",
+      short: true,
       number: 2,
       title: "The blueprint – three areas",
       subtitle: "Settings, playground and game engine.",
@@ -808,7 +818,7 @@ Explain in simple language (for someone with no programming experience), without
     },
     {
       id: "step3",
-      short: true, shortNumber: "2",
+      short: true, shortNumber: "3",
       number: 3,
       title: "Camera – how far ahead can you see?",
       subtitle: "The skier moves up or down – the gates come into view earlier or later.",
@@ -863,7 +873,7 @@ In your 1–2 sentences, also explain why TRACK_HALF is called "half".`
     },
     {
       id: "step5",
-      short: true, shortNumber: "3",
+      short: true, shortNumber: "4",
       number: 5,
       title: "Steering – slippery or direct",
       subtitle: "How long does the skier slide on after steering?",
@@ -949,7 +959,7 @@ In your 1–2 sentences, also explain why a smaller number for TREE_EVERY means 
     },
     {
       id: "step8",
-      short: true, shortNumber: "4",
+      short: true, shortNumber: "5",
       number: 8,
       title: "Your own course – version 1 done",
       subtitle: "Your own course, your own title. Then set a best time!",
@@ -4690,6 +4700,29 @@ window.__ski = {
     splitSummary: "Doesn't work all at once? Split into two rounds",
     splitHint: "Send round 1 first, check the game, then send round 2 in the same chat.",
     splitRound: (n) => `Round ${n}`,
+    aiTitle: "How we work with AI",
+    aiRules: [
+      "<b>The AI is a program that writes text and code.</b> It has read a huge amount, but it does not think like a person – and it can be wrong.",
+      "<b>You are the bosses.</b> You say what you want and check whether it is right. The AI is your co-driver.",
+      "<b>No personal data in the chat:</b> no names, addresses, photos or passwords.",
+      "<b>If something seems odd:</b> don't guess – play, check and ask."
+    ],
+    howtoSummary: "❓ How the file gets into the chat",
+    howtoLaptop: "<b>Laptop:</b> press “Download base game” – the file lands in your “Downloads” folder. In the chat click 📎 or ➕, choose the file ski-race-v2.html, then paste the prompt and send.",
+    howtoIpad: "<b>iPad:</b> “Download base game” → the share menu opens. Choose the ChatGPT or Claude app, or “Save to Files” and upload it in the chat via ➕ → “Files”.",
+    howtoBack: "<b>Back again:</b> in the AI's answer press the copy button on the code block, paste it into the editor here and press “Show game”.",
+    ideasLabel: "Ideas to try (fills in the fields – then make it your own):",
+    ideas: [
+      { label: "🌗 Day and night", idea: "that evening slowly falls during the race: the colours get darker and bluer.", keep: "Gates, trees, steering, time and finish stay the same.", done: "the background gets visibly darker while I ski." },
+      { label: "🥇 Golden gates", idea: "that now and then a gate is golden. Skiing through a golden gate shows the message “Gold!”.", keep: "All other gates, the penalties and the finish stay the same.", done: "I see a golden gate now and then and “Gold!” appears when I pass it." },
+      { label: "💥 Crash effect", idea: "that snow sprays in all directions when I crash and “Ouch!” appears for a moment.", keep: "The crash penalty and the steering stay the same.", done: "snow sprays and “Ouch!” appears at every crash." },
+      { label: "🏔 Mountains behind", idea: "that grey mountains with white peaks can be seen along the top edge of the screen.", keep: "Piste, gates and trees stay the same and easy to see.", done: "I see mountains at the top and the game runs normally." },
+      { label: "🐰 Animal friends", idea: "that a little hare skis along next to the piste with me.", keep: "The hare is harmless: you cannot crash into it.", done: "a hare skis along next to the piste." },
+      { label: "🚀 Space race", idea: "that the game looks like a race in space: a dark sky with stars, glowing gates.", keep: "The game rules stay exactly the same.", done: "everything looks like space and you can still ski well." }
+    ],
+    checkBtn: "🔍 Let the AI check the prompt first",
+    checkHint: "Tip: first let the AI say whether your prompt is clear enough – only then build it.",
+    checkPrompt: "Before you change anything: will this prompt work? Look at it carefully and tell me in simple words what is unclear or missing. Don't write any code yet.\n\n---\n",
   };
   // UI_TEXT_END
 
@@ -5189,6 +5222,29 @@ window.__ski = {
   });
   decorate(1);
   if (currentStepTeil2Id) decorate(2);
+
+  // --- 7a) KI-Regeln auf der Startseite, Datei-Hilfe, Ideen für Teil 3 -------
+  const ruleBox = document.querySelector("#tab-teil0 .rule");
+  if (ruleBox) ruleBox.insertAdjacentHTML("afterend", `<div class="ai-rules"><b class="ai-title">🤖 ${T.aiTitle}</b><ul>` +
+    T.aiRules.map((r) => `<li>${r}</li>`).join("") + "</ul></div>");
+  const dlGroup = $("downloadBaseBtn").closest(".tool-group");
+  dlGroup.insertAdjacentHTML("afterend", `<details class="howto"><summary>${T.howtoSummary}</summary>` +
+    `<p>${T.howtoLaptop}</p><p>${T.howtoIpad}</p><p>${T.howtoBack}</p></details>`);
+  const studio = $("studioFormWrapper");
+  studio.insertAdjacentHTML("afterbegin", `<div class="idea-row"><span>${T.ideasLabel}</span>` +
+    T.ideas.map((x, i) => `<button type="button" class="chip-btn" data-idea="${i}">${x.label}</button>`).join("") + "</div>");
+  studio.querySelectorAll("[data-idea]").forEach((b) => b.addEventListener("click", () => {
+    const x = T.ideas[Number(b.dataset.idea)];
+    [["ideaInput", x.idea], ["keepInput", x.keep], ["doneInput", x.done]].forEach(([id, v]) => {
+      const el = $(id); el.value = v; el.dispatchEvent(new Event("input"));
+    });
+  }));
+  studio.insertAdjacentHTML("beforeend", `<p class="studio-note">${T.checkHint}</p>` +
+    `<div><button class="secondary-btn" type="button" id="checkOwnBtn">${T.checkBtn}</button> <span class="status"></span></div>`);
+  $("checkOwnBtn").addEventListener("click", async () => {
+    const st = $("checkOwnBtn").nextElementSibling;
+    st.textContent = (await copyToClipboard(T.checkPrompt + $("promptTextTeil2").textContent)) ? T.copied : T.copyFailed;
+  });
 
   // --- 7) Startseite und Trainer-Modus ------------------------------------
   document.querySelectorAll("[data-go]").forEach((b) => b.addEventListener("click", () => {

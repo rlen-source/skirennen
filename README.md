@@ -5,7 +5,7 @@
 **Ein Ski-Spiel mit KI bauen – ohne eine Zeile Code selbst zu tippen.**
 Ein fertiger Workshop, der das Programmieren mit KI näherbringt – für Teilnehmer:innen ab etwa 10 Jahren, in der Schule, im Ferienkurs, im Coding-Club oder am Zukunftstag. Auf Deutsch und Englisch.
 
-**[▶ Workshop öffnen](https://rlen-source.github.io/skirennen/)** · **[✨ Demo spielen](https://rlen-source.github.io/skirennen/skirennen-v3.html)** · **[📄 Infoblatt (PDF)](https://rlen-source.github.io/skirennen/trainer-de.pdf)** · **[🇬🇧 English version](https://rlen-source.github.io/skirennen/en/)**
+**[▶ Workshop öffnen](https://rlen-source.github.io/skirennen/)** · **[✨ Demo spielen](https://rlen-source.github.io/skirennen/skirennen-v3.html)** · **[📄 Infoblatt (PDF)](https://rlen-source.github.io/skirennen/trainer-de.pdf)** · **[📘 Begleitheft (PDF)](https://rlen-source.github.io/skirennen/begleitheft-de.pdf)** · **[🇬🇧 English version](https://rlen-source.github.io/skirennen/en/)**
 
 [![Startseite des Workshops: drei Schritte und das Demo-Bild](docs/launcher-start.png)](https://rlen-source.github.io/skirennen/)
 
@@ -21,7 +21,7 @@ Am Ende hat jedes Team sein eigenes Skirennen – mit eigener Strecke, eigener S
 
 - **Schule:** im Informatik- oder Medienunterricht, in einer Projektwoche oder als Einstieg ins Thema KI
 - **Ferienkurse und Coding-Clubs:** als halber Tag oder als Start für eine Reihe mit eigenen Spielideen
-- **Zukunftstag und Firmenanlässe:** erleben, wie Software heute in Firmen entsteht. Hier ist der Workshop entstanden.
+- **Zukunftstag und Firmenanlässe:** erleben, wie Software heute in Firmen entsteht.
 - **Bibliotheken, Jugendarbeit und Familienanlässe:** mit einem Laptop oder Tablet pro Team und einer erwachsenen Person, die den Chat bedient
 - **Zu Hause:** Eltern und Kinder zusammen – alles läuft im Browser, und eine gespeicherte Version lässt sich später weiterbauen
 
@@ -41,7 +41,7 @@ Eine KI macht bei einer ungenauen Bitte jedes Mal etwas anderes. Ist ein Prompt 
 
 Über den Tag nimmt die Hilfe ab: In **Teil 1** wird mit Auswahl-Knöpfen formuliert, in **Teil 2** mit mehr Freiheit, in **Teil 3** ganz frei mit der Formel *Ich möchte … · Nicht ändern … · Fertig ist es, wenn …*
 
-Entstanden ist der Workshop für den Zukunftstag. Die erste Fassung (2025) arbeitete mit fertigen, Wort für Wort vorgegebenen Prompts, weil die Qualität des erzeugten Codes sonst nicht verlässlich war. Heute sichern Spiel-Aufbau und automatische Prüfung die Verlässlichkeit – darum dürfen die Teilnehmer:innen selbst formulieren.
+Verlässlich wird das Ergebnis nicht durch Wort für Wort vorgegebene Prompts, sondern durch den Aufbau des Spiels und die automatische Prüfung – darum dürfen die Teilnehmer:innen selbst formulieren.
 
 ## Was die Teilnehmer:innen lernen
 
@@ -58,7 +58,7 @@ Auf der Startseite wählt man die Länge. Für Trainer:innen gibt es direkte Lin
 
 | | Kurz | Ausführlich |
 |---|---|---|
-| **Teil 1** | 4 Schritte: Spielen, Kamera, Lenkung, eigene Strecke | 8 Schritte, Piste und Wald als Bonus |
+| **Teil 1** | 5 Schritte: Spielen, Bauplan, Kamera, Lenkung, eigene Strecke | 8 Schritte, Piste und Wald als Bonus |
 | **Teil 2** | Extras einschalten, „Spiel aufpeppen“ (Deko, Tempo und Kombo-Serie in einem Prompt), dann Gegner, Farben, Figur | Extras einschalten, dann 6 Ideen einzeln |
 | **Teil 3** | Freie Idee als Bonus | Freie Idee |
 
@@ -70,7 +70,7 @@ Bei „Spiel aufpeppen“ haken die Teilnehmer:innen an, was die KI machen soll,
 |---|---|
 | 10 Min. | Begrüssung, Demo zeigen, Teams bilden |
 | 10 Min. | Basis-Spiel ausprobieren, Datei im Chat hochladen |
-| 35 Min. | **Teil 1:** Kamera, Lenkung, eigene Strecke |
+| 35 Min. | **Teil 1:** Bauplan, Kamera, Lenkung, eigene Strecke |
 | 30 Min. | **Teil 2:** Extras einschalten, Spiel aufpeppen, dann Gegner, Farben oder Figur |
 | 10 Min. | Spiele gegenseitig ausprobieren, Bestzeiten vergleichen |
 
@@ -114,10 +114,18 @@ Die [Demo-Version](https://rlen-source.github.io/skirennen/skirennen-v3.html) ze
 
 ## Vorbereitung für Trainer:innen
 
-- [ ] **Chat-Zugang klären.** Gebraucht wird ein Chat mit KI, zum Beispiel ChatGPT oder Claude, in dem man Dateien hochladen kann. **Dafür braucht es ein Konto:** Ohne Anmeldung lässt sich die Spieldatei nicht hochladen. Konten deshalb vor dem Workshop einrichten und auf den Geräten anmelden. Die Anbieter haben Altersgrenzen. Bei jüngeren Teilnehmer:innen läuft der Chat deshalb meist über das Konto einer erwachsenen Person, die beim Team sitzt.
+Alles Wichtige für den Tag steht auch im **Begleitheft** ([Deutsch (PDF)](https://rlen-source.github.io/skirennen/begleitheft-de.pdf) · [English (PDF)](https://rlen-source.github.io/skirennen/begleitheft-en.pdf)): Teil A für Lehrpersonen mit Ablauf, Einstiegssätzen, Rollen und Hilfe, wenn ein Team feststeckt; Teil B für die Teams mit KI-Regeln, kleinem Wörterbuch und Bildern „So sieht es aus“.
+
+- [ ] **Chat-Konto einrichten.** Gebraucht wird ein Chat mit KI, zum Beispiel ChatGPT oder Claude, in dem man Dateien hochladen kann. **Dafür braucht es ein Konto:** Ohne Anmeldung lässt sich die Spieldatei nicht hochladen. Konten vor dem Workshop einrichten und auf den Geräten anmelden. Die Anbieter haben Altersgrenzen (aktuelle Nutzungsbedingungen prüfen). Bei Kindern läuft der Chat deshalb über das Konto einer erwachsenen Person, die beim Team sitzt.
+- [ ] **Grenzen der Gratis-Konten bedenken.** Jede Antwort enthält das ganze Spiel (rund 46 000 Zeichen). Gratis-Konten haben Tageslimits und kürzen lange Antworten öfter. Am besten pro Team ein Konto mit grosszügigen Limits, oder ein Ersatz-Konto bereithalten.
+- [ ] **Datenschutz und Schulregeln klären.** Welche KI-Dienste sind an der Schule erlaubt? Manche Schulen erlauben nur eigene Plattformen. Diese müssen Dateien annehmen und lange Antworten ganz zurückgeben können – vorher mit dem Basis-Spiel ausprobieren. Konten nicht mit Namen der Kinder anlegen.
 - [ ] **WLAN testen.** Der Launcher lädt von `rlen-source.github.io`, die Spiel-Bibliothek von `cdn.jsdelivr.net` und die Schrift von `fonts.googleapis.com`. Schul- und Firmen-WLANs blockieren manchmal einzelne davon – am besten vorher einmal auf einem Workshop-Gerät öffnen.
-- [ ] **Einen Durchlauf selbst machen**, mindestens Teil 1 bis Schritt 3, mit dem Chat, den die Teilnehmer:innen benutzen.
-- [ ] **Infoblatt ausdrucken** und aufhängen: [Deutsch (PDF)](https://rlen-source.github.io/skirennen/trainer-de.pdf) · [English (PDF)](https://rlen-source.github.io/skirennen/trainer-en.pdf). Der QR-Code führt direkt zum Launcher.
+- [ ] **Einen Durchlauf selbst machen**, mindestens Teil 1 der Kurz-Version (ca. 30 Min.), mit dem Chat, den die Teilnehmer:innen benutzen.
+- [ ] **Ausdrucken:** das [Infoblatt mit QR-Code](https://rlen-source.github.io/skirennen/trainer-de.pdf) pro Tisch und Teil B des Begleithefts pro Team.
+- [ ] **Beamer bereitstellen:** für die Demo und um Schritt 1 (Datei in den Chat) gemeinsam vorzuzeigen – dort klemmt es am häufigsten.
+- [ ] **Rollen festlegen:** 🎮 Fahrer:in (spielt und testet), ✍️ Prompter:in (wählt aus, schreibt, kopiert), 🔍 Prüfer:in (liest die Checkliste vor). Nach jedem Schritt wechseln.
+- [ ] **Einstieg vorbereiten:** Auf der Startseite steht „So arbeiten wir mit KI“ – die KI kann sich irren, ihr seid die Chefs, keine persönlichen Daten in den Chat. Diese Punkte zu Beginn gemeinsam besprechen.
+- [ ] **Notfallplan:** Ist das Tageslimit erreicht oder fällt der Chat aus: „💾 Meine Version herunterladen“ und mit einem Ersatz-Konto weitermachen, sonst Teams zusammenlegen oder die Demo als Inspiration fahren.
 - [ ] **Trainer-Modus:** unten im Launcher „👩‍🏫 Trainer-Modus“ einschalten oder den Link mit `?trainer` öffnen. Dann erscheinen auf der Startseite Methode und Ablauf und in Teil 1 Lernziele und Gesprächsfragen zu jedem Schritt.
 
 Gut zu wissen:
@@ -155,6 +163,7 @@ Extras sind kleine Bausteine, die sich ins Spiel einklinken: Wenn ein Extra eine
 | `skirennen-v3.html` | Die Demo-Version |
 | `en/index.html`, `ski-race-v2.html`, `ski-race-v3.html` | Dasselbe auf Englisch |
 | `trainer.html`, `trainer-de.pdf`, `trainer-en.pdf` | Infoblatt mit QR-Code |
+| `begleitheft.html`, `begleitheft-de.pdf`, `begleitheft-en.pdf`, `docs/heft/` | Begleitheft für Lehrpersonen und Teams, mit Bildern |
 | `docs/` | Bilder für diese Seite |
 
 ## Kontakt
@@ -179,7 +188,7 @@ Fremde Bausteine behalten ihre eigenen Lizenzen: [p5.js](https://p5js.org) (LGPL
 **Build a ski game with AI – without typing a single line of code yourself.**
 A ready-to-use workshop that introduces coding with AI – for participants from about 10 years, at school, in holiday courses, coding clubs or on Future Day ("Zukunftstag"). In German and English.
 
-**[▶ Open the workshop](https://rlen-source.github.io/skirennen/en/)** · **[✨ Play the demo](https://rlen-source.github.io/skirennen/ski-race-v3.html)** · **[📄 Info sheet (PDF)](https://rlen-source.github.io/skirennen/trainer-en.pdf)**
+**[▶ Open the workshop](https://rlen-source.github.io/skirennen/en/)** · **[✨ Play the demo](https://rlen-source.github.io/skirennen/ski-race-v3.html)** · **[📄 Info sheet (PDF)](https://rlen-source.github.io/skirennen/trainer-en.pdf)** · **[📘 Guide (PDF)](https://rlen-source.github.io/skirennen/begleitheft-en.pdf)**
 
 Everything is available in English: the launcher, all prompts, the teaching notes and both games. With the English prompts the AI answers in English too.
 
@@ -195,7 +204,7 @@ Anywhere a first, positive experience of coding with AI is wanted, for example:
 
 - **School:** in computer science or media lessons, during a project week, or as an introduction to AI
 - **Holiday courses and coding clubs:** as a half day, or as the start of a series with the participants' own game ideas
-- **Future Day and company events:** seeing how software is made in companies today. This is where the workshop started.
+- **Future Day and company events:** seeing how software is made in companies today.
 - **Libraries, youth work and family events:** with one laptop or tablet per team and an adult who handles the chat
 - **At home:** parents and kids together – everything runs in the browser, and a saved version can be continued later
 
@@ -215,7 +224,7 @@ Given a vague request, an AI does something different every time. If a prompt is
 
 The help fades over the day: in **Part 1** participants phrase their wish with choice buttons, in **Part 2** with more freedom, in **Part 3** completely freely with the formula *I want … · Don't change … · It is done when …*
 
-The workshop was created for Future Day. The first version (2025) used ready-made prompts written out word for word, because otherwise the generated code was not reliable. Today the game's structure and the automatic checks keep it reliable – so participants can phrase things themselves.
+The result is kept reliable not by prompts written out word for word, but by the game's structure and the automatic checks – so participants can phrase things themselves.
 
 ### What participants learn
 
@@ -232,7 +241,7 @@ Choose the length on the start page. Trainers can use direct links: [short](http
 
 | | Short | Extended |
 |---|---|---|
-| **Part 1** | 4 steps: play, camera, steering, own course | 8 steps, piste and forest as bonus steps |
+| **Part 1** | 5 steps: play, blueprint, camera, steering, own course | 8 steps, piste and forest as bonus steps |
 | **Part 2** | Switch on extras, "Spice up the game" (decoration, speed and combo streak in one prompt), then enemy, colours, figure | Switch on extras, then 6 ideas one by one |
 | **Part 3** | Free idea as a bonus | Free idea |
 
@@ -244,7 +253,7 @@ In "Spice up the game" participants tick what the AI should do and send everythi
 |---|---|
 | 10 min | Welcome, show the demo, form teams |
 | 10 min | Try the base game, upload the file in the chat |
-| 35 min | **Part 1:** camera, steering, own course |
+| 35 min | **Part 1:** blueprint, camera, steering, own course |
 | 30 min | **Part 2:** switch on extras, spice up the game, then enemy, colours or figure |
 | 10 min | Try each other's games, compare best times |
 
@@ -284,10 +293,18 @@ The [demo version](https://rlen-source.github.io/skirennen/ski-race-v3.html) sho
 
 ### Preparation for trainers
 
-- [ ] **Sort out chat access.** You need an AI chat such as ChatGPT or Claude that accepts file uploads. **This needs an account:** without signing in, the game file cannot be uploaded. Set up the accounts before the workshop and sign in on the devices. The providers have age limits, so with younger participants the chat usually runs on the account of an adult sitting with the team.
+Everything for the day is also in the **guide** ([English (PDF)](https://rlen-source.github.io/skirennen/begleitheft-en.pdf) · [German (PDF)](https://rlen-source.github.io/skirennen/begleitheft-de.pdf)): Part A for teachers with plan, opening sentences, roles and help when a team is stuck; Part B for the teams with AI rules, a small glossary and “what it looks like” pictures.
+
+- [ ] **Set up a chat account.** You need an AI chat such as ChatGPT or Claude that accepts file uploads. **This needs an account:** without signing in, the game file cannot be uploaded. Set up the accounts before the workshop and sign in on the devices. The providers have age limits (check the current terms), so with children the chat runs on the account of an adult sitting with the team.
+- [ ] **Keep the limits of free accounts in mind.** Every answer contains the whole game (about 46,000 characters). Free accounts have daily limits and cut long answers off more often. Ideally one account with generous limits per team, or keep a spare account ready.
+- [ ] **Check privacy and school rules.** Which AI services does the school allow? Some schools only allow their own platforms. These must accept files and return long answers in full – try it with the base game beforehand. Don't create accounts with children's names.
 - [ ] **Test the Wi-Fi.** The launcher loads from `rlen-source.github.io`, the game library from `cdn.jsdelivr.net` and the font from `fonts.googleapis.com`. School and company networks sometimes block one of them – open it once on a workshop device beforehand.
-- [ ] **Do a run yourself**, at least Part 1 up to step 3, with the chat the participants will use.
-- [ ] **Print the info sheet** and put it up: [English (PDF)](https://rlen-source.github.io/skirennen/trainer-en.pdf) · [German (PDF)](https://rlen-source.github.io/skirennen/trainer-de.pdf). The QR code leads straight to the launcher.
+- [ ] **Do a run yourself**, at least Part 1 of the short version (about 30 min), with the chat the participants will use.
+- [ ] **Print:** the [info sheet with QR code](https://rlen-source.github.io/skirennen/trainer-en.pdf) for each table and Part B of the guide for each team.
+- [ ] **Have a projector ready:** for the demo and to show step 1 (file into the chat) together – that is where teams get stuck most often.
+- [ ] **Set roles:** 🎮 driver (plays and tests), ✍️ prompter (chooses, writes, copies), 🔍 checker (reads out the checklist). Swap after every step.
+- [ ] **Prepare the opening:** the start page shows “How we work with AI” – the AI can be wrong, you are the bosses, no personal data in the chat. Talk these points through together at the start.
+- [ ] **Backup plan:** if the daily limit is reached or the chat is down: “💾 Download my version” and carry on with a spare account, otherwise merge teams or ski the demo for inspiration.
 - [ ] **Trainer mode:** switch on "👩‍🏫 Trainer mode" at the bottom of the launcher, or open the link with `?trainer`. This shows method and plan on the start page, and learning goals and discussion questions for every Part 1 step.
 
 Good to know:
@@ -325,6 +342,7 @@ Extras are small building blocks that plug into the game: if an extra has an err
 | `ski-race-v3.html` | The demo version |
 | `index.html`, `skirennen-v2.html`, `skirennen-v3.html` | The same in German |
 | `trainer.html`, `trainer-en.pdf`, `trainer-de.pdf` | Info sheet with QR code |
+| `begleitheft.html`, `begleitheft-en.pdf`, `begleitheft-de.pdf`, `docs/heft/` | Guide for teachers and teams, with pictures |
 | `docs/` | Pictures for this page |
 
 ### Contact

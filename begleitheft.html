@@ -1,0 +1,366 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>KI-Spielwerkstatt: Skirennen – Begleitheft / AI Game Lab: Ski Race – Guide</title>
+<link rel="icon" href="icon-192.png">
+<style>
+  :root { --ink: #111827; --muted: #4b5563; --blue: #1d4ed8; --red: #dc2626; --green: #15803d; --line: #d1d5db; --soft: #eff6ff; --bg: #f3f4f6; --paper: #fff; }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink); font: 15px/1.45 system-ui, -apple-system, "Segoe UI", sans-serif; }
+  .bar { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; padding: 16px; }
+  .bar button, .bar a { font: inherit; padding: 8px 14px; border-radius: 8px; border: 1px solid var(--line); background: var(--paper); color: var(--ink); text-decoration: none; cursor: pointer; }
+  .bar button.primary { background: var(--blue); border-color: var(--blue); color: #fff; }
+  .doc { max-width: 210mm; margin: 0 auto 24px; }
+  .page { background: var(--paper); padding: 16mm 17mm 14mm; margin-bottom: 18px; box-shadow: 0 4px 20px rgba(0,0,0,.08); }
+  h1 { font-size: 28px; margin: 0 0 4px; }
+  h2 { font-size: 21px; margin: 0 0 10px; padding-bottom: 6px; border-bottom: 3px solid var(--blue); }
+  h3 { font-size: 16px; margin: 16px 0 6px; }
+  .kicker { text-transform: uppercase; letter-spacing: .06em; font-size: 12px; font-weight: 800; color: var(--blue); margin: 0 0 4px; }
+  .sub { color: var(--muted); margin: 0 0 14px; font-size: 16px; }
+  p { margin: 6px 0; }
+  ul, ol { margin: 6px 0; padding-left: 20px; }
+  li { margin: 3px 0; }
+  .check li { list-style: none; position: relative; padding-left: 4px; }
+  .check li::before { content: "☐"; position: absolute; left: -20px; }
+  table { width: 100%; border-collapse: collapse; margin: 8px 0; font-size: 14px; }
+  th, td { text-align: left; vertical-align: top; padding: 5px 8px; border-bottom: 1px solid var(--line); }
+  th { background: var(--soft); }
+  .say { margin: 6px 0; padding: 8px 12px; border-left: 4px solid var(--blue); background: var(--soft); border-radius: 0 8px 8px 0; }
+  .say::before { content: "💬 "; }
+  .box { border: 1px solid var(--line); border-radius: 10px; padding: 8px 12px; margin: 8px 0; }
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px 14px; }
+  .roles { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+  .roles div { border: 1px solid var(--line); border-radius: 10px; padding: 8px 10px; }
+  .roles b { display: block; font-size: 15px; }
+  .words dt { font-weight: 800; }
+  .words dd { margin: 0 0 6px; }
+  .step { display: grid; grid-template-columns: 50mm 1fr; gap: 12px; align-items: start; margin: 6px 0; padding: 8px 0; border-top: 1px solid var(--line); }
+  .step img { width: 100%; border-radius: 8px; border: 1px solid var(--line); display: block; }
+  .step .n { display: inline-grid; place-items: center; width: 26px; height: 26px; border-radius: 50%; background: var(--blue); color: #fff; font-weight: 800; font-size: 13px; margin-right: 6px; }
+  .step.t1 .n { background: var(--red); }
+  .step h3 { margin: 0 0 4px; }
+  .step .watch { color: var(--muted); font-size: 14px; }
+  .areas div { border-radius: 10px; padding: 8px 10px; }
+  .a1 { background: #fef3c7; } .a2 { background: #dcfce7; } .a3 { background: #fee2e2; }
+  .foot { margin-top: 14px; color: var(--muted); font-size: 12px; }
+  @media (max-width: 760px) { .page { padding: 20px 16px; } .grid2, .roles, .step { grid-template-columns: 1fr; } }
+  @media print {
+    @page { size: A4; margin: 0; }
+    body { background: #fff; }
+    .bar { display: none; }
+    .doc { max-width: none; margin: 0; }
+    body { font-size: 14px; }
+    .page { box-shadow: none; margin: 0; width: 210mm; height: 296mm; overflow: hidden; break-after: page; padding-top: 13mm; padding-bottom: 10mm; }
+    .page:last-child { break-after: auto; }
+    body.only-de .doc[lang="en"], body.only-en .doc[lang="de"] { display: none; }
+  }
+</style>
+</head>
+<body>
+<div class="bar">
+  <button class="primary" onclick="printLang('de')">🖨 Deutsch drucken</button>
+  <button class="primary" onclick="printLang('en')">🖨 Print English</button>
+  <a href="begleitheft-de.pdf" download>⬇ PDF Deutsch</a>
+  <a href="begleitheft-en.pdf" download>⬇ PDF English</a>
+  <a href="./">← Launcher</a>
+</div>
+
+<!-- ============================== DEUTSCH ============================== -->
+<div class="doc" lang="de" id="de">
+
+<section class="page">
+  <p class="kicker">Begleitheft · Teil A für Lehrpersonen</p>
+  <h1>⛷ KI-Spielwerkstatt: Skirennen</h1>
+  <p class="sub">Teilnehmer:innen ab etwa 10 Jahren bauen ein Ski-Spiel, ohne Code zu tippen: Sie sagen der KI, was sie wollen, die KI schreibt den Code, sie prüfen das Ergebnis.</p>
+
+  <div class="grid2">
+    <div class="box"><b>Launcher:</b> rlen-source.github.io/skirennen<br><b>Kurz</b> (ca. 1½–2 Std.): Link mit <code>?kurz</code><br><b>Ausführlich</b> (ca. 3 Std.): Link mit <code>?lang</code></div>
+    <div class="box"><b>Pro Team:</b> 2–3 Personen, ein Laptop oder iPad, ein Chat mit KI (ChatGPT oder Claude).<br><b>Trainer-Modus:</b> unten im Launcher einschalten – zeigt Lernziele und Gesprächsfragen.</div>
+  </div>
+
+  <h2>Vorbereitung</h2>
+  <ul class="check">
+    <li><b>Chat-Konto:</b> Ohne Anmeldung lässt sich die Spieldatei weder bei ChatGPT noch bei Claude hochladen. Die Anbieter haben Altersgrenzen (aktuelle Nutzungsbedingungen prüfen). Bei Kindern läuft der Chat deshalb über das Konto einer erwachsenen Person, die beim Team sitzt.</li>
+    <li><b>Grenzen der Gratis-Konten:</b> Jede Antwort enthält das ganze Spiel (rund 46 000 Zeichen). Gratis-Konten haben Tageslimits und kürzen lange Antworten öfter. Am besten pro Team ein Konto mit grosszügigen Limits, oder ein Ersatz-Konto bereithalten.</li>
+    <li><b>Datenschutz und Schule:</b> Klären, welche KI-Dienste an eurer Schule erlaubt sind. Manche Schulen erlauben nur eigene Plattformen. Diese müssen Dateien annehmen und lange Antworten ganz zurückgeben können – vorher mit dem Basis-Spiel ausprobieren. Konten nicht mit Namen der Kinder anlegen.</li>
+    <li><b>Geräte und WLAN:</b> Der Launcher lädt von rlen-source.github.io, cdn.jsdelivr.net und fonts.googleapis.com. Einmal auf einem Workshop-Gerät öffnen und ein Spiel starten.</li>
+    <li><b>Selbst einmal durchspielen:</b> mindestens Teil 1 der Kurz-Version, mit dem Chat, den die Klasse benutzt (ca. 30 Min). So kennt ihr die Stolpersteine.</li>
+    <li><b>Drucken:</b> das Infoblatt mit QR-Code pro Tisch und Teil B dieses Hefts pro Team.</li>
+    <li><b>Beamer:</b> für die Demo und um den ersten Schritt gemeinsam zu zeigen.</li>
+  </ul>
+
+  <h2>Rollen im Team</h2>
+  <div class="roles">
+    <div><b>🎮 Fahrer:in</b>spielt, testet und sagt, was auffällt.</div>
+    <div><b>✍️ Prompter:in</b>wählt aus, schreibt den eigenen Satz, kopiert und fügt ein.</div>
+    <div><b>🔍 Prüfer:in</b>liest „Fertig ist es, wenn …“ vor und hakt ab.</div>
+  </div>
+  <p>Nach jedem Schritt die Rollen wechseln. So kommen alle an die Tastatur und alle lernen das Prüfen.</p>
+  <p class="foot">© 2026 Reto Lenz · Lizenz CC BY-NC 4.0</p>
+</section>
+
+<section class="page">
+  <p class="kicker">Teil A für Lehrpersonen</p>
+  <h2>Ablauf</h2>
+  <table>
+    <tr><th>Kurz (ca. 1½–2 Std.)</th><th>Ausführlich (ca. 3 Std.)</th><th>Was passiert</th></tr>
+    <tr><td>10 Min.</td><td>15 Min.</td><td><b>Einstieg:</b> Demo zeigen, „So arbeiten wir mit KI“ besprechen, Teams und Rollen.</td></tr>
+    <tr><td>10 Min.</td><td>15 Min.</td><td><b>Schritt 1 gemeinsam:</b> Basis-Spiel laden, fahren, Datei herunterladen und im Chat hochladen – am Beamer vorzeigen.</td></tr>
+    <tr><td>35 Min.</td><td>70 Min.</td><td><b>Teil 1:</b> Bauplan, Kamera, Lenkung, eigene Strecke (ausführlich: dazu Tore, Piste und Wald).</td></tr>
+    <tr><td>–</td><td>15 Min.</td><td>Pause</td></tr>
+    <tr><td>30 Min.</td><td>50 Min.</td><td><b>Teil 2 und 3:</b> Extras einschalten, eigene Ideen, freie Idee.</td></tr>
+    <tr><td>10 Min.</td><td>15 Min.</td><td><b>Abschluss:</b> Spiele gegenseitig ausprobieren, Bestzeiten, Gesprächsrunde.</td></tr>
+  </table>
+
+  <h3>Einstieg – so könnt ihr es sagen</h3>
+  <p class="say">Heute baut ihr ein eigenes Ski-Spiel, ohne selbst Code zu tippen. Ihr sagt der KI, was ihr wollt. Die KI schreibt den Code. Und ihr prüft, ob es stimmt.</p>
+  <p class="say">Die KI ist euer Beifahrer: Sie ist schnell, aber sie kann sich irren. Ihr seid die Chefs – ihr entscheidet und ihr prüft.</p>
+  <p class="say">Im Chat schreiben wir keine Namen, Adressen, Fotos oder Passwörter.</p>
+
+</section>
+
+<section class="page">
+  <p class="kicker">Teil A für Lehrpersonen</p>
+  <h2>Während der Arbeit: Wenn ein Team feststeckt</h2>
+  <table>
+    <tr><th>Das seht ihr</th><th>Das hilft</th></tr>
+    <tr><td>Die KI fragt zurück oder schickt keinen Code.</td><td>Prompt nochmals ganz kopieren (Knopf „Prompt kopieren“). Sonst nachschieben: „Bitte gib mir die vollständige Datei.“</td></tr>
+    <tr><td>Der Code hört mittendrin auf.</td><td>Der Launcher merkt das. Prompt „↻ Weiter“ schicken, dann „🧩 Fortsetzung anhängen“.</td></tr>
+    <tr><td>Roter Hinweis über dem Spiel.</td><td>„Reparatur-Prompt kopieren“, im Chat einfügen, neue Antwort testen.</td></tr>
+    <tr><td>Spiel läuft, aber anders als gewünscht.</td><td>Unter „Was hat sich geändert?“ bei „Etwas stimmt nicht?“ beschreiben. Oder „🛟 Genauer Prompt“ schicken.</td></tr>
+    <tr><td>Ein Schritt hat es schlechter gemacht.</td><td>„↩ Vorherige Version“.</td></tr>
+    <tr><td>Der Chat wird sehr lang oder langsam.</td><td>„💾 Meine Version herunterladen“, neuen Chat öffnen, Datei hochladen, weitermachen.</td></tr>
+    <tr><td>Tageslimit erreicht oder Chat fällt aus.</td><td>Version herunterladen und mit einem Ersatz-Konto weiter. Sonst Teams zusammenlegen oder die Demo als Inspiration fahren.</td></tr>
+    <tr><td>Ein Team ist schnell fertig.</td><td>Teil 3 „Freie Idee“ mit den Ideen-Knöpfen. Tipp: Die KI zuerst den Prompt prüfen lassen.</td></tr>
+  </table>
+
+  <h2 style="margin-top:22px">Abschluss – Gesprächsfragen</h2>
+  <ul>
+    <li>Welcher Satz in eurem Prompt hat am meisten bewirkt?</li>
+    <li>Wo hat sich die KI geirrt – und wie habt ihr es gemerkt?</li>
+    <li>Was würdet ihr der KI beim nächsten Mal genauer sagen?</li>
+    <li>Wer hat das Spiel gemacht: ihr oder die KI?</li>
+  </ul>
+  <p class="foot">Mehr Hintergrund: README auf github.com/rlen-source/skirennen</p>
+</section>
+
+<section class="page">
+  <p class="kicker">Begleitheft · Teil B für die Teams</p>
+  <h1>So baut ihr euer Skirennen</h1>
+  <p class="sub">Ihr beschreibt, die KI programmiert, ihr prüft. Hier steht, was ihr wissen müsst.</p>
+
+  <h2>🤖 So arbeiten wir mit KI</h2>
+  <ul>
+    <li><b>Die KI ist ein Programm, das Texte und Code schreibt.</b> Sie hat sehr viel gelesen, aber sie denkt nicht wie ein Mensch – und sie kann sich irren.</li>
+    <li><b>Ihr seid die Chefs.</b> Ihr sagt, was ihr wollt, und prüft, ob es stimmt. Die KI ist euer Beifahrer.</li>
+    <li><b>Keine persönlichen Daten in den Chat:</b> keine Namen, Adressen, Fotos oder Passwörter.</li>
+    <li><b>Wenn etwas komisch ist:</b> nicht raten – spielen, prüfen und nachfragen.</li>
+  </ul>
+
+  <h2>📖 Was ist was?</h2>
+  <dl class="words grid2">
+    <div><dt>Prompt</dt><dd>Eure Nachricht an die KI: was ihr wollt, was gleich bleiben muss, woran man sieht, dass es fertig ist.</dd>
+    <dt>Code</dt><dd>Die Anleitung für den Computer, Zeile für Zeile. Die KI schreibt sie für euch.</dd>
+    <dt>HTML-Datei</dt><dd>Das „Haus“, in dem das ganze Spiel wohnt. Ihr gebt sie der KI und bekommt sie verändert zurück.</dd>
+    <dt>p5.js</dt><dd>Eine „Mal- und Spielmaschine“: Sie zeichnet die Piste und bewegt den Skifahrer.</dd></div>
+    <div><dt>CONFIG</dt><dd>Das Mischpult: alle Zahlen an einem Ort, zum Beispiel Tempo oder Anzahl Tore.</dd>
+    <dt>Extra</dt><dd>Ein Zusatzteil wie ein Lego-Anbauteil: Publikum, Sterne, ein Bär. Mit einer Zeile ein- oder ausschalten.</dd>
+    <dt>Seed</dt><dd>Die Startzahl für die Strecke. Gleiche Zahl = gleiche Strecke für alle.</dd>
+    <dt>Live Editor</dt><dd>Hier fügt ihr den Code aus dem Chat ein und seht sofort euer Spiel.</dd></div>
+  </dl>
+
+  <h2>🧱 Der Bauplan: drei Bereiche</h2>
+  <div class="grid2 areas" style="grid-template-columns:1fr 1fr 1fr">
+    <div class="a1"><b>1 · Einstellungen</b><br>Das Mischpult mit allen Zahlen.</div>
+    <div class="a2"><b>2 · Hier darfst du ändern</b><br>Die Bastelecke: Farben, Figur, Extras.</div>
+    <div class="a3"><b>3 · Spiel-Motor</b><br>Der Motorraum: Finger weg! Die KI darf hier nichts ändern.</div>
+  </div>
+
+  <h2>📁 So kommt die Datei in den Chat</h2>
+  <ol>
+    <li>Im Live Editor <b>„Basis-Spiel herunterladen“</b> (Laptop: Ordner „Downloads“; iPad: Teilen-Menü → Chat-App oder „In Dateien sichern“).</li>
+    <li>Im Chat anmelden, auf <b>📎 oder ➕</b> tippen und die Datei auswählen.</li>
+    <li>Im Launcher <b>„Prompt kopieren“</b>, im Chat einfügen und senden.</li>
+    <li>In der Antwort den <b>Kopieren-Knopf am Codeblock</b> drücken, im Live Editor einfügen, <b>„▶ Spiel anzeigen“</b>.</li>
+  </ol>
+</section>
+
+<section class="page">
+  <p class="kicker">Teil B für die Teams</p>
+  <h2>So sieht es aus – Teil 1: Spiel einstellen</h2>
+  <div class="step t1"><img src="docs/heft/titel.png" alt=""><div><h3><span class="n">1</span>Spiel holen und spielen</h3><p>Ihr fahrt ein Rennen und gebt die Datei der KI. Die KI erklärt euch das Spiel – sie ändert noch nichts.</p><p class="watch">Darauf achten: Merkt euch eure Zeit!</p></div></div>
+  <div class="step t1"><img src="docs/heft/basis.png" alt=""><div><h3><span class="n">2</span>Der Bauplan</h3><p>Ihr lasst euch die drei Bereiche zeigen: Mischpult, Bastelecke, Motorraum.</p><p class="watch">Darauf achten: Wo würdet ihr das Tempo ändern? Wo die Farbe?</p></div></div>
+  <div class="step t1"><img src="docs/heft/kamera.png" alt=""><div><h3><span class="n">3</span>Kamera</h3><p>Der Skifahrer rückt nach oben oder unten – so seht ihr die Tore früher oder später.</p><p class="watch">Darauf achten: Nur eine Zahl ändert sich. Wo steht der Skifahrer jetzt?</p></div></div>
+  <div class="step t1"><div style="font-size:46px;text-align:center">🛷</div><div><h3><span class="n">4</span>Lenkung · <span class="n">5</span>Eigene Strecke</h3><p>Rutschig wie auf Eis oder ganz direkt? Dann eine eigene Strecke (Seed) und ein eigener Titel – eure Version 1.</p><p class="watch">Darauf achten: Fühlt sich das Lenken anders an? Zeigt das Titelbild euren Titel?</p></div></div>
+  <p class="foot">Nummern wie in der Kurz-Version. In der ausführlichen Version gibt es zusätzlich Tore, Piste und Wald.</p>
+</section>
+
+<section class="page">
+  <p class="kicker">Teil B für die Teams</p>
+  <h2>So sieht es aus – Teil 2 und 3: Eure Ideen</h2>
+  <div class="step"><img src="docs/heft/extras.png" alt=""><div><h3><span class="n">0</span>Extras einschalten</h3><p>Schneefall, Publikum, Sterne, Adler und Feuerwerk sind schon fertig – ihr schaltet sie ein.</p><p class="watch">Darauf achten: Jubelt das Publikum bei jedem Tor? Zählt oben rechts der Sterne-Zähler?</p></div></div>
+  <div class="step"><img src="docs/heft/deko.png" alt=""><div><h3><span class="n">A</span>Deko und „Spiel aufpeppen“</h3><p>Hütten, Steine, Ziegen oder Iglus neben der Piste. In der Kurz-Version zusammen mit Tempo und Kombo-Serie in einem Prompt.</p><p class="watch">Darauf achten: Steht die Deko nur neben der Piste? Welcher Satz hat was bewirkt?</p></div></div>
+  <div class="step"><img src="docs/heft/baer.png" alt=""><div><h3><span class="n">B</span>Ein Gegner jagt euch</h3><p>Bär, Yeti oder Schneemann kommen von hinten den Hang hinunter.</p><p class="watch">Darauf achten: Kommt er erst nach ein paar Sekunden? Stürzt ihr, wenn er euch erwischt?</p></div></div>
+  <div class="step"><img src="docs/heft/nacht.png" alt=""><div><h3><span class="n">C</span>Farben</h3><p>Nacht, Neon, Bonbon oder Retro – nur die Farben ändern sich.</p><p class="watch">Darauf achten: Sieht man Piste, Tiefschnee und Tore noch gut?</p></div></div>
+  <div class="step"><img src="docs/heft/figur.png" alt=""><div><h3><span class="n">D</span>Eigene Figur</h3><p>Prinzessin, Ninja, Pinguin oder Roboter statt Skifahrer.</p><p class="watch">Darauf achten: Steht die Figur auf zwei Skiern? Ist sie etwa gleich gross?</p></div></div>
+  <div class="box"><b>★ Freie Idee:</b> Ich möchte … · Nicht ändern … · Fertig ist es, wenn … – Die Ideen-Knöpfe helfen beim Start. Tipp: Lasst die KI zuerst prüfen, ob euer Prompt klar ist.</div>
+  <p class="foot">© 2026 Reto Lenz · Lizenz CC BY-NC 4.0 – frei nutzbar und anpassbar mit Namensnennung, nicht kommerziell.</p>
+</section>
+</div>
+
+<!-- ============================== ENGLISH ============================== -->
+<div class="doc" lang="en" id="en">
+
+<section class="page">
+  <p class="kicker">Guide · Part A for teachers</p>
+  <h1>⛷ AI Game Lab: Ski Race</h1>
+  <p class="sub">Participants from about 10 years build a ski game without typing code: they tell the AI what they want, the AI writes the code, they check the result.</p>
+
+  <div class="grid2">
+    <div class="box"><b>Launcher:</b> rlen-source.github.io/skirennen/en<br><b>Short</b> (about 1½–2 h): link with <code>?short</code><br><b>Extended</b> (about 3 h): link with <code>?long</code></div>
+    <div class="box"><b>Per team:</b> 2–3 people, one laptop or iPad, an AI chat (ChatGPT or Claude).<br><b>Trainer mode:</b> switch it on at the bottom of the launcher – it shows learning goals and discussion questions.</div>
+  </div>
+
+  <h2>Preparation</h2>
+  <ul class="check">
+    <li><b>Chat account:</b> without signing in, neither ChatGPT nor Claude lets you upload the game file. The providers have age limits (check the current terms). With children the chat therefore runs on the account of an adult sitting with the team.</li>
+    <li><b>Limits of free accounts:</b> every answer contains the whole game (about 46,000 characters). Free accounts have daily limits and cut long answers off more often. Ideally one account with generous limits per team, or keep a spare account ready.</li>
+    <li><b>Privacy and school:</b> find out which AI services your school allows. Some schools only allow their own platforms. These must accept files and return long answers in full – try it with the base game beforehand. Don't create accounts with children's names.</li>
+    <li><b>Devices and Wi-Fi:</b> the launcher loads from rlen-source.github.io, cdn.jsdelivr.net and fonts.googleapis.com. Open it once on a workshop device and start a game.</li>
+    <li><b>Do a run yourself:</b> at least Part 1 of the short version, with the chat the class will use (about 30 min). Then you know the stumbling blocks.</li>
+    <li><b>Print:</b> the info sheet with QR code for each table and Part B of this guide for each team.</li>
+    <li><b>Projector:</b> for the demo and to show the first step together.</li>
+  </ul>
+
+  <h2>Roles in the team</h2>
+  <div class="roles">
+    <div><b>🎮 Driver</b>plays, tests and says what they notice.</div>
+    <div><b>✍️ Prompter</b>chooses, writes the own sentence, copies and pastes.</div>
+    <div><b>🔍 Checker</b>reads out “It is done when …” and ticks off.</div>
+  </div>
+  <p>Swap roles after every step. That way everyone gets to the keyboard and everyone learns to check.</p>
+  <p class="foot">© 2026 Reto Lenz · Licence CC BY-NC 4.0</p>
+</section>
+
+<section class="page">
+  <p class="kicker">Part A for teachers</p>
+  <h2>Plan</h2>
+  <table>
+    <tr><th>Short (about 1½–2 h)</th><th>Extended (about 3 h)</th><th>What happens</th></tr>
+    <tr><td>10 min</td><td>15 min</td><td><b>Start:</b> show the demo, talk through “How we work with AI”, teams and roles.</td></tr>
+    <tr><td>10 min</td><td>15 min</td><td><b>Step 1 together:</b> load the base game, ski, download the file and upload it in the chat – show it on the projector.</td></tr>
+    <tr><td>35 min</td><td>70 min</td><td><b>Part 1:</b> blueprint, camera, steering, own course (extended: plus gates, piste and forest).</td></tr>
+    <tr><td>–</td><td>15 min</td><td>Break</td></tr>
+    <tr><td>30 min</td><td>50 min</td><td><b>Parts 2 and 3:</b> switch on extras, own ideas, free idea.</td></tr>
+    <tr><td>10 min</td><td>15 min</td><td><b>Wrap-up:</b> try each other's games, best times, discussion.</td></tr>
+  </table>
+
+  <h3>Start – how you could put it</h3>
+  <p class="say">Today you'll build your own ski game without typing code yourselves. You tell the AI what you want. The AI writes the code. And you check whether it's right.</p>
+  <p class="say">The AI is your co-driver: it's fast, but it can be wrong. You are the bosses – you decide and you check.</p>
+  <p class="say">In the chat we don't write names, addresses, photos or passwords.</p>
+
+</section>
+
+<section class="page">
+  <p class="kicker">Part A for teachers</p>
+  <h2>During the work: when a team is stuck</h2>
+  <table>
+    <tr><th>What you see</th><th>What helps</th></tr>
+    <tr><td>The AI asks back or sends no code.</td><td>Copy the whole prompt again (“Copy prompt” button). Otherwise add: “Please give me the complete file.”</td></tr>
+    <tr><td>The code stops halfway.</td><td>The launcher notices. Send the “↻ Continue” prompt, then use “🧩 Append continuation”.</td></tr>
+    <tr><td>Red notice above the game.</td><td>“Copy repair prompt”, paste it in the chat, test the new answer.</td></tr>
+    <tr><td>The game runs, but not as wanted.</td><td>Under “What has changed?” describe it at “Something not right?”. Or send the “🛟 Exact prompt”.</td></tr>
+    <tr><td>A step made it worse.</td><td>“↩ Previous version”.</td></tr>
+    <tr><td>The chat gets very long or slow.</td><td>“💾 Download my version”, open a new chat, upload the file, carry on.</td></tr>
+    <tr><td>Daily limit reached or chat down.</td><td>Download the version and carry on with a spare account. Otherwise merge teams or ski the demo for inspiration.</td></tr>
+    <tr><td>A team finishes early.</td><td>Part 3 “Free idea” with the idea buttons. Tip: let the AI check the prompt first.</td></tr>
+  </table>
+
+  <h2 style="margin-top:22px">Wrap-up – discussion questions</h2>
+  <ul>
+    <li>Which sentence in your prompt had the biggest effect?</li>
+    <li>Where was the AI wrong – and how did you notice?</li>
+    <li>What would you tell the AI more precisely next time?</li>
+    <li>Who made the game: you or the AI?</li>
+  </ul>
+  <p class="foot">More background: README on github.com/rlen-source/skirennen</p>
+</section>
+
+<section class="page">
+  <p class="kicker">Guide · Part B for the teams</p>
+  <h1>How to build your ski race</h1>
+  <p class="sub">You describe, the AI programs, you check. Here is what you need to know.</p>
+
+  <h2>🤖 How we work with AI</h2>
+  <ul>
+    <li><b>The AI is a program that writes text and code.</b> It has read a huge amount, but it does not think like a person – and it can be wrong.</li>
+    <li><b>You are the bosses.</b> You say what you want and check whether it is right. The AI is your co-driver.</li>
+    <li><b>No personal data in the chat:</b> no names, addresses, photos or passwords.</li>
+    <li><b>If something seems odd:</b> don't guess – play, check and ask.</li>
+  </ul>
+
+  <h2>📖 What is what?</h2>
+  <dl class="words grid2">
+    <div><dt>Prompt</dt><dd>Your message to the AI: what you want, what must stay the same, how you can tell it is done.</dd>
+    <dt>Code</dt><dd>The instructions for the computer, line by line. The AI writes them for you.</dd>
+    <dt>HTML file</dt><dd>The “house” the whole game lives in. You give it to the AI and get it back changed.</dd>
+    <dt>p5.js</dt><dd>A “drawing and game machine”: it draws the piste and moves the skier.</dd></div>
+    <div><dt>CONFIG</dt><dd>The mixing desk: all numbers in one place, for example speed or number of gates.</dd>
+    <dt>Extra</dt><dd>An add-on like a Lego piece: crowd, stars, a bear. Switched on or off with one line.</dd>
+    <dt>Seed</dt><dd>The starting number for the course. Same number = same course for everyone.</dd>
+    <dt>Live Editor</dt><dd>Where you paste the code from the chat and see your game straight away.</dd></div>
+  </dl>
+
+  <h2>🧱 The blueprint: three areas</h2>
+  <div class="grid2 areas" style="grid-template-columns:1fr 1fr 1fr">
+    <div class="a1"><b>1 · Settings</b><br>The mixing desk with all numbers.</div>
+    <div class="a2"><b>2 · You may change this</b><br>The workshop corner: colours, figure, extras.</div>
+    <div class="a3"><b>3 · Game engine</b><br>The engine room: hands off! The AI may not change anything here.</div>
+  </div>
+
+  <h2>📁 How the file gets into the chat</h2>
+  <ol>
+    <li>In the Live Editor press <b>“Download base game”</b> (laptop: “Downloads” folder; iPad: share menu → chat app or “Save to Files”).</li>
+    <li>Sign in to the chat, tap <b>📎 or ➕</b> and choose the file.</li>
+    <li>In the launcher press <b>“Copy prompt”</b>, paste it in the chat and send.</li>
+    <li>In the answer press the <b>copy button on the code block</b>, paste it into the Live Editor, <b>“▶ Show game”</b>.</li>
+  </ol>
+</section>
+
+<section class="page">
+  <p class="kicker">Part B for the teams</p>
+  <h2>What it looks like – Part 1: tune the game</h2>
+  <div class="step t1"><img src="docs/heft/titel.png" alt=""><div><h3><span class="n">1</span>Get the game and play</h3><p>You ski a race and give the file to the AI. The AI explains the game to you – it doesn't change anything yet.</p><p class="watch">Watch out: remember your time!</p></div></div>
+  <div class="step t1"><img src="docs/heft/basis.png" alt=""><div><h3><span class="n">2</span>The blueprint</h3><p>You let the AI show you the three areas: mixing desk, workshop corner, engine room.</p><p class="watch">Watch out: where would you change the speed? Where the colour?</p></div></div>
+  <div class="step t1"><img src="docs/heft/kamera.png" alt=""><div><h3><span class="n">3</span>Camera</h3><p>The skier moves up or down – so you see the gates earlier or later.</p><p class="watch">Watch out: only one number changes. Where is the skier now?</p></div></div>
+  <div class="step t1"><div style="font-size:46px;text-align:center">🛷</div><div><h3><span class="n">4</span>Steering · <span class="n">5</span>Own course</h3><p>Slippery like ice or very direct? Then your own course (seed) and your own title – your version 1.</p><p class="watch">Watch out: does steering feel different? Does the title screen show your title?</p></div></div>
+  <p class="foot">Numbers as in the short version. The extended version also has gates, piste and forest. (Screenshots show the German game.)</p>
+</section>
+
+<section class="page">
+  <p class="kicker">Part B for the teams</p>
+  <h2>What it looks like – Parts 2 and 3: your ideas</h2>
+  <div class="step"><img src="docs/heft/extras.png" alt=""><div><h3><span class="n">0</span>Switch on extras</h3><p>Snowfall, crowd, stars, eagle and fireworks are already finished – you switch them on.</p><p class="watch">Watch out: does the crowd cheer at every gate? Does the star counter at the top right count?</p></div></div>
+  <div class="step"><img src="docs/heft/deko.png" alt=""><div><h3><span class="n">A</span>Decoration and “Spice up the game”</h3><p>Huts, rocks, goats or igloos next to the piste. In the short version together with speed and combo streak in one prompt.</p><p class="watch">Watch out: is the decoration only next to the piste? Which sentence did what?</p></div></div>
+  <div class="step"><img src="docs/heft/baer.png" alt=""><div><h3><span class="n">B</span>An enemy chases you</h3><p>A bear, yeti or snowman comes down the slope from behind.</p><p class="watch">Watch out: does it only come after a few seconds? Do you crash when it catches you?</p></div></div>
+  <div class="step"><img src="docs/heft/nacht.png" alt=""><div><h3><span class="n">C</span>Colours</h3><p>Night, neon, candy or retro – only the colours change.</p><p class="watch">Watch out: can you still see piste, deep snow and gates well?</p></div></div>
+  <div class="step"><img src="docs/heft/figur.png" alt=""><div><h3><span class="n">D</span>Your own figure</h3><p>Princess, ninja, penguin or robot instead of the skier.</p><p class="watch">Watch out: does the figure stand on two skis? Is it about the same size?</p></div></div>
+  <div class="box"><b>★ Free idea:</b> I want … · Don't change … · It is done when … – the idea buttons help you start. Tip: let the AI check first whether your prompt is clear.</div>
+  <p class="foot">© 2026 Reto Lenz · Licence CC BY-NC 4.0 – free to use and adapt with attribution, non-commercial.</p>
+</section>
+</div>
+
+<script>
+  const only = new URLSearchParams(location.search).get("only");
+  if (only) document.body.classList.add("only-" + only);
+  function printLang(lang) {
+    document.body.classList.remove("only-de", "only-en");
+    if (lang) document.body.classList.add("only-" + lang);
+    window.print();
+  }
+</script>
+</body>
+</html>
